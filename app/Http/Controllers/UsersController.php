@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Auth\JWTManager;
 use App\Http\Requests\Users\Register;
 use App\Users\UserManager;
+use Illuminate\Contracts\Routing\ResponseFactory;
 use Illuminate\Http\JsonResponse;
 
 /**
@@ -14,6 +15,10 @@ use Illuminate\Http\JsonResponse;
  */
 final class UsersController extends Controller
 {
+    const ROUTE_NAME_REGISTER = 'user.register';
+
+    const RESPONSE_PARAMETER_USER = 'user';
+
     /**
      * @var UserManager
      */
@@ -22,10 +27,13 @@ final class UsersController extends Controller
     /**
      * UsersController constructor.
      *
-     * @param UserManager $userManager
+     * @param UserManager     $userManager
+     * @param ResponseFactory $responseFactory
      */
-    public function __construct(UserManager $userManager)
+    public function __construct(UserManager $userManager, ResponseFactory $responseFactory)
     {
+        parent::__construct($responseFactory);
+
         $this->userManager = $userManager;
     }
 
@@ -47,7 +55,16 @@ final class UsersController extends Controller
      */
     public function register(Register $request, JWTManager $jwtManager): JsonResponse
     {
-        // TODO
+        $user = $this->getUserManager()->createUser($request->getEmail(), $request->getPassword());
+
+        return $jwtManager->issueTokens(
+            $user,
+            $this->getResponseFactory()->json(
+                [self::RESPONSE_PARAMETER_USER => $user->toArray()],
+                JsonResponse::HTTP_CREATED
+            ),
+            $request->shouldRemember()
+        );
     }
 
     //endregion

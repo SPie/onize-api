@@ -4,6 +4,7 @@ namespace Tests\Helper;
 
 use App\Models\DatabaseHandler;
 use App\Models\Model;
+use App\Models\Repository;
 use Doctrine\Common\Collections\Collection;
 use Mockery as m;
 use Mockery\MockInterface;
@@ -175,6 +176,38 @@ trait ModelHelper
     {
         $databaseHandler
             ->shouldHaveReceived('flush')
+            ->once();
+
+        return $this;
+    }
+
+    /**
+     * @param Repository|MockInterface $repository
+     * @param Model                    $model
+     *
+     * @return $this
+     */
+    private function mockRepositorySave(MockInterface $repository, Model $model): self
+    {
+        $repository
+            ->shouldReceive('save')
+            ->with($model)
+            ->andReturn($model);
+
+        return $this;
+    }
+
+    /**
+     * @param Repository|MockInterface $repository
+     * @param Model                    $model
+     *
+     * @return $this
+     */
+    private function assertRepositorySave(MockInterface $repository, Model $model): self
+    {
+        $repository
+            ->shouldHaveReceived('save')
+            ->with($model)
             ->once();
 
         return $this;

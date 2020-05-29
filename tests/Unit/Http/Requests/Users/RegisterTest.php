@@ -3,6 +3,8 @@
 namespace Tests\Unit\Http\Requests\Users;
 
 use App\Http\Requests\Users\Register;
+use App\Http\Requests\Validators\UniqueUser;
+use Tests\Helper\HttpHelper;
 use Tests\TestCase;
 
 /**
@@ -12,6 +14,8 @@ use Tests\TestCase;
  */
 final class RegisterTest extends TestCase
 {
+    use HttpHelper;
+
     //region Tests
 
     /**
@@ -19,12 +23,14 @@ final class RegisterTest extends TestCase
      */
     public function testRules(): void
     {
+        $uniqueUser = $this->createUniqueUser();
+
         $this->assertEquals(
             [
-                'email'    => ['required', 'email'],
+                'email'    => ['required', 'email', $uniqueUser],
                 'password' => ['required', 'string'],
             ],
-            $this->getRegister()->rules()
+            $this->getRegister($uniqueUser)->rules()
         );
     }
 
@@ -52,13 +58,24 @@ final class RegisterTest extends TestCase
         $this->assertEquals($password, $request->getPassword());
     }
 
+    public function testShouldRemember(): void
+    {
+        $remember = $this->getFaker()->boolean;
+        $request = $this->getRegister();
+        $request->offsetSet('remember', $remember);
+
+        $this->assertEquals($remember, $request->shouldRemember());
+    }
+
     //endregion
 
     /**
+     * @param UniqueUser|null $uniqueUser
+     *
      * @return Register
      */
-    private function getRegister(): Register
+    private function getRegister(UniqueUser $uniqueUser = null): Register
     {
-        return new Register();
+        return new Register($uniqueUser ?: $this->createUniqueUser());
     }
 }

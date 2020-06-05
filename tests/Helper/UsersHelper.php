@@ -119,4 +119,21 @@ trait UsersHelper
     {
         return m::spy(UserRepository::class);
     }
+
+    /**
+     * @param UserRepository|MockInterface $userRepository
+     * @param UserModel|null               $user
+     * @param string                       $email
+     *
+     * @return $this
+     */
+    private function mockUserRepositoryFindOneByEmail(MockInterface $userRepository, ?UserModel $user, string $email): self
+    {
+        $userRepository
+            ->shouldReceive('findOneByEmail')
+            ->with($email)
+            ->andReturn($user);
+
+        return $this;
+    }
 }

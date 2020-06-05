@@ -19,4 +19,11 @@ interface UserRepository extends Repository
      * @return UserModel|Model
      */
     public function save(Model $model, bool $flush = true): Model;
+
+    /**
+     * @param string $email
+     *
+     * @return UserModel|null
+     */
+    public function findOneByEmail(string $email): ?UserModel;
 }

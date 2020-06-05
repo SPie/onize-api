@@ -2,15 +2,23 @@
 
 namespace App\Models;
 
+use Doctrine\ORM\Mapping as ORM;
+use Gedmo\Mapping\Annotation as Gedmo;
 
 trait Timestamps
 {
     /**
+     * @ORM\Column(name="created_at", type="datetime", nullable=false)
+     * @Gedmo\Timestampable(on="create")
+     *
      * @var \DateTime|null
      */
     private ?\DateTime $createdAt;
 
     /**
+     * @ORM\Column(name="updated_at", type="datetime", nullable=false)
+     * @Gedmo\Timestampable(on="update")
+     *
      * @var \DateTime|null
      */
     private ?\DateTime $updatedAt;

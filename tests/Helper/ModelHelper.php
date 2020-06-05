@@ -4,7 +4,9 @@ namespace Tests\Helper;
 
 use App\Models\DatabaseHandler;
 use App\Models\Model;
+use App\Models\PasswordHasher;
 use App\Models\Repository;
+use App\Models\UuidGenerator;
 use Doctrine\Common\Collections\Collection;
 use Mockery as m;
 use Mockery\MockInterface;
@@ -207,8 +209,49 @@ trait ModelHelper
     {
         $repository
             ->shouldHaveReceived('save')
+            ->with(m::on(fn (Model $actual) => $model == $actual))
             ->with($model)
             ->once();
+
+        return $this;
+    }
+
+    /**
+     * @param string|null $uuid
+     *
+     * @return UuidGenerator|MockInterface
+     */
+    private function createUuidGenerator(string $uuid = null): UuidGenerator
+    {
+        $uuidGenerator = m::spy(UuidGenerator::class);
+        $uuidGenerator
+            ->shouldReceive('generate')
+            ->andReturn($uuid ?: $this->getFaker()->uuid);
+
+        return $uuidGenerator;
+    }
+
+    /**
+     * @return PasswordHasher|MockInterface
+     */
+    private function createPasswordHasher(): PasswordHasher
+    {
+        return m::spy(PasswordHasher::class);
+    }
+
+    /**
+     * @param PasswordHasher|MockInterface $passwordHasher
+     * @param string                       $hash
+     * @param string                       $password
+     *
+     * @return $this
+     */
+    private function mockPasswordHasherHash(MockInterface $passwordHasher, string $hash, string $password): self
+    {
+        $passwordHasher
+            ->shouldReceive('hash')
+            ->with($password)
+            ->andReturn($hash);
 
         return $this;
     }

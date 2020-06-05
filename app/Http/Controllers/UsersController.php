@@ -57,14 +57,12 @@ final class UsersController extends Controller
     {
         $user = $this->getUserManager()->createUser($request->getEmail(), $request->getPassword());
 
-        return $jwtManager->issueTokens(
-            $user,
-            $this->getResponseFactory()->json(
-                [self::RESPONSE_PARAMETER_USER => $user->toArray()],
-                JsonResponse::HTTP_CREATED
-            ),
-            $request->shouldRemember()
+        $response = $this->getResponseFactory()->json(
+            [self::RESPONSE_PARAMETER_USER => $user->toArray()],
+            JsonResponse::HTTP_CREATED
         );
+
+        return $jwtManager->issueTokens($user, $response, $request->shouldRemember());
     }
 
     //endregion

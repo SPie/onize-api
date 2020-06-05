@@ -1,7 +1,7 @@
 <?php
 
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\UsersController;
+use Illuminate\Routing\Router;
 
 /*
 |--------------------------------------------------------------------------
@@ -14,3 +14,10 @@ use Illuminate\Support\Facades\Route;
 |
 */
 
+/**
+ * @var Router $router
+ */
+
+$router->group(['prefix' => 'users'], function (Router $router) {
+    $router->post('')->name(UsersController::ROUTE_NAME_REGISTER)->uses('UsersController@register');
+});

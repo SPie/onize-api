@@ -7,6 +7,7 @@ use App\Models\Model;
 use App\Models\PasswordHasher;
 use App\Models\Repository;
 use App\Models\UuidGenerator;
+use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Mockery as m;
 use Mockery\MockInterface;
@@ -254,5 +255,21 @@ trait ModelHelper
             ->andReturn($hash);
 
         return $this;
+    }
+
+    /**
+     * @param string $className
+     * @param int    $times
+     * @param array  $attributes
+     *
+     * @return Model[]|Collection
+     */
+    private function createModelEntities(string $className, int $times = 1, array $attributes = []): Collection
+    {
+        if ($times = 1) {
+            return new ArrayCollection([entity($className, 1)->create($attributes)]);
+        }
+
+        return entity($className, $times)->create($attributes);
     }
 }

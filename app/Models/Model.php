@@ -2,14 +2,12 @@
 
 namespace App\Models;
 
-use Illuminate\Contracts\Support\Arrayable;
-
 /**
  * Interface Model
  *
  * @package App\Models
  */
-interface Model extends Arrayable
+interface Model
 {
     const PROPERTY_ID = 'id';
 

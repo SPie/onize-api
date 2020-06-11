@@ -51,6 +51,7 @@ final class JWTManagerTest extends TestCase
 
         $this->assertEquals($response, $jwtManager->issueTokens($user, $inputResponse));
         $this->assertJWTGuardIssueAccessToken($jwtGuard, $user);
+        $this->assertJWTGuardSetUser($jwtGuard, $user);
     }
 
     /**
@@ -66,6 +67,7 @@ final class JWTManagerTest extends TestCase
 
         $this->assertEquals($response, $jwtManager->issueTokens($user, $inputResponse, true));
         $this->assertJWTGuardIssueRefreshToken($jwtGuard);
+        $this->assertJWTGuardSetUser($jwtGuard, $user);
     }
 
     //endregion

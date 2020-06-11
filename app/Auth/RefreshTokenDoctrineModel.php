@@ -27,7 +27,7 @@ class RefreshTokenDoctrineModel extends AbstractDoctrineModel implements Refresh
     private string $identifier;
 
     /**
-     * @ORM\ManyToOne(targetEntity="App\User\UserDoctrineModel", inversedBy="refreshTokens", cascade={"persist"})
+     * @ORM\ManyToOne(targetEntity="App\Users\UserDoctrineModel", inversedBy="refreshTokens", cascade={"persist"})
      *
      * @var UserModel
      */

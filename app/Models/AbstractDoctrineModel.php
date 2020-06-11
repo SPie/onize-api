@@ -2,6 +2,8 @@
 
 namespace App\Models;
 
+use Doctrine\ORM\Mapping;
+
 /**
  * Class AbstractDoctrineModel
  *
@@ -10,6 +12,10 @@ namespace App\Models;
 abstract class AbstractDoctrineModel implements Model
 {
     /**
+     * @Mapping\Id
+     * @Mapping\GeneratedValue
+     * @Mapping\Column(type="integer")
+     *
      * @var int|null
      */
     protected ?int $id;

@@ -137,14 +137,6 @@ final class UserDoctrineModel extends AbstractDoctrineModel implements UserModel
     }
 
     /**
-     * @return array
-     */
-    public function toArray()
-    {
-        // TODO
-    }
-
-    /**
      * @return string|void
      */
     public function getAuthIdentifierName()
@@ -197,5 +189,16 @@ final class UserDoctrineModel extends AbstractDoctrineModel implements UserModel
     public function getCustomClaims(): array
     {
         return [];
+    }
+
+    /**
+     * @return array
+     */
+    public function toArray(): array
+    {
+        return [
+            self::PROPERTY_UUID  => $this->getUuid(),
+            self::PROPERTY_EMAIL => $this->getEmail(),
+        ];
     }
 }

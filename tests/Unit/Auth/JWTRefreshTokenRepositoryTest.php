@@ -29,13 +29,18 @@ final class JWTRefreshTokenRepositoryTest extends TestCase
 
     //region Tests
 
-    private function setUpStoreRefreshTokenTest(bool $withUser = true): array
+    private function setUpStoreRefreshTokenTest(bool $withUser = true, bool $withExpiresAt = true): array
     {
         $refreshToken = $this->createJWT();
         $this
             ->mockJWTGetSubject($refreshToken, $this->getFaker()->safeEmail)
             ->mockJWTGetRefreshTokenId($refreshToken, $this->getFaker()->word)
-            ->mockJWTGetExpiresAt($refreshToken, new \DateTimeImmutable($this->getFaker()->dateTime->format('Y-m-d H:i:s')));
+            ->mockJWTGetExpiresAt(
+                $refreshToken,
+                $withExpiresAt
+                    ? new \DateTimeImmutable($this->getFaker()->dateTime->format('Y-m-d H:i:s'))
+                    : null
+            );
         $user = $this->createUserModel();
         $userRepository = $this->createUserRepository();
         $this->mockUserRepositoryFindOneByEmail($userRepository, $withUser ? $user : null, $refreshToken->getSubject());
@@ -46,7 +51,7 @@ final class JWTRefreshTokenRepositoryTest extends TestCase
             $refreshTokenModel,
             $refreshToken->getRefreshTokenId(),
             $user,
-            new \DateTime($refreshToken->getExpiresAt()->format('Y-m-d H:i:s'))
+            $withExpiresAt ? new \DateTime($refreshToken->getExpiresAt()->format('Y-m-d H:i:s')) : null
         );
         $refreshTokenRepository = $this->createRefreshTokenRepository();
         $jwtRefreshTokenRepository = $this->getJWTRefreshTokenRepository($refreshTokenRepository, $refreshTokenModelFactory, $userRepository);
@@ -81,6 +86,22 @@ final class JWTRefreshTokenRepositoryTest extends TestCase
         $this->expectException(ModelNotFoundException::class);
 
         $jwtRefreshTokenRepository->storeRefreshToken($refreshToken);
+    }
+
+    /**
+     * @return void
+     */
+    public function testStoreRefreshTokenWithoutRefreshExpiresAt(): void
+    {
+        /**
+         * @var JWTRefreshTokenRepository $jwtRefreshTokenRepository
+         * @var RefreshTokenRepository    $refreshTokenRepository
+         * @var RefreshTokenModel         $refreshTokenModel
+         */
+        [$jwtRefreshTokenRepository, $refreshToken, $refreshTokenRepository, $refreshTokenModel] = $this->setUpStoreRefreshTokenTest(true, false);
+
+        $this->assertEquals($jwtRefreshTokenRepository, $jwtRefreshTokenRepository->storeRefreshToken($refreshToken));
+        $this->assertRepositorySave($refreshTokenRepository, $refreshTokenModel);
     }
 
     private function setUpRevokeRefreshTokenTest(bool $withRefreshToken = true): array

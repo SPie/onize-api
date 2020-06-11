@@ -47,6 +47,44 @@ final class UserManagerTest extends TestCase
         $this->assertRepositorySave($userRepository, $user);
     }
 
+    /**
+     * @param bool $isEmailUsed
+     *
+     * @return array
+     */
+    private function setUpIsEmailUsedTest(bool $isEmailUsed = true): array
+    {
+        $email = $this->getFaker()->safeEmail;
+        $user = $this->createUserModel();
+        $userRepository = $this->createUserRepository();
+        $this->mockUserRepositoryFindOneByEmail($userRepository, $isEmailUsed ? $user : null, $email);
+        $userManager = $this->getUserManager($userRepository);
+
+        return [$userManager, $email];
+    }
+
+    /**
+     * @return void
+     */
+    public function testIsEmailUsed(): void
+    {
+        /** @var UserManager $userManager */
+        [$userManager, $email] = $this->setUpIsEmailUsedTest();
+
+        $this->assertTrue($userManager->isEmailUsed($email));
+    }
+
+    /**
+     * @return void
+     */
+    public function testIsEmailUsedWithoutUsedEmail(): void
+    {
+        /** @var UserManager $userManager */
+        [$userManager, $email] = $this->setUpIsEmailUsedTest(false);
+
+        $this->assertFalse($userManager->isEmailUsed($email));
+    }
+
     //endregion
 
     /**

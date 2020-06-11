@@ -2,10 +2,12 @@
 
 namespace Tests\Helper;
 
+use App\Users\UserDoctrineModel;
 use App\Users\UserManager;
 use App\Users\UserModel;
 use App\Users\UserModelFactory;
 use App\Users\UserRepository;
+use Doctrine\Common\Collections\Collection;
 use Mockery as m;
 use Mockery\MockInterface;
 
@@ -135,5 +137,16 @@ trait UsersHelper
             ->andReturn($user);
 
         return $this;
+    }
+
+    /**
+     * @param int   $times
+     * @param array $attributes
+     *
+     * @return UserDoctrineModel[]|Collection
+     */
+    private function createUserEntities(int $times = 1, array $attributes = []): Collection
+    {
+        return $this->createModelEntities(UserDoctrineModel::class, $times, $attributes);
     }
 }

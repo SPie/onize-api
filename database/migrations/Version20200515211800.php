@@ -22,11 +22,12 @@ final class Version20200515211800 extends AbstractMigration
         $this
             ->createUsersTable($schema)
             ->createRefreshTokensTable($schema)
-            ->createLoginAttemptsTable($schema)
-            ->createProjectsTable($schema)
-            ->createProjectInvitesTable($schema)
-            ->createProjectMembersTable($schema)
-            ->createProjectMetaDataElements($schema);
+//            ->createLoginAttemptsTable($schema)
+//            ->createProjectsTable($schema)
+//            ->createProjectInvitesTable($schema)
+//            ->createProjectMembersTable($schema)
+//            ->createProjectMetaDataElements($schema)
+        ;
     }
 
     /**

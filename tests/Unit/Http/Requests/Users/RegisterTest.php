@@ -58,15 +58,6 @@ final class RegisterTest extends TestCase
         $this->assertEquals($password, $request->getPassword());
     }
 
-    public function testShouldRemember(): void
-    {
-        $remember = $this->getFaker()->boolean;
-        $request = $this->getRegister();
-        $request->offsetSet('remember', $remember);
-
-        $this->assertEquals($remember, $request->shouldRemember());
-    }
-
     //endregion
 
     /**

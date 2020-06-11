@@ -14,10 +14,24 @@ class Register extends FormRequest
 {
     const PARAMETER_EMAIL    = 'email';
     const PARAMETER_PASSWORD = 'password';
-    const PARAMETER_REMEMBER = 'remember';
 
+    /**
+     * @var UniqueUser
+     */
     private UniqueUser $uniqueUser;
 
+    /**
+     * Register constructor.
+     *
+     * @param UniqueUser $uniqueUser
+     * @param array      $query
+     * @param array      $request
+     * @param array      $attributes
+     * @param array      $cookies
+     * @param array      $files
+     * @param array      $server
+     * @param null       $content
+     */
     public function __construct(
         UniqueUser $uniqueUser,
         array $query = [],
@@ -66,13 +80,5 @@ class Register extends FormRequest
     public function getPassword(): string
     {
         return $this->get(self::PARAMETER_PASSWORD);
-    }
-
-    /**
-     * @return bool
-     */
-    public function shouldRemember(): bool
-    {
-        return $this->get(self::PARAMETER_REMEMBER);
     }
 }

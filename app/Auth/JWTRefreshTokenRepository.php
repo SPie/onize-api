@@ -85,7 +85,9 @@ final class JWTRefreshTokenRepository implements SPieJWTRefreshTokenRepository
         $refreshTokenModel = $this->getRefreshTokenModelFactory()->create(
             $refreshToken->getRefreshTokenId(),
             $user,
-            new \DateTime($refreshToken->getExpiresAt()->format('Y-m-d H:i:s'))
+            !empty($refreshToken->getExpiresAt())
+                ? new \DateTime($refreshToken->getExpiresAt()->format('Y-m-d H:i:s'))
+                : null
         );
 
         $this->getRefreshTokenRepository()->save($refreshTokenModel);

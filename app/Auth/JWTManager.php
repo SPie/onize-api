@@ -63,6 +63,8 @@ class JWTManager
      */
     public function issueTokens(UserModel $user, JsonResponse $response, bool $withRefreshToken = false): JsonResponse
     {
+        $this->getJwtGuard()->setUser($user);
+
         $this->getJwtGuard()->issueAccessToken($user);
 
         if ($withRefreshToken) {

@@ -100,6 +100,22 @@ trait AuthHelper
     }
 
     /**
+     * @param JWTGuard|MockInterface $jwtGuard
+     * @param UserModel              $user
+     *
+     * @return $this
+     */
+    private function assertJWTGuardSetUser(MockInterface $jwtGuard, UserModel $user): self
+    {
+        $jwtGuard
+            ->shouldHaveReceived('setUser')
+            ->with($user)
+            ->once();
+
+        return $this;
+    }
+
+    /**
      * @return JWTHandler|MockInterface
      */
     private function createJWTHandler(): JWTHandler
@@ -233,7 +249,7 @@ trait AuthHelper
             ->with(
                 $identifier,
                 $user,
-                m::on(function (\DateTime $actual) use ($validUntil) {
+                m::on(function (?\DateTime $actual) use ($validUntil) {
                     return $actual == $validUntil;
                 })
             )

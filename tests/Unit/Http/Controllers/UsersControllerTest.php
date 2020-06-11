@@ -36,7 +36,7 @@ final class UsersControllerTest extends TestCase
         $this->mockResponseFactoryJson($responseFactory, $response, ['user' => $userData], 201);
         $responseWithTokens = $this->createJsonResponse();
         $jwtManager = $this->createJWTManager();
-        $this->mockJWTManagerIssueTokens($jwtManager, $responseWithTokens, $user, $response, $request->shouldRemember());
+        $this->mockJWTManagerIssueTokens($jwtManager, $responseWithTokens, $user, $response, true);
         $usersController = $this->getUsersController($userManager, $responseFactory);
 
         return [$usersController, $request, $jwtManager, $responseWithTokens];

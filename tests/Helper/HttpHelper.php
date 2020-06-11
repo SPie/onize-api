@@ -75,11 +75,10 @@ trait HttpHelper
     /**
      * @param string|null $email
      * @param string|null $password
-     * @param bool|null   $remember
      *
      * @return Register|MockInterface
      */
-    private function createRegister(string $email = null, string $password = null, bool $remember = null): Register
+    private function createRegister(string $email = null, string $password = null): Register
     {
         $request = m::spy(Register::class);
         $request
@@ -87,10 +86,7 @@ trait HttpHelper
             ->andReturn($email ?: $this->getFaker()->safeEmail)
             ->getMock()
             ->shouldReceive('getPassword')
-            ->andReturn($password ?: $this->getFaker()->password)
-            ->getMock()
-            ->shouldReceive('shouldRemeber')
-            ->andReturn($remember ?? $this->getFaker()->boolean);
+            ->andReturn($password ?: $this->getFaker()->password);
 
         return $request;
     }

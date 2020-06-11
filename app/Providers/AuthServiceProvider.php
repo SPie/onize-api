@@ -2,8 +2,10 @@
 
 namespace App\Providers;
 
+use App\Users\UserManager;
+use Illuminate\Contracts\Auth\Guard;
 use Illuminate\Foundation\Support\Providers\AuthServiceProvider as ServiceProvider;
-use Illuminate\Support\Facades\Gate;
+use SPie\LaravelJWT\Contracts\JWTGuard;
 
 class AuthServiceProvider extends ServiceProvider
 {
@@ -16,6 +18,11 @@ class AuthServiceProvider extends ServiceProvider
         // 'App\Model' => 'App\Policies\ModelPolicy',
     ];
 
+    public function register(): void
+    {
+        $this->app->bind(JWTGuard::class, fn () => $this->app->get(Guard::class));
+    }
+
     /**
      * Register any authentication / authorization services.
      *
@@ -26,5 +33,8 @@ class AuthServiceProvider extends ServiceProvider
         $this->registerPolicies();
 
         //
+        $this->app->get('auth')->provider('app_user_provider', function ($app, array $config) {
+            return $this->app->get(UserManager::class);
+        });
     }
 }

@@ -23,6 +23,6 @@ trait Uuid
      */
     public function getUuid(): string
     {
-        return $this->getUuid();
+        return $this->uuid;
     }
 }

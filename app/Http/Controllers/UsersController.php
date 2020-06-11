@@ -62,7 +62,7 @@ final class UsersController extends Controller
             JsonResponse::HTTP_CREATED
         );
 
-        return $jwtManager->issueTokens($user, $response, $request->shouldRemember());
+        return $jwtManager->issueTokens($user, $response, true);
     }
 
     //endregion

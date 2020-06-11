@@ -63,4 +63,9 @@ interface UserModel extends Model, JWTAuthenticatable, SoftDeletable, Timestampa
      * @return RefreshTokenModel[]|Collection
      */
     public function getRefreshTokens(): Collection;
+
+    /**
+     * @return array
+     */
+    public function toArray(): array;
 }

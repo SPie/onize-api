@@ -27,6 +27,8 @@
         <server name="QUEUE_CONNECTION" value="sync"/>
         <server name="SESSION_DRIVER" value="array"/>
         <server name="TELESCOPE_ENABLED" value="false"/>
+        <server name="JWT_ACCESS_TOKEN_KEY" value="auth-token" />
+        <server name="JWT_ACCESS_TOKEN_PROVIDER" value="SPie\LaravelJWT\TokenProvider\CookieTokenProvider" />
         <server name="JWT_REFRESH_TOKEN_PROVIDER" value="SPie\LaravelJWT\TokenProvider\CookieTokenProvider"/>
         <server name="JWT_REFRESH_TOKEN_KEY" value="refresh-token"/>
         <server name="JWT_REFRESH_TOKEN_REPOSITORY" value="App\Auth\JWTRefreshTokenRepository"/>

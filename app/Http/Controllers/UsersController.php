@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers;
 
-use App\Auth\JWTManager;
+use App\Auth\AuthManager;
 use App\Http\Requests\Users\Register;
 use App\Users\UserManager;
 use Illuminate\Contracts\Routing\ResponseFactory;
@@ -48,21 +48,21 @@ final class UsersController extends Controller
     //region Controller actions
 
     /**
-     * @param Register   $request
-     * @param JWTManager $jwtManager
+     * @param Register    $request
+     * @param AuthManager $authManager
      *
      * @return JsonResponse
      */
-    public function register(Register $request, JWTManager $jwtManager): JsonResponse
+    public function register(Register $request, AuthManager $authManager): JsonResponse
     {
         $user = $this->getUserManager()->createUser($request->getEmail(), $request->getPassword());
 
-        $response = $this->getResponseFactory()->json(
+        $authManager->login($user);
+
+        return $this->getResponseFactory()->json(
             [self::RESPONSE_PARAMETER_USER => $user->toArray()],
             JsonResponse::HTTP_CREATED
         );
-
-        return $jwtManager->issueTokens($user, $response, true);
     }
 
     //endregion

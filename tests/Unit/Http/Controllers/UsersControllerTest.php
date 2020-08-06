@@ -34,12 +34,10 @@ final class UsersControllerTest extends TestCase
         $response = $this->createJsonResponse();
         $responseFactory = $this->createResponseFactory();
         $this->mockResponseFactoryJson($responseFactory, $response, ['user' => $userData], 201);
-        $responseWithTokens = $this->createJsonResponse();
-        $jwtManager = $this->createJWTManager();
-        $this->mockJWTManagerIssueTokens($jwtManager, $responseWithTokens, $user, $response, true);
+        $authManager = $this->createAuthManager();
         $usersController = $this->getUsersController($userManager, $responseFactory);
 
-        return [$usersController, $request, $jwtManager, $responseWithTokens];
+        return [$usersController, $request, $authManager, $response, $user];
     }
 
     /**
@@ -48,9 +46,10 @@ final class UsersControllerTest extends TestCase
     public function testRegister(): void
     {
         /** @var UsersController $usersController */
-        [$usersController, $request, $jwtManager, $responseWithTokens] = $this->setUpRegisterTest();
+        [$usersController, $request, $authManager, $response, $user] = $this->setUpRegisterTest();
 
-        $this->assertEquals($responseWithTokens, $usersController->register($request, $jwtManager));
+        $this->assertEquals($response, $usersController->register($request, $authManager));
+        $this->assertAuthManagerLogin($authManager, $user);
     }
 
     //endregion

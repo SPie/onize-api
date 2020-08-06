@@ -51,6 +51,6 @@ class UniqueUser implements Rule
      */
     public function message()
     {
-        return 'validation.user-not-unique';
+        return 'validation.user_not_unique';
     }
 }

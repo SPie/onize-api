@@ -2,7 +2,7 @@
 
 namespace Tests\Helper;
 
-use App\Auth\JWTManager;
+use App\Auth\AuthManager;
 use App\Auth\RefreshTokenModel;
 use App\Auth\RefreshTokenModelFactory;
 use App\Auth\RefreshTokenRepository;
@@ -31,85 +31,16 @@ trait AuthHelper
 
     /**
      * @param JWTGuard|MockInterface $jwtGuard
-     * @param JWTAuthenticatable     $authenticatable
+     * @param UserModel     $user
+     * @param bool          $remember
      *
      * @return $this
      */
-    private function assertJWTGuardIssueAccessToken(MockInterface $jwtGuard, JWTAuthenticatable $authenticatable): self
+    private function assertJWTGuardLogin(MockInterface $jwtGuard, UserModel $user, bool $remember): self
     {
         $jwtGuard
-            ->shouldHaveReceived('issueAccessToken')
-            ->with($authenticatable)
-            ->once();
-
-        return $this;
-    }
-
-    /**
-     * @param JWTGuard|MockInterface $jwtGuard
-     *
-     * @return $this
-     */
-    private function assertJWTGuardIssueRefreshToken(MockInterface $jwtGuard): self
-    {
-        $jwtGuard
-            ->shouldHaveReceived('issueRefreshToken')
-            ->once();
-
-        return $this;
-    }
-
-    /**
-     * @param JWTGuard|MockInterface $jwtGuard
-     * @param JsonResponse           $response
-     * @param JsonResponse           $inputResponse
-     *
-     * @return $this
-     */
-    private function mockJWTGuardReturnAccessToken(
-        MockInterface $jwtGuard,
-        JsonResponse $response,
-        JsonResponse $inputResponse
-    ): self {
-        $jwtGuard
-            ->shouldReceive('returnAccessToken')
-            ->with($inputResponse)
-            ->andReturn($response);
-
-        return $this;
-    }
-
-    /**
-     * @param JWTGuard|MockInterface $jwtGuard
-     * @param JsonResponse           $response
-     * @param JsonResponse           $inputResponse
-     *
-     * @return $this
-     */
-    private function mockJWTGuardReturnRefreshToken(
-        MockInterface $jwtGuard,
-        JsonResponse $response,
-        JsonResponse $inputResponse
-    ): self {
-        $jwtGuard
-            ->shouldReceive('returnRefreshToken')
-            ->with($inputResponse)
-            ->andReturn($response);
-
-        return $this;
-    }
-
-    /**
-     * @param JWTGuard|MockInterface $jwtGuard
-     * @param UserModel              $user
-     *
-     * @return $this
-     */
-    private function assertJWTGuardSetUser(MockInterface $jwtGuard, UserModel $user): self
-    {
-        $jwtGuard
-            ->shouldHaveReceived('setUser')
-            ->with($user)
+            ->shouldHaveReceived('login')
+            ->with($user, $remember)
             ->once();
 
         return $this;
@@ -124,30 +55,46 @@ trait AuthHelper
     }
 
     /**
-     * @return JWTManager|MockInterface
+     * @return AuthManager|MockInterface
      */
-    private function createJWTManager(): JWTManager
+    private function createAuthManager(): AuthManager
     {
-        return m::spy(JWTManager::class);
+        return m::spy(AuthManager::class);
     }
 
     /**
-     * @param JWTManager|MockInterface $jwtManager
-     * @param JsonResponse                 $response
-     * @param UserModel                $user
-     * @param JsonResponse                 $inputResponse
-     * @param bool                     $withRefreshToken
+     * @param AuthManager|MockInterface $authManager
+     * @param UserModel                 $user
      *
      * @return $this
      */
-    private function mockJWTManagerIssueTokens(
-        MockInterface $jwtManager,
+    private function assertAuthManagerLogin(MockInterface $authManager, UserModel $user): self
+    {
+        $authManager
+            ->shouldHaveReceived('login')
+            ->with($user)
+            ->once();
+
+        return $this;
+    }
+
+    /**
+     * @param AuthManager|MockInterface $authManager
+     * @param JsonResponse              $response
+     * @param UserModel                 $user
+     * @param JsonResponse              $inputResponse
+     * @param bool                      $withRefreshToken
+     *
+     * @return $this
+     */
+    private function mockAuthManagerIssueTokens(
+        MockInterface $authManager,
         JsonResponse $response,
         UserModel $user,
         JsonResponse $inputResponse,
         bool $withRefreshToken
     ): self {
-        $jwtManager
+        $authManager
             ->shouldReceive('issueTokens')
             ->with($user, $inputResponse, $withRefreshToken)
             ->andReturn($response);

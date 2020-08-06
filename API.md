@@ -34,6 +34,7 @@ HTTP Status Code `201`
 HTTP Status Codes:
 
 * `422`: Validation Errors
+* `500`: Server Error
 
 ##### Validation Errors
 

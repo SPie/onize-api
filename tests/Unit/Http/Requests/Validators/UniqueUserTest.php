@@ -23,7 +23,7 @@ final class UniqueUserTest extends TestCase
      */
     public function testMessage(): void
     {
-        $this->assertEquals('validation.user-not-unique', $this->getUniqueUser()->message());
+        $this->assertEquals('validation.user_not_unique', $this->getUniqueUser()->message());
     }
 
     /**

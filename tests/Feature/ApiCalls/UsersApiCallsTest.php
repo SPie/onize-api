@@ -46,7 +46,7 @@ final class UsersApiCallsTest extends FeatureTestCase
         $response->assertCreated();
         $user = $this->getConcreteUserRepository()->findOneBy(['email' => $email]);
         $this->assertNotEmpty($user);
-        $response->assertHeader('Authorization');
+        $response->assertCookie('auth-token');
         $response->assertCookie('refresh-token');
         $this->assertAuthenticated();
         $response->assertJsonFragment([
@@ -110,7 +110,7 @@ final class UsersApiCallsTest extends FeatureTestCase
 
         $response->assertStatus(422);
         $response->assertJsonFragment([
-            'email' => ['validation.user-not-unique'],
+            'email' => ['validation.user_not_unique'],
         ]);
     }
 

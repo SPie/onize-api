@@ -21,7 +21,7 @@ use Gedmo\Mapping\Annotation as Gedmo;
  *
  * @package App\Users
  */
-final class UserDoctrineModel extends AbstractDoctrineModel implements UserModel
+class UserDoctrineModel extends AbstractDoctrineModel implements UserModel
 {
     use SoftDelete;
     use Timestamps;

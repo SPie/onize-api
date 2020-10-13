@@ -3,7 +3,9 @@
 namespace App\Auth;
 
 use App\Users\UserModel;
-use SPie\LaravelJWT\Contracts\JWTGuard;
+use Illuminate\Auth\AuthenticationException;
+use Illuminate\Contracts\Auth\Authenticatable;
+use Illuminate\Contracts\Auth\StatefulGuard;
 
 /**
  * Class AuthManager
@@ -14,26 +16,26 @@ class AuthManager
 {
 
     /**
-     * @var JWTGuard
+     * @var StatefulGuard
      */
-    private JWTGuard $jwtGuard;
+    private StatefulGuard $guard;
 
     /**
      * JWTManager constructor.
      *
-     * @param JWTGuard $jwtGuard
+     * @param StatefulGuard $guard
      */
-    public function __construct(JWTGuard $jwtGuard)
+    public function __construct(StatefulGuard $guard)
     {
-        $this->jwtGuard = $jwtGuard;
+        $this->guard = $guard;
     }
 
     /**
-     * @return JWTGuard
+     * @return StatefulGuard
      */
-    private function getJwtGuard(): JWTGuard
+    private function getGuard(): StatefulGuard
     {
-        return $this->jwtGuard;
+        return $this->guard;
     }
 
     /**
@@ -43,8 +45,21 @@ class AuthManager
      */
     public function login(UserModel $user): self
     {
-        $this->getJwtGuard()->login($user, true);
+        $this->getGuard()->login($user, true);
 
         return $this;
+    }
+
+    /**
+     * @return UserModel|Authenticatable
+     */
+    public function authenticatedUser(): UserModel
+    {
+        $user = $this->getGuard()->user();
+        if (!$user) {
+            throw new AuthenticationException();
+        }
+
+        return $user;
     }
 }

@@ -7,12 +7,10 @@ use App\Auth\RefreshTokenModel;
 use App\Auth\RefreshTokenModelFactory;
 use App\Auth\RefreshTokenRepository;
 use App\Users\UserModel;
-use Illuminate\Http\JsonResponse;
+use Illuminate\Contracts\Auth\Authenticatable;
+use Illuminate\Contracts\Auth\StatefulGuard;
 use Mockery as m;
 use Mockery\MockInterface;
-use SPie\LaravelJWT\Contracts\JWTAuthenticatable;
-use SPie\LaravelJWT\Contracts\JWTGuard;
-use SPie\LaravelJWT\Contracts\JWTHandler;
 
 /**
  * Trait AuthHelper
@@ -22,23 +20,23 @@ use SPie\LaravelJWT\Contracts\JWTHandler;
 trait AuthHelper
 {
     /**
-     * @return JWTGuard|MockInterface
+     * @return StatefulGuard|MockInterface
      */
-    private function createJWTGuard(): JWTGuard
+    private function createStatefulGuard(): StatefulGuard
     {
-        return m::spy(JWTGuard::class);
+        return m::spy(StatefulGuard::class);
     }
 
     /**
-     * @param JWTGuard|MockInterface $jwtGuard
-     * @param UserModel     $user
-     * @param bool          $remember
+     * @param StatefulGuard|MockInterface $guard
+     * @param UserModel                   $user
+     * @param bool                        $remember
      *
      * @return $this
      */
-    private function assertJWTGuardLogin(MockInterface $jwtGuard, UserModel $user, bool $remember): self
+    private function assertStatefulGuardLogin(MockInterface $guard, UserModel $user, bool $remember): self
     {
-        $jwtGuard
+        $guard
             ->shouldHaveReceived('login')
             ->with($user, $remember)
             ->once();
@@ -47,11 +45,18 @@ trait AuthHelper
     }
 
     /**
-     * @return JWTHandler|MockInterface
+     * @param StatefulGuard|MockInterface $guard
+     * @param Authenticatable|null        $user
+     *
+     * @return $this
      */
-    private function createJWTHandler(): JWTHandler
+    private function mockStatefulGuardUser(MockInterface $guard, ?Authenticatable $user): self
     {
-        return m::spy(JWTHandler::class);
+        $guard
+            ->shouldReceive('user')
+            ->andReturn($user);
+
+        return $this;
     }
 
     /**
@@ -80,24 +85,15 @@ trait AuthHelper
 
     /**
      * @param AuthManager|MockInterface $authManager
-     * @param JsonResponse              $response
-     * @param UserModel                 $user
-     * @param JsonResponse              $inputResponse
-     * @param bool                      $withRefreshToken
+     * @param UserModel|\Exception      $user
      *
      * @return $this
      */
-    private function mockAuthManagerIssueTokens(
-        MockInterface $authManager,
-        JsonResponse $response,
-        UserModel $user,
-        JsonResponse $inputResponse,
-        bool $withRefreshToken
-    ): self {
+    private function mockAuthManagerAuthenticatedUser(MockInterface $authManager, $user): self
+    {
         $authManager
-            ->shouldReceive('issueTokens')
-            ->with($user, $inputResponse, $withRefreshToken)
-            ->andReturn($response);
+            ->shouldReceive('authenticatedUser')
+            ->andThrow($user);
 
         return $this;
     }

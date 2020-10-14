@@ -46,8 +46,6 @@ final class UsersApiCallsTest extends FeatureTestCase
         $response->assertCreated();
         $user = $this->getConcreteUserRepository()->findOneBy(['email' => $email]);
         $this->assertNotEmpty($user);
-        $response->assertCookie('auth-token');
-        $response->assertCookie('refresh-token');
         $this->assertAuthenticated();
         $response->assertJsonFragment([
             'email' => $email,

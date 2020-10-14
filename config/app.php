@@ -169,7 +169,6 @@ return [
         LaravelDoctrine\ORM\DoctrineServiceProvider::class,
         LaravelDoctrine\Extensions\GedmoExtensionsServiceProvider::class,
         LaravelDoctrine\Migrations\MigrationsServiceProvider::class,
-        SPie\LaravelJWT\Providers\LaravelServiceProvider::class,
 
         /*
          * Application Service Providers...

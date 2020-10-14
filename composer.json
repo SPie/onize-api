@@ -17,8 +17,7 @@
         "laravel-doctrine/migrations": "^2.1",
         "laravel-doctrine/orm": "^1.6",
         "laravel/framework": "^7.0",
-        "laravel/tinker": "^2.0",
-        "spie/laravel-jwt": "^3.0.0"
+        "laravel/tinker": "^2.0"
     },
     "require-dev": {
         "facade/ignition": "^2.0",

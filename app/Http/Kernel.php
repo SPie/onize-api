@@ -2,8 +2,9 @@
 
 namespace App\Http;
 
+use Illuminate\Cookie\Middleware\EncryptCookies;
 use Illuminate\Foundation\Http\Kernel as HttpKernel;
-use SPie\LaravelJWT\Middleware\JWTTokens;
+use Illuminate\Session\Middleware\StartSession;
 
 class Kernel extends HttpKernel
 {
@@ -30,9 +31,9 @@ class Kernel extends HttpKernel
      */
     protected $middlewareGroups = [
         'api' => [
-            'throttle:60,1',
-//            \Illuminate\Routing\Middleware\SubstituteBindings::class,
-            JWTTokens::class
+//            'throttle:60,1',
+            StartSession::class,
+            EncryptCookies::class,
         ],
     ];
 

@@ -35,7 +35,7 @@ final class AuthManagerTest extends TestCase
     /**
      * @return void
      */
-    public function testLoginToken(): void
+    public function testLogin(): void
     {
         /**
          * @var AuthManager   $jwtManager
@@ -44,7 +44,7 @@ final class AuthManagerTest extends TestCase
         [$jwtManager, $user, $guard] = $this->setUpLoginTest();
 
         $this->assertEquals($jwtManager, $jwtManager->login($user));
-        $this->assertStatefulGuardLogin($guard, $user, true);
+        $this->assertStatefulGuardLogin($guard, $user);
     }
 
     /**

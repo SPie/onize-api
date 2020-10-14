@@ -14,7 +14,7 @@ return [
     */
 
     'defaults' => [
-        'guard' => 'jwt',
+        'guard' => 'api',
     ],
 
     /*
@@ -35,9 +35,9 @@ return [
     */
 
     'guards' => [
-        'jwt' => [
-            'driver' => 'jwt',
-            'provider' => 'app',
+        'api' => [
+            'driver' => 'session',
+            'provider' => 'app'
         ],
     ],
 
@@ -59,7 +59,6 @@ return [
     */
 
     'providers' => [
-
         'app' => [
             'driver' => 'app_user_provider',
         ]

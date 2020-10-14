@@ -85,6 +85,42 @@ final class UserManagerTest extends TestCase
         $this->assertFalse($userManager->isEmailUsed($email));
     }
 
+    /**
+     * @return array
+     */
+    private function setUpRetrieveByIdTest(bool $withUser = true): array
+    {
+        $identifier = $this->getFaker()->numberBetween();
+        $user = $this->createUserModel();
+        $userRepository = $this->createUserRepository();
+        $this->mockRepositoryFind($userRepository, $withUser ? $user : null, $identifier);
+        $userManager = $this->getUserManager($userRepository);
+
+        return [$userManager, $identifier, $user];
+    }
+
+    /**
+     * @return void
+     */
+    public function testRetrieveById(): void
+    {
+        /** @var UserManager $userManager */
+        [$userManager, $identifier, $user] = $this->setUpRetrieveByIdTest();
+
+        $this->assertEquals($user, $userManager->retrieveById($identifier));
+    }
+
+    /**
+     * @return void
+     */
+    public function testRetrieveByIdWithoutUser(): void
+    {
+        /** @var UserManager $userManager */
+        [$userManager, $identifier, $user] = $this->setUpRetrieveByIdTest(false);
+
+        $this->assertEmpty($userManager->retrieveById($identifier));
+    }
+
     //endregion
 
     /**

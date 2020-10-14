@@ -2,20 +2,18 @@
 
 namespace App\Users;
 
-use App\Auth\RefreshTokenModel;
 use App\Models\Model;
 use App\Models\SoftDeletable;
 use App\Models\Timestampable;
 use App\Models\UuidModel;
-use Doctrine\Common\Collections\Collection;
-use SPie\LaravelJWT\Contracts\JWTAuthenticatable;
+use Illuminate\Contracts\Auth\Authenticatable;
 
 /**
  * Interface UserModel
  *
  * @package App\Users
  */
-interface UserModel extends Model, JWTAuthenticatable, SoftDeletable, Timestampable, UuidModel
+interface UserModel extends Model, Authenticatable, SoftDeletable, Timestampable, UuidModel
 {
     const PROPERTY_EMAIL    = 'email';
     const PROPERTY_PASSWORD = 'password';
@@ -44,25 +42,6 @@ interface UserModel extends Model, JWTAuthenticatable, SoftDeletable, Timestampa
      * @return string
      */
     public function getPassword(): string;
-
-    /**
-     * @param RefreshTokenModel[] $refreshTokens
-     *
-     * @return $this
-     */
-    public function setRefreshTokens(array $refreshTokens): self;
-
-    /**
-     * @param RefreshTokenModel $refreshToken
-     *
-     * @return $this
-     */
-    public function addRefreshToken(RefreshTokenModel $refreshToken): self;
-
-    /**
-     * @return RefreshTokenModel[]|Collection
-     */
-    public function getRefreshTokens(): Collection;
 
     /**
      * @return array

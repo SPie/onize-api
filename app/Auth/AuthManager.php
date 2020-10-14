@@ -45,7 +45,7 @@ class AuthManager
      */
     public function login(UserModel $user): self
     {
-        $this->getGuard()->login($user, true);
+        $this->getGuard()->login($user);
 
         return $this;
     }

@@ -30,15 +30,14 @@ trait AuthHelper
     /**
      * @param StatefulGuard|MockInterface $guard
      * @param UserModel                   $user
-     * @param bool                        $remember
      *
      * @return $this
      */
-    private function assertStatefulGuardLogin(MockInterface $guard, UserModel $user, bool $remember): self
+    private function assertStatefulGuardLogin(MockInterface $guard, UserModel $user): self
     {
         $guard
             ->shouldHaveReceived('login')
-            ->with($user, $remember)
+            ->with($user)
             ->once();
 
         return $this;

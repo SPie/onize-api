@@ -218,6 +218,23 @@ trait ModelHelper
     }
 
     /**
+     * @param Repository|MockInterface $repository
+     * @param Model|null               $model
+     * @param int                      $id
+     *
+     * @return $this
+     */
+    private function mockRepositoryFind(MockInterface $repository, ?Model $model, int $id): self
+    {
+        $repository
+            ->shouldReceive('find')
+            ->with($id)
+            ->andReturn($model);
+
+        return $this;
+    }
+
+    /**
      * @param string|null $uuid
      *
      * @return UuidGenerator|MockInterface

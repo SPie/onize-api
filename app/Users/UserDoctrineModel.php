@@ -2,7 +2,6 @@
 
 namespace App\Users;
 
-use App\Auth\RefreshTokenModel;
 use App\Models\AbstractDoctrineModel;
 use App\Models\SoftDelete;
 use App\Models\Timestamps;
@@ -40,13 +39,6 @@ class UserDoctrineModel extends AbstractDoctrineModel implements UserModel
      * @var string
      */
     private string $password;
-
-    /**
-     * @ORM\OneToMany(targetEntity="App\Auth\RefreshTokenDoctrineModel", mappedBy="user", cascade={"persist"})
-     *
-     * @var RefreshTokenModel[]|Collection
-     */
-    private Collection $refreshTokens;
 
     /**
      * UserDoctrineModel constructor.
@@ -103,45 +95,11 @@ class UserDoctrineModel extends AbstractDoctrineModel implements UserModel
     }
 
     /**
-     * @param array $refreshTokens
-     *
-     * @return $this
-     */
-    public function setRefreshTokens(array $refreshTokens): self
-    {
-        $this->refreshTokens = new ArrayCollection($refreshTokens);
-
-        return $this;
-    }
-
-    /**
-     * @param RefreshTokenModel $refreshToken
-     *
-     * @return $this
-     */
-    public function addRefreshToken(RefreshTokenModel $refreshToken): self
-    {
-        if (!$this->getRefreshTokens()->contains($refreshToken)) {
-            $this->getRefreshTokens()->add($refreshToken);
-        }
-
-        return $this;
-    }
-
-    /**
-     * @return Collection
-     */
-    public function getRefreshTokens(): Collection
-    {
-        return $this->refreshTokens;
-    }
-
-    /**
      * @return string|void
      */
     public function getAuthIdentifierName()
     {
-        return self::PROPERTY_EMAIL;
+        return self::PROPERTY_ID;
     }
 
     /**
@@ -149,7 +107,7 @@ class UserDoctrineModel extends AbstractDoctrineModel implements UserModel
      */
     public function getAuthIdentifier()
     {
-        return $this->getEmail();
+        return $this->getId();
     }
 
     /**
@@ -181,14 +139,6 @@ class UserDoctrineModel extends AbstractDoctrineModel implements UserModel
     public function getRememberTokenName()
     {
         return '';
-    }
-
-    /**
-     * @return array
-     */
-    public function getCustomClaims(): array
-    {
-        return [];
     }
 
     /**

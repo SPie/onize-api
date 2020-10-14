@@ -31,6 +31,24 @@ final class UserDoctrineModelTest extends TestCase
         );
     }
 
+    /**
+     * @return void
+     */
+    public function testGetAuthIdentifier(): void
+    {
+        $user = $this->getUserDoctrineModel()->setId($this->getFaker()->numberBetween());
+
+        $this->assertEquals($user->getId(), $user->getAuthIdentifier());
+    }
+
+    /**
+     * @return void
+     */
+    public function testGetAuthIdentifierName(): void
+    {
+        $this->assertEquals('id', $this->getUserDoctrineModel()->getAuthIdentifierName());
+    }
+
     //endregion
 
     /**

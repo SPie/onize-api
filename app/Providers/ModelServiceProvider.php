@@ -2,12 +2,6 @@
 
 namespace App\Providers;
 
-use App\Auth\RefreshTokenDoctrineModel;
-use App\Auth\RefreshTokenDoctrineModelFactory;
-use App\Auth\RefreshTokenDoctrineRepository;
-use App\Auth\RefreshTokenModel;
-use App\Auth\RefreshTokenModelFactory;
-use App\Auth\RefreshTokenRepository;
 use App\Models\DatabaseHandler;
 use App\Models\DoctrineDatabaseHandler;
 use App\Models\LaravelPasswordHasher;
@@ -53,7 +47,6 @@ final class ModelServiceProvider extends ServiceProvider
     private function bindModels(): self
     {
         $this->app->bind(UserModel::class, UserDoctrineModel::class);
-        $this->app->bind(RefreshTokenModel::class, RefreshTokenDoctrineModel::class);
 
         return $this;
     }
@@ -64,7 +57,6 @@ final class ModelServiceProvider extends ServiceProvider
     private function bindModelFactories(): self
     {
         $this->app->singleton(UserModelFactory::class, UserDoctrineModelFactory::class);
-        $this->app->singleton(RefreshTokenModelFactory::class, RefreshTokenDoctrineModelFactory::class);
 
         return $this;
     }
@@ -100,10 +92,6 @@ final class ModelServiceProvider extends ServiceProvider
         $this->app->singleton(
             UserRepository::class,
             fn () => new UserDoctrineRepository($this->makeDatabaseHandler(UserDoctrineModel::class))
-        );
-        $this->app->singleton(
-            RefreshTokenRepository::class,
-            fn () => new RefreshTokenDoctrineRepository($this->makeDatabaseHandler(RefreshTokenDoctrineModel::class))
         );
 
         return $this;

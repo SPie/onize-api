@@ -21,7 +21,6 @@ final class Version20200515211800 extends AbstractMigration
     {
         $this
             ->createUsersTable($schema)
-            ->createRefreshTokensTable($schema)
 //            ->createLoginAttemptsTable($schema)
 //            ->createProjectsTable($schema)
 //            ->createProjectInvitesTable($schema)
@@ -46,27 +45,6 @@ final class Version20200515211800 extends AbstractMigration
             $table->string('password');
             $table->timestamps();
             $table->softDeletes();
-        });
-
-        return $this;
-    }
-
-    /**
-     * @param Schema $schema
-     *
-     * @return $this
-     */
-    private function createRefreshTokensTable(Schema $schema): self
-    {
-        (new Builder($schema))->create('refresh_tokens', function (Table $table) {
-            $table->increments('id');
-            $table->string('identifier');
-            $table->unique('identifier');
-            $table->dateTime('valid_until')->setNotnull(false);
-            $table->integer('user_id', false, true);
-            $table->foreign('users', 'user_id', 'id');
-            $table->timestamps();
-            $table->index('valid_until');
         });
 
         return $this;

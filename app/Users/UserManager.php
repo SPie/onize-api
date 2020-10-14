@@ -2,6 +2,7 @@
 
 namespace App\Users;
 
+use App\Models\Model;
 use Illuminate\Contracts\Auth\Authenticatable;
 use Illuminate\Contracts\Auth\UserProvider;
 
@@ -73,9 +74,14 @@ class UserManager implements UserProvider
         return !empty($this->getUserRepository()->findOneByEmail($email));
     }
 
+    /**
+     * @param mixed $identifier
+     *
+     * @return UserModel|Model|Authenticatable|null
+     */
     public function retrieveById($identifier)
     {
-        // TODO: Implement retrieveById() method.
+        return $this->getUserRepository()->find($identifier);
     }
 
     public function retrieveByToken($identifier, $token)

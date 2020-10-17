@@ -9,6 +9,7 @@ use App\Models\Repository;
 use App\Models\UuidGenerator;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
+use Illuminate\Contracts\Auth\Authenticatable;
 use Mockery as m;
 use Mockery\MockInterface;
 
@@ -270,6 +271,28 @@ trait ModelHelper
             ->shouldReceive('hash')
             ->with($password)
             ->andReturn($hash);
+
+        return $this;
+    }
+
+    /**
+     * @param PasswordHasher|MockInterface $passwordHasher
+     * @param bool                         $valid
+     * @param string                       $password
+     * @param string                       $hashedPassword
+     *
+     * @return $this
+     */
+    private function mockPasswordHasherCheck(
+        MockInterface $passwordHasher,
+        bool $valid,
+        string $password,
+        string $hashedPassword
+    ): self {
+        $passwordHasher
+            ->shouldReceive('check')
+            ->with($password, $hashedPassword)
+            ->andReturn($valid);
 
         return $this;
     }

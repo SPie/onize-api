@@ -3,9 +3,11 @@
 namespace Tests\Feature;
 
 use Illuminate\Foundation\Testing\DatabaseMigrations as EloquentDatabaseMigrations;
+use Illuminate\Foundation\Testing\TestCase;
 use Illuminate\Support\Facades\URL;
 use LaravelDoctrine\Migrations\Testing\DatabaseMigrations;
-use Tests\TestCase;
+use Tests\CreatesApplication;
+use Tests\Faker;
 
 /**
  * Class FeatureTestCase
@@ -14,6 +16,8 @@ use Tests\TestCase;
  */
 abstract class FeatureTestCase extends TestCase
 {
+    use CreatesApplication;
+    use Faker;
 
     /**
      * @return void

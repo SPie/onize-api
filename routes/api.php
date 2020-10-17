@@ -23,6 +23,8 @@ $router->group(['prefix' => 'users'], function (Router $router) {
     $router->post('')->name(UsersController::ROUTE_NAME_REGISTER)->uses('UsersController@register');
 });
 
+$router->post('auth')->name(AuthController::ROUTE_NAME_AUTHENTICATE)->uses('AuthController@authenticate');
+
 $router->group(['middleware' => 'auth'], function (Router $router) {
 
     $router->get('/me')->name(AuthController::ROUTE_NAME_AUTHENTICATED)->uses('AuthController@authenticated');

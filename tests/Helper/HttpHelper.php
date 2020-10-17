@@ -2,6 +2,7 @@
 
 namespace Tests\Helper;
 
+use App\Http\Requests\Auth\Authenticate;
 use App\Http\Requests\Users\Register;
 use App\Http\Requests\Validators\UniqueUser;
 use Illuminate\Contracts\Routing\ResponseFactory;
@@ -97,5 +98,22 @@ trait HttpHelper
     private function createUniqueUser(): UniqueUser
     {
         return m::spy(UniqueUser::class);
+    }
+
+    /**
+     * @param string|null $email
+     * @param string|null $password
+     *
+     * @return Authenticate|MockInterface
+     */
+    private function createAuthenticateRequest(string $email = null, string $password = null): Authenticate
+    {
+        return m::spy(Authenticate::class)
+            ->shouldReceive('getEmail')
+            ->andReturn($email ?: $this->getFaker()->safeEmail)
+            ->getMock()
+            ->shouldReceive('getPassword')
+            ->andReturn($password ?: $this->getFaker()->password)
+            ->getMock();
     }
 }

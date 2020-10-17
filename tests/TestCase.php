@@ -2,9 +2,7 @@
 
 namespace Tests;
 
-use Faker\Factory;
-use Faker\Generator;
-use Illuminate\Foundation\Testing\TestCase as BaseTestCase;
+use PHPUnit\Framework\TestCase as BaseTestCase;
 
 /**
  * Class TestCase
@@ -13,22 +11,5 @@ use Illuminate\Foundation\Testing\TestCase as BaseTestCase;
  */
 abstract class TestCase extends BaseTestCase
 {
-    use CreatesApplication;
-
-    /**
-     * @var Generator
-     */
-    private Generator $faker;
-
-    /**
-     * @return Generator
-     */
-    protected function getFaker(): Generator
-    {
-        if (!isset($this->faker)) {
-            $this->faker = Factory::create();
-        }
-
-        return $this->faker;
-    }
+    use Faker;
 }

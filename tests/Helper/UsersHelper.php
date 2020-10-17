@@ -8,6 +8,7 @@ use App\Users\UserModel;
 use App\Users\UserModelFactory;
 use App\Users\UserRepository;
 use Doctrine\Common\Collections\Collection;
+use Illuminate\Contracts\Auth\Authenticatable;
 use Mockery as m;
 use Mockery\MockInterface;
 
@@ -37,6 +38,21 @@ trait UsersHelper
         $user
             ->shouldReceive('toArray')
             ->andReturn($data);
+
+        return $this;
+    }
+
+    /**
+     * @param UserModel|MockInterface $user
+     * @param string                  $authPassword
+     *
+     * @return $this
+     */
+    private function mockUserModelGetAuthPassword(MockInterface $user, string $authPassword): self
+    {
+        $user
+            ->shouldReceive('getAuthPassword')
+            ->andReturn($authPassword);
 
         return $this;
     }
@@ -80,6 +96,40 @@ trait UsersHelper
             ->shouldReceive('isEmailUsed')
             ->with($email)
             ->andReturn($emailUsed);
+
+        return $this;
+    }
+
+    /**
+     * @param UserManager|MockInterface $userManager
+     * @param UserModel|\Exception      $user
+     * @param int                       $id
+     *
+     * @return $this
+     */
+    private function mockUserManagerGetUserById(MockInterface $userManager, $user, int $id): self
+    {
+        $userManager
+            ->shouldReceive('getUserById')
+            ->with($id)
+            ->andThrow($user);
+
+        return $this;
+    }
+
+    /**
+     * @param UserManager|MockInterface $userManager
+     * @param UserModel|\Exception      $user
+     * @param string                    $email
+     *
+     * @return $this
+     */
+    private function mockUserManagerGetUserByEmail(MockInterface $userManager, $user, string $email): self
+    {
+        $userManager
+            ->shouldReceive('getUserByEmail')
+            ->with($email)
+            ->andThrow($user);
 
         return $this;
     }

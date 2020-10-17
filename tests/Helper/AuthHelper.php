@@ -3,9 +3,6 @@
 namespace Tests\Helper;
 
 use App\Auth\AuthManager;
-use App\Auth\RefreshTokenModel;
-use App\Auth\RefreshTokenModelFactory;
-use App\Auth\RefreshTokenRepository;
 use App\Users\UserModel;
 use Illuminate\Contracts\Auth\Authenticatable;
 use Illuminate\Contracts\Auth\StatefulGuard;
@@ -59,6 +56,23 @@ trait AuthHelper
     }
 
     /**
+     * @param StatefulGuard|MockInterface $guard
+     * @param bool                        $authenticated
+     * @param array                       $credentials
+     *
+     * @return $this
+     */
+    private function mockStatefulGuardAttempt(MockInterface $guard, bool $authenticated, array $credentials): self
+    {
+        $guard
+            ->shouldReceive('attempt')
+            ->with($credentials)
+            ->andReturn($authenticated);
+
+        return $this;
+    }
+
+    /**
      * @return AuthManager|MockInterface
      */
     private function createAuthManager(): AuthManager
@@ -98,132 +112,19 @@ trait AuthHelper
     }
 
     /**
-     * @return RefreshTokenModel|MockInterface
-     */
-    private function createRefreshTokenModel(): RefreshTokenModel
-    {
-        return m::spy(RefreshTokenModel::class);
-    }
-
-    /**
-     * @param RefreshTokenModel|MockInterface $refreshTokenModel
-     * @param \DateTime|null                  $validUntil
+     * @param AuthManager|MockInterface $authManager
+     * @param UserModel|\Exception      $user
+     * @param string                    $email
+     * @param string                    $password
      *
      * @return $this
      */
-    private function mockRefreshTokenModelSetValidUntil(MockInterface $refreshTokenModel, ?\DateTime $validUntil): self
+    private function mockAuthManagerAuthenticate(MockInterface $authManager, $user, string $email, string $password): self
     {
-        $refreshTokenModel
-            ->shouldReceive('setValidUntil')
-            ->with(m::on(function (\DateTime $actual) use ($validUntil) {
-                return (
-                    $actual->sub(new \DateInterval('PT10S')) < $validUntil
-                    && $actual->add(new \DateInterval('PT10S')) > $validUntil
-                );
-            }))
-            ->andReturn($refreshTokenModel);
-
-        return $this;
-    }
-
-    /**
-     * @param RefreshTokenModel|MockInterface $refreshTokenModel
-     * @param \DateTime|null                  $validUntil
-     *
-     * @return $this
-     */
-    private function assertRefreshTokenModelSetValidUntil(MockInterface $refreshTokenModel, ?\DateTime $validUntil): self
-    {
-        $refreshTokenModel
-            ->shouldHaveReceived('setValidUntil')
-            ->with(m::on(function (\DateTime $actual) use ($validUntil) {
-                return (
-                    $actual->sub(new \DateInterval('PT10S')) < $validUntil
-                    && $actual->add(new \DateInterval('PT10S')) > $validUntil
-                );
-            }))
-            ->once();
-
-        return $this;
-    }
-
-    /**
-     * @param RefreshTokenModel|MockInterface $refreshTokenModel
-     * @param \DateTime|null                  $validUntil
-     *
-     * @return $this
-     */
-    private function mockRefreshTokenModelGetValidUntil(MockInterface $refreshTokenModel, ?\DateTime $validUntil): self
-    {
-        $refreshTokenModel
-            ->shouldReceive('getValidUntil')
-            ->andReturn($validUntil);
-
-        return $this;
-    }
-
-    /**
-     * @return RefreshTokenModelFactory|MockInterface
-     */
-    private function createRefreshTokenModelFactory(): RefreshTokenModelFactory
-    {
-        return m::spy(RefreshTokenModelFactory::class);
-    }
-
-    /**
-     * @param RefreshTokenModelFactory|MockInterface $refreshTokenModelFactory
-     * @param RefreshTokenModel                      $refreshTokenModel
-     * @param string                                 $identifier
-     * @param UserModel                              $user
-     * @param \DateTime|null                         $validUntil
-     *
-     * @return $this
-     */
-    private function mockRefreshTokenModelFactoryCreate(
-        MockInterface $refreshTokenModelFactory,
-        RefreshTokenModel $refreshTokenModel,
-        string $identifier,
-        UserModel $user,
-        ?\DateTime $validUntil
-    ): self {
-        $refreshTokenModelFactory
-            ->shouldReceive('create')
-            ->with(
-                $identifier,
-                $user,
-                m::on(function (?\DateTime $actual) use ($validUntil) {
-                    return $actual == $validUntil;
-                })
-            )
-            ->andReturn($refreshTokenModel);
-
-        return $this;
-    }
-
-    /**
-     * @return RefreshTokenRepository|MockInterface
-     */
-    private function createRefreshTokenRepository(): RefreshTokenRepository
-    {
-        return m::spy(RefreshTokenRepository::class);
-    }
-
-    /**
-     * @param RefreshTokenRepository|MockInterface $refreshTokenRepository
-     * @param RefreshTokenModel|null               $refreshTokenModel
-     * @param string                               $refreshTokenId
-     *
-     * @return $this
-     */
-    private function mockRefreshTokenRepositoryFindOneByRefreshTokenId(
-        MockInterface $refreshTokenRepository,
-        ?RefreshTokenModel $refreshTokenModel,
-        string $refreshTokenId
-    ): self {
-        $refreshTokenRepository
-            ->shouldReceive('findOneByRefreshTokenId')
-            ->with($refreshTokenId)
-            ->andReturn($refreshTokenModel);
+        $authManager
+            ->shouldReceive('authenticate')
+            ->with($email, $password)
+            ->andThrow($user);
 
         return $this;
     }

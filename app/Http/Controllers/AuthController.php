@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Auth\AuthManager;
+use App\Http\Requests\Auth\Authenticate;
 use Illuminate\Contracts\Routing\ResponseFactory;
 use Illuminate\Http\JsonResponse;
 
@@ -13,6 +14,7 @@ use Illuminate\Http\JsonResponse;
  */
 final class AuthController extends Controller
 {
+    const ROUTE_NAME_AUTHENTICATE  = 'auth.authenticate';
     const ROUTE_NAME_AUTHENTICATED = 'auth.authenticated';
 
     const RESPONSE_PARAMETER_USER = 'user';
@@ -44,6 +46,18 @@ final class AuthController extends Controller
     }
 
     //region Controller actions
+
+    /**
+     * @param Authenticate $request
+     *
+     * @return JsonResponse
+     */
+    public function authenticate(Authenticate $request): JsonResponse
+    {
+        $this->getAuthManager()->authenticate($request->getEmail(), $request->getPassword());
+
+        return $this->getResponseFactory()->json([], JsonResponse::HTTP_NO_CONTENT);
+    }
 
     /**
      * @return JsonResponse

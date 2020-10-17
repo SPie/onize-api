@@ -2,6 +2,7 @@
 
 namespace Tests\Unit\Users;
 
+use App\Models\Exceptions\ModelNotFoundException;
 use App\Users\UserManager;
 use App\Users\UserModelFactory;
 use App\Users\UserRepository;
@@ -86,39 +87,83 @@ final class UserManagerTest extends TestCase
     }
 
     /**
+     * @param bool $withUser
+     *
      * @return array
      */
-    private function setUpRetrieveByIdTest(bool $withUser = true): array
+    private function setUpGetUserByIdTest(bool $withUser = true): array
     {
-        $identifier = $this->getFaker()->numberBetween();
+        $id = $this->getFaker()->numberBetween();
         $user = $this->createUserModel();
         $userRepository = $this->createUserRepository();
-        $this->mockRepositoryFind($userRepository, $withUser ? $user : null, $identifier);
+        $this->mockRepositoryFind($userRepository, $withUser ? $user : null, $id);
         $userManager = $this->getUserManager($userRepository);
 
-        return [$userManager, $identifier, $user];
+        return [$userManager, $id, $user];
     }
 
     /**
      * @return void
      */
-    public function testRetrieveById(): void
+    public function testGetUserById(): void
     {
         /** @var UserManager $userManager */
-        [$userManager, $identifier, $user] = $this->setUpRetrieveByIdTest();
+        [$userManager, $id, $user] = $this->setUpGetUserByIdTest();
 
-        $this->assertEquals($user, $userManager->retrieveById($identifier));
+        $this->assertEquals($user, $userManager->getUserById($id));
     }
 
     /**
      * @return void
      */
-    public function testRetrieveByIdWithoutUser(): void
+    public function testGetUserByIdWithoutUser(): void
     {
         /** @var UserManager $userManager */
-        [$userManager, $identifier, $user] = $this->setUpRetrieveByIdTest(false);
+        [$userManager, $id] = $this->setUpGetUserByIdTest(false);
 
-        $this->assertEmpty($userManager->retrieveById($identifier));
+        $this->expectException(ModelNotFoundException::class);
+
+        $userManager->getUserById($id);
+    }
+
+    /**
+     * @param bool $withUser
+     *
+     * @return array
+     */
+    private function setUpGetUserByEmailTest(bool $withUser = true): array
+    {
+        $email = $this->getFaker()->safeEmail;
+        $user = $this->createUserModel();
+        $userRepository = $this->createUserRepository();
+        $this->mockUserRepositoryFindOneByEmail($userRepository, $withUser ? $user : null, $email);
+        $userManager = $this->getUserManager($userRepository);
+
+        return [$userManager, $email, $user];
+    }
+
+    /**
+     * @return void
+     */
+    public function testGetUserByEmail(): void
+    {
+        /** @var UserManager $userManager */
+        [$userManager, $email, $user] = $this->setUpGetUserByEmailTest();
+
+        $this->assertEquals($user, $userManager->getUserByEmail($email));
+    }
+
+    /**
+     * @return void
+     */
+    public function testGetUserByEmailWithoutUser(): void
+    {
+        /** @var UserManager $userManager */
+        [$userManager, $email] = $this->setUpGetUserByEmailTest(false);
+
+        $this->expectException(ModelNotFoundException::class);
+
+        $userManager->getUserByEmail($email);
     }
 
     //endregion

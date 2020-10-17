@@ -2,6 +2,9 @@
 
 namespace App\Models;
 
+
+use Illuminate\Contracts\Auth\Authenticatable;
+
 /**
  * Interface PasswordHasher
  *
@@ -15,4 +18,12 @@ interface PasswordHasher
      * @return string
      */
     public function hash(string $password): string;
+
+    /**
+     * @param string $password
+     * @param string $hashedPassword
+     *
+     * @return bool
+     */
+    public function check(string $password, string $hashedPassword): bool;
 }

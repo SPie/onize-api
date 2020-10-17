@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use Illuminate\Contracts\Auth\Authenticatable;
 use Illuminate\Hashing\HashManager;
 
 /**
@@ -42,5 +43,16 @@ final class LaravelPasswordHasher implements PasswordHasher
     public function hash(string $password): string
     {
         return $this->getHashManager()->make($password);
+    }
+
+    /**
+     * @param string $password
+     * @param string $hashedPassword
+     *
+     * @return bool
+     */
+    public function check(string $password, string $hashedPassword): bool
+    {
+        return $this->getHashManager()->check($password, $hashedPassword);
     }
 }

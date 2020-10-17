@@ -2,6 +2,7 @@
 
 namespace App\Providers;
 
+use App\Auth\UserProvider;
 use App\Users\UserManager;
 use Illuminate\Auth\SessionGuard;
 use Illuminate\Contracts\Auth\StatefulGuard;
@@ -42,7 +43,7 @@ class AuthServiceProvider extends ServiceProvider
 
         //
         $this->app->get('auth')->provider('app_user_provider', function ($app, array $config) {
-            return $this->app->get(UserManager::class);
+            return $this->app->get(UserProvider::class);
         });
     }
 }

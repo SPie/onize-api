@@ -3,6 +3,8 @@
 namespace Tests\Unit\Auth;
 
 use App\Auth\AuthManager;
+use App\Users\UserManager;
+use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Auth\AuthenticationException;
 use Illuminate\Contracts\Auth\StatefulGuard;
 use Tests\Helper\AuthHelper;
@@ -86,15 +88,62 @@ final class AuthManagerTest extends TestCase
         $authManager->authenticatedUser();
     }
 
+    /**
+     * @param bool $authenticated
+     *
+     * @return array
+     */
+    private function setUpAuthenticateTest(bool $authenticated = true): array
+    {
+        $email = $this->getFaker()->safeEmail;
+        $password = $this->getFaker()->password;
+        $user = $this->createUserModel();
+        $guard = $this->createStatefulGuard();
+        $this
+            ->mockStatefulGuardAttempt($guard, $authenticated, ['email' => $email, 'password' => $password])
+            ->mockStatefulGuardUser($guard, $user);
+        $authManager = $this->getAuthManager($guard);
+
+        return [$authManager, $email, $password, $user];
+    }
+
+    /**
+     * @return void
+     */
+    public function testAuthenticate(): void
+    {
+        /** @var AuthManager $authManager */
+        [$authManager, $email, $password, $user] = $this->setUpAuthenticateTest();
+
+        $this->assertEquals($user, $authManager->authenticate($email, $password));
+    }
+
+    /**
+     * @return void
+     */
+    public function testAuthenticateWithInvalidAttempt(): void
+    {
+        /** @var AuthManager $authManager */
+        [$authManager, $email, $password] = $this->setUpAuthenticateTest(false);
+
+        $this->expectException(AuthorizationException::class);
+
+        $authManager->authenticate($email, $password);
+    }
+
     //endregion
 
     /**
      * @param StatefulGuard|null $guard
+     * @param UserManager|null   $userManager
      *
      * @return AuthManager
      */
-    private function getAuthManager(StatefulGuard $guard = null): AuthManager
+    private function getAuthManager(StatefulGuard $guard = null, UserManager $userManager = null): AuthManager
     {
-        return new AuthManager($guard ?: $this->createStatefulGuard());
+        return new AuthManager(
+            $guard ?: $this->createStatefulGuard(),
+            $userManager ?: $this->createUserManager()
+        );
     }
 }

@@ -2,16 +2,15 @@
 
 namespace App\Users;
 
+use App\Models\Exceptions\ModelNotFoundException;
 use App\Models\Model;
-use Illuminate\Contracts\Auth\Authenticatable;
-use Illuminate\Contracts\Auth\UserProvider;
 
 /**
  * Class UserManager
  *
  * @package App\Users
  */
-class UserManager implements UserProvider
+class UserManager
 {
     /**
      * @var UserRepository
@@ -75,32 +74,32 @@ class UserManager implements UserProvider
     }
 
     /**
-     * @param mixed $identifier
+     * @param int $id
      *
-     * @return UserModel|Model|Authenticatable|null
+     * @return UserModel|Model
      */
-    public function retrieveById($identifier)
+    public function getUserById(int $id): UserModel
     {
-        return $this->getUserRepository()->find($identifier);
+        $user = $this->getUserRepository()->find($id);
+        if (!$user) {
+            throw new ModelNotFoundException(\sprintf('User with id %d not found.', $id));
+        }
+
+        return $user;
     }
 
-    public function retrieveByToken($identifier, $token)
+    /**
+     * @param string $email
+     *
+     * @return UserModel
+     */
+    public function getUserByEmail(string $email): UserModel
     {
-        // TODO: Implement retrieveByToken() method.
-    }
+        $user = $this->getUserRepository()->findOneByEmail($email);
+        if (!$user) {
+            throw new ModelNotFoundException(\sprintf('User with email %s not found.', $email));
+        }
 
-    public function updateRememberToken(Authenticatable $user, $token)
-    {
-        // TODO: Implement updateRememberToken() method.
-    }
-
-    public function retrieveByCredentials(array $credentials)
-    {
-        // TODO: Implement retrieveByCredentials() method.
-    }
-
-    public function validateCredentials(Authenticatable $user, array $credentials)
-    {
-        // TODO: Implement validateCredentials() method.
+        return $user;
     }
 }

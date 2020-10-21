@@ -3,7 +3,6 @@
 namespace Tests\Unit\Auth;
 
 use App\Auth\AuthManager;
-use App\Users\UserManager;
 use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Auth\AuthenticationException;
 use Illuminate\Contracts\Auth\StatefulGuard;
@@ -131,19 +130,27 @@ final class AuthManagerTest extends TestCase
         $authManager->authenticate($email, $password);
     }
 
+    /**
+     * @return void
+     */
+    public function testLogout(): void
+    {
+        $guard = $this->createStatefulGuard();
+
+        $this->getAuthManager($guard)->logout();
+
+        $guard->shouldHaveReceived('logout')->once();
+    }
+
     //endregion
 
     /**
      * @param StatefulGuard|null $guard
-     * @param UserManager|null   $userManager
      *
      * @return AuthManager
      */
-    private function getAuthManager(StatefulGuard $guard = null, UserManager $userManager = null): AuthManager
+    private function getAuthManager(StatefulGuard $guard = null): AuthManager
     {
-        return new AuthManager(
-            $guard ?: $this->createStatefulGuard(),
-            $userManager ?: $this->createUserManager()
-        );
+        return new AuthManager($guard ?: $this->createStatefulGuard());
     }
 }

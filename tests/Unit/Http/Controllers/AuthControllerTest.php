@@ -99,6 +99,20 @@ final class AuthControllerTest extends TestCase
         $authController->authenticate($request);
     }
 
+    /**
+     * @return void
+     */
+    public function testLogout(): void
+    {
+        $authManager = $this->createAuthManager();
+        $response = $this->createJsonResponse();
+        $responseFactory = $this->createResponseFactory();
+        $this->mockResponseFactoryJson($responseFactory, $response, [], 204);
+
+        $this->assertEquals($response, $this->getAuthController($authManager, $responseFactory)->logout());
+        $authManager->shouldHaveReceived('logout')->once();
+    }
+
     //endregion
 
     /**

@@ -78,4 +78,14 @@ class AuthManager
 
         return $user;
     }
+
+    /**
+     * @return $this
+     */
+    public function logout(): self
+    {
+        $this->getGuard()->logout();
+
+        return $this;
+    }
 }

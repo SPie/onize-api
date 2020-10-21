@@ -154,5 +154,43 @@ final class AuthApiCallsTest extends FeatureTestCase
         $response->assertStatus(401);
     }
 
+    /**
+     * @return array
+     */
+    private function setUpLogoutTest(bool $withAuthenticatedUser = true): array
+    {
+        $user = $this->createUserEntities()->first();
+        if ($withAuthenticatedUser) {
+            $this->actingAs($user);
+        }
+
+        return [];
+    }
+
+    /**
+     * @return void
+     */
+    public function testLogout(): void
+    {
+        $this->setUpLogoutTest();
+
+        $response = $this->doApiCall('POST', $this->getUrl(AuthController::ROUTE_NAME_LOGOUT));
+
+        $response->assertNoContent();
+        $this->assertGuest();
+    }
+
+    /**
+     * @return void
+     */
+    public function testLogoutWithoutAuthenticatedUser(): void
+    {
+        $this->setUpLogoutTest(false);
+
+        $response = $this->doApiCall('POST', $this->getUrl(AuthController::ROUTE_NAME_LOGOUT));
+
+        $response->assertStatus(401);
+    }
+
     //endregion
 }

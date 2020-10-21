@@ -16,6 +16,7 @@ final class AuthController extends Controller
 {
     const ROUTE_NAME_AUTHENTICATE  = 'auth.authenticate';
     const ROUTE_NAME_AUTHENTICATED = 'auth.authenticated';
+    const ROUTE_NAME_LOGOUT        = 'auth.logout';
 
     const RESPONSE_PARAMETER_USER = 'user';
 
@@ -67,6 +68,16 @@ final class AuthController extends Controller
         return $this->getResponseFactory()->json([
             self::RESPONSE_PARAMETER_USER => $this->getAuthManager()->authenticatedUser()->toArray()
         ]);
+    }
+
+    /**
+     * @return JsonResponse
+     */
+    public function logout(): JsonResponse
+    {
+        $this->getAuthManager()->logout();
+
+        return $this->getResponseFactory()->json([], JsonResponse::HTTP_NO_CONTENT);
     }
 
     //endregion

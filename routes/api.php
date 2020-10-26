@@ -30,4 +30,8 @@ $router->group(['middleware' => 'auth'], function (Router $router) {
     $router->get('/me')->name(AuthController::ROUTE_NAME_AUTHENTICATED)->uses('AuthController@authenticated');
     $router->post('/logout')->name(AuthController::ROUTE_NAME_LOGOUT)->uses('AuthController@logout');
 
+    $router->group(['prefix' => 'users'], function (Router $router) {
+        $router->patch('')->name(UsersController::ROUTE_NAME_UPDATE)->uses('UsersController@update');
+    });
+
 });

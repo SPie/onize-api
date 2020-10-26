@@ -63,14 +63,4 @@ final class UserDoctrineModelFactory implements UserModelFactory
             $this->getPasswordHasher()->hash($password)
         );
     }
-
-    /**
-     * @param string $password
-     *
-     * @return string
-     */
-    public function hashUserPassword(string $password): string
-    {
-        // TODO
-    }
 }

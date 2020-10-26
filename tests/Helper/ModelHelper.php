@@ -9,7 +9,6 @@ use App\Models\Repository;
 use App\Models\UuidGenerator;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
-use Illuminate\Contracts\Auth\Authenticatable;
 use Mockery as m;
 use Mockery\MockInterface;
 
@@ -26,6 +25,21 @@ trait ModelHelper
     private function createModel(): Model
     {
         return m::spy(Model::class);
+    }
+
+    /**
+     * @param Model|MockInterface $model
+     * @param int|null            $id
+     *
+     * @return $this
+     */
+    private function mockModelGetId(MockInterface $model, ?int $id): self
+    {
+        $model
+            ->shouldReceive('getId')
+            ->andReturn($id);
+
+        return $this;
     }
 
     /**

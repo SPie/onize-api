@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Auth\AuthManager;
 use App\Http\Requests\Users\Register;
+use App\Http\Requests\Users\Update;
 use App\Users\UserManager;
 use Illuminate\Contracts\Routing\ResponseFactory;
 use Illuminate\Http\JsonResponse;
@@ -16,6 +17,7 @@ use Illuminate\Http\JsonResponse;
 final class UsersController extends Controller
 {
     const ROUTE_NAME_REGISTER = 'user.register';
+    const ROUTE_NAME_UPDATE   = 'user.update';
 
     const RESPONSE_PARAMETER_USER = 'user';
 
@@ -63,6 +65,21 @@ final class UsersController extends Controller
             [self::RESPONSE_PARAMETER_USER => $user->toArray()],
             JsonResponse::HTTP_CREATED
         );
+    }
+
+    /**
+     * @param Update      $request
+     * @param AuthManager $authManager
+     *
+     * @return JsonResponse
+     */
+    public function update(Update $request, AuthManager $authManager): JsonResponse
+    {
+        $user = $this->getUserManager()->updateUserData($authManager->authenticatedUser(), $request->getEmail());
+
+        return $this->getResponseFactory()->json([
+            self::RESPONSE_PARAMETER_USER => $user->toArray(),
+        ]);
     }
 
     //endregion

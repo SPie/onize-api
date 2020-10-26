@@ -3,7 +3,9 @@
 namespace Tests\Unit\Http\Requests\Validators;
 
 use App\Http\Requests\Validators\UniqueUser;
+use App\Models\Exceptions\ModelNotFoundException;
 use App\Users\UserManager;
+use Tests\Helper\ModelHelper;
 use Tests\Helper\UsersHelper;
 use Tests\TestCase;
 
@@ -14,6 +16,7 @@ use Tests\TestCase;
  */
 final class UniqueUserTest extends TestCase
 {
+    use ModelHelper;
     use UsersHelper;
 
     //region Tests
@@ -28,15 +31,22 @@ final class UniqueUserTest extends TestCase
 
     /**
      * @param bool $emailUsed
+     * @param bool $emailUsedAllowed
      *
      * @return array
      */
-    private function setUpPassesTest(bool $emailUsed = false): array
+    private function setUpPassesTest(bool $emailUsed = false, bool $emailUsedAllowed = false): array
     {
         $email = $this->getFaker()->safeEmail;
+        $userId = $this->getFaker()->numberBetween();
+        $user = $this->createUserModel();
+        $this->mockModelGetId($user, $userId);
         $userManager = $this->createUserManager();
-        $this->mockUserManagerIsEmailUsed($userManager, $emailUsed, $email);
+        $this->mockUserManagerGetUserByEmail($userManager, $emailUsed ? $user : new ModelNotFoundException(), $email);
         $rule = $this->getUniqueUser($userManager);
+        if ($emailUsedAllowed) {
+            $rule->setExistingUserId($userId);
+        }
 
         return [$rule, $email];
     }
@@ -61,6 +71,28 @@ final class UniqueUserTest extends TestCase
         [$rule, $email] = $this->setUpPassesTest(true);
 
         $this->assertFalse($rule->passes($this->getFaker()->word, $email));
+    }
+
+    /**
+     * @return void
+     */
+    public function testPassesWithExistingEmailAllowed(): void
+    {
+        /** @var UniqueUser $rule */
+        [$rule, $email] = $this->setUpPassesTest(true, true);
+
+        $this->assertTrue($rule->passes($this->getFaker()->word, $email));
+    }
+
+    /**
+     * @return void
+     */
+    public function testPassesWithEmptyEmail(): void
+    {
+        /** @var UniqueUser $rule */
+        [$rule] = $this->setUpPassesTest();
+
+        $this->assertTrue($rule->passes($this->getFaker()->word, null));
     }
 
     //endregion

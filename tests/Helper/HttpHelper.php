@@ -74,30 +74,43 @@ trait HttpHelper
     }
 
     /**
-     * @param string|null $email
-     * @param string|null $password
-     *
-     * @return Register|MockInterface
-     */
-    private function createRegister(string $email = null, string $password = null): Register
-    {
-        $request = m::spy(Register::class);
-        $request
-            ->shouldReceive('getEmail')
-            ->andReturn($email ?: $this->getFaker()->safeEmail)
-            ->getMock()
-            ->shouldReceive('getPassword')
-            ->andReturn($password ?: $this->getFaker()->password);
-
-        return $request;
-    }
-
-    /**
      * @return UniqueUser
      */
     private function createUniqueUser(): UniqueUser
     {
         return m::spy(UniqueUser::class);
+    }
+
+    /**
+     * @param UniqueUser|MockInterface $uniqueUser
+     * @param int|null                 $userId
+     *
+     * @return $this
+     */
+    private function mockUniqueUserSetExistingUserId(MockInterface $uniqueUser, ?int $userId): self
+    {
+        $uniqueUser
+            ->shouldReceive('setExistingUserId')
+            ->with($userId)
+            ->andReturn($uniqueUser);
+
+        return $this;
+    }
+
+    /**
+     * @param UniqueUser|MockInterface $uniqueUser
+     * @param int|null                 $userId
+     *
+     * @return $this
+     */
+    private function assertUniqueUserSetExistingUserId(MockInterface $uniqueUser, ?int $userId): self
+    {
+        $uniqueUser
+            ->shouldHaveReceived('setExistingUserId')
+            ->with($userId)
+            ->once();
+
+        return $this;
     }
 
     /**

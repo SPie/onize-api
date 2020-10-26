@@ -107,5 +107,41 @@ HTTP Status Codes:
 
 * `email.validation.required`
 * `email.validation.email`
+* `email.validation.user_not_unique`
 * `password.validation.required`
 * `password.validation.string`
+
+### Update Data
+
+`PATCH /api/users`
+
+#### Parameters
+
+Parameter | Type | Required
+`email` | email | No
+
+#### Response
+
+HTTP Status Code `200`
+
+```json
+{
+  "user": {
+    "uuid": "1234-5678-90AB-CDEF",
+    "email": "example@email.com"
+  }
+}
+```
+
+#### Error Response
+
+HTTP Status Codes:
+
+* `401`: Not Authenticated
+* `422`: Validation Errors
+* `500`: Server Error
+
+##### Validation Errors
+
+* `email.validation.email`
+* `email.validation.user_not_unique`

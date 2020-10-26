@@ -8,7 +8,6 @@ use App\Users\UserModel;
 use App\Users\UserModelFactory;
 use App\Users\UserRepository;
 use Doctrine\Common\Collections\Collection;
-use Illuminate\Contracts\Auth\Authenticatable;
 use Mockery as m;
 use Mockery\MockInterface;
 
@@ -58,6 +57,38 @@ trait UsersHelper
     }
 
     /**
+     * @param UserModel|MockInterface $user
+     * @param string                  $email
+     *
+     * @return $this
+     */
+    private function mockUserModelSetEmail(MockInterface $user, string $email): self
+    {
+        $user
+            ->shouldReceive('setEmail')
+            ->with($email)
+            ->andReturn($user);
+
+        return $this;
+    }
+
+    /**
+     * @param UserModel|MockInterface $user
+     * @param string                  $email
+     *
+     * @return $this
+     */
+    private function assertUserModelSetEmail(MockInterface $user, string $email): self
+    {
+        $user
+            ->shouldHaveReceived('setEmail')
+            ->with($email)
+            ->once();
+
+        return $this;
+    }
+
+    /**
      * @return UserManager|MockInterface
      */
     private function createUserManager(): UserManager
@@ -79,23 +110,6 @@ trait UsersHelper
             ->shouldReceive('createUser')
             ->with($email, $password)
             ->andThrow($user);
-
-        return $this;
-    }
-
-    /**
-     * @param UserManager|MockInterface $userManager
-     * @param bool                      $emailUsed
-     * @param string                    $email
-     *
-     * @return $this
-     */
-    private function mockUserManagerIsEmailUsed(MockInterface $userManager, bool $emailUsed, string $email): self
-    {
-        $userManager
-            ->shouldReceive('isEmailUsed')
-            ->with($email)
-            ->andReturn($emailUsed);
 
         return $this;
     }
@@ -130,6 +144,28 @@ trait UsersHelper
             ->shouldReceive('getUserByEmail')
             ->with($email)
             ->andThrow($user);
+
+        return $this;
+    }
+
+    /**
+     * @param MockInterface $userManager
+     * @param UserModel     $updatedUser
+     * @param UserModel     $user
+     * @param string|null   $email
+     *
+     * @return $this
+     */
+    private function mockUserManagerUpdateUserData(
+        MockInterface $userManager,
+        UserModel $updatedUser,
+        UserModel $user,
+        ?string $email
+    ): self {
+        $userManager
+            ->shouldReceive('updateUserData')
+            ->with($user, $email)
+            ->andReturn($updatedUser);
 
         return $this;
     }

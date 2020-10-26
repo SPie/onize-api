@@ -64,16 +64,6 @@ class UserManager
     }
 
     /**
-     * @param string $email
-     *
-     * @return bool
-     */
-    public function isEmailUsed(string $email): bool
-    {
-        return !empty($this->getUserRepository()->findOneByEmail($email));
-    }
-
-    /**
      * @param int $id
      *
      * @return UserModel|Model
@@ -98,6 +88,21 @@ class UserManager
         $user = $this->getUserRepository()->findOneByEmail($email);
         if (!$user) {
             throw new ModelNotFoundException(\sprintf('User with email %s not found.', $email));
+        }
+
+        return $user;
+    }
+
+    /**
+     * @param UserModel   $user
+     * @param string|null $email
+     *
+     * @return UserModel
+     */
+    public function updateUserData(UserModel $user, ?string $email): UserModel
+    {
+        if (!empty($email)) {
+            $user = $this->getUserRepository()->save($user->setEmail($email));
         }
 
         return $user;

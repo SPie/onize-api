@@ -112,6 +112,146 @@ final class UsersApiCallsTest extends FeatureTestCase
         ]);
     }
 
+    /**
+     * @return array
+     */
+    private function setUpUpdateTest(bool $withAuthenticatedUser = true): array
+    {
+        $user = $this->createUserEntities()->first();
+        if ($withAuthenticatedUser) {
+            $this->actingAs($user);
+        }
+
+        return [$user, $this->createUserEntities()->first()->getEmail()];
+    }
+
+    /**
+     * @return void
+     */
+    public function testUpdate(): void
+    {
+        [$user] = $this->setUpUpdateTest();
+        $newEmail = $this->getFaker()->word . $user->getEmail();
+
+        $response = $this->doApiCall(
+            'PATCH',
+            $this->getUrl(UsersController::ROUTE_NAME_UPDATE),
+            ['email' => $newEmail]
+        );
+
+        $response->assertOk();
+        $response->assertJsonFragment([
+            'user' => [
+                'uuid'  => $user->getUuid(),
+                'email' => $newEmail,
+            ]
+        ]);
+    }
+
+    /**
+     * @return void
+     */
+    public function testUpdateWithoutChange(): void
+    {
+        [$user] = $this->setUpUpdateTest();
+
+        $response = $this->doApiCall(
+            'PATCH',
+            $this->getUrl(UsersController::ROUTE_NAME_UPDATE)
+        );
+
+        $response->assertOk();
+        $response->assertJsonFragment([
+            'user' => [
+                'uuid'  => $user->getUuid(),
+                'email' => $user->getEmail(),
+            ]
+        ]);
+    }
+
+    /**
+     * @return void
+     */
+    public function testUpdateWithEmptyEmail(): void
+    {
+        $this->setUpUpdateTest();
+
+        $response = $this->doApiCall(
+            'PATCH',
+            $this->getUrl(UsersController::ROUTE_NAME_UPDATE),
+            ['email' => '']
+        );
+
+        $response->assertStatus(422);
+        $response->assertJsonFragment(['email' => ['validation.email']]);
+    }
+
+    /**
+     * @return void
+     */
+    public function testUpdateWithInvalidEmail(): void
+    {
+        $this->setUpUpdateTest();
+
+        $response = $this->doApiCall(
+            'PATCH',
+            $this->getUrl(UsersController::ROUTE_NAME_UPDATE),
+            ['email' => $this->getFaker()->word]
+        );
+
+        $response->assertStatus(422);
+        $response->assertJsonFragment(['email' => ['validation.email']]);
+    }
+
+    /**
+     * @return void
+     */
+    public function testUpdateWithExistingEmail(): void
+    {
+        [$user, $existingEmail] = $this->setUpUpdateTest();
+
+        $response = $this->doApiCall(
+            'PATCH',
+            $this->getUrl(UsersController::ROUTE_NAME_UPDATE),
+            ['email' => $existingEmail]
+        );
+
+        $response->assertStatus(422);
+        $response->assertJsonFragment(['email' => ['validation.user_not_unique']]);
+    }
+
+    /**
+     * @return void
+     */
+    public function testUpdateWithExistingEmailFromAuthenticatedUser(): void
+    {
+        [$user] = $this->setUpUpdateTest();
+
+        $response = $this->doApiCall(
+            'PATCH',
+            $this->getUrl(UsersController::ROUTE_NAME_UPDATE),
+            ['email' => $user->getEmail()]
+        );
+
+        $response->assertOk();
+    }
+
+    /**
+     * @return void
+     */
+    public function testUpdateWithoutAuthenticatedUser(): void
+    {
+        $this->setUpUpdateTest(false);
+
+        $response = $this->doApiCall(
+            'PATCH',
+            $this->getUrl(UsersController::ROUTE_NAME_UPDATE),
+            ['email' => $this->getFaker()->safeEmail]
+        );
+
+        $response->assertStatus(401);
+    }
+
     //endregion
 
     /**

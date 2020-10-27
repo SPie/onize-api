@@ -32,6 +32,7 @@ $router->group(['middleware' => 'auth'], function (Router $router) {
 
     $router->group(['prefix' => 'users'], function (Router $router) {
         $router->patch('')->name(UsersController::ROUTE_NAME_UPDATE)->uses('UsersController@update');
+        $router->patch('password')->name(UsersController::ROUTE_NAME_UPDATE_PASSWORD)->uses('UsersController@updatePassword');
     });
 
 });

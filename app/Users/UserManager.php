@@ -107,4 +107,21 @@ class UserManager
 
         return $user;
     }
+
+    /**
+     * @param UserModel   $user
+     * @param string|null $password
+     *
+     * @return UserModel
+     */
+    public function updatePassword(UserModel $user, ?string $password): UserModel
+    {
+        if (!empty($password)) {
+            $user = $this->getUserRepository()->save(
+                $this->getUserModelFactory()->setPassword($user, $password)
+            );
+        }
+
+        return $user;
+    }
 }

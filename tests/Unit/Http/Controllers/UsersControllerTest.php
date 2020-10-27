@@ -103,6 +103,53 @@ final class UsersControllerTest extends TestCase
         $this->assertEquals($response, $usersController->update($request, $authManager));
     }
 
+    /**
+     * @param bool $withChange
+     *
+     * @return array
+     */
+    private function setUpUpdatePasswordTest(bool $withChange = true): array
+    {
+        $password = $withChange ? $this->getFaker()->password : null;
+        $request = $this->createUpdatePasswordRequest($password);
+        $user = $this->createUserModel();
+        $authManager = $this->createAuthManager();
+        $this->mockAuthManagerAuthenticatedUser($authManager, $user);
+        $userData = [$this->getFaker()->word => $this->getFaker()->word];
+        $updatedUser = $this->createUserModel();
+        $this->mockUserModelToArray($updatedUser, $userData);
+        $userManager = $this->createUserManager();
+        $this->mockUserManagerUpdatePassword($userManager, $updatedUser, $user, $password);
+        $response = $this->createJsonResponse();
+        $responseFactory = $this->createResponseFactory();
+        $this->mockResponseFactoryJson($responseFactory, $response, ['user' => $userData]);
+        $usersController = $this->getUsersController($userManager, $responseFactory);
+
+        return [$usersController, $request, $authManager, $response];
+    }
+
+    /**
+     * @return void
+     */
+    public function testUpdatePassword(): void
+    {
+        /** @var UsersController $usersController */
+        [$usersController, $request, $authManager, $response] = $this->setUpUpdatePasswordTest();
+
+        $this->assertEquals($response, $usersController->updatePassword($request, $authManager));
+    }
+
+    /**
+     * @return void
+     */
+    public function testUpdatePasswordWithoutChange(): void
+    {
+        /** @var UsersController $usersController */
+        [$usersController, $request, $authManager, $response] = $this->setUpUpdatePasswordTest(false);
+
+        $this->assertEquals($response, $usersController->updatePassword($request, $authManager));
+    }
+
     //endregion
 
     /**

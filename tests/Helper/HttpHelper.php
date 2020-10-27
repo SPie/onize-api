@@ -4,6 +4,7 @@ namespace Tests\Helper;
 
 use App\Http\Requests\Auth\Authenticate;
 use App\Http\Requests\Users\Register;
+use App\Http\Requests\Users\UpdatePassword;
 use App\Http\Requests\Validators\UniqueUser;
 use Illuminate\Contracts\Routing\ResponseFactory;
 use Illuminate\Http\JsonResponse;
@@ -127,6 +128,19 @@ trait HttpHelper
             ->getMock()
             ->shouldReceive('getPassword')
             ->andReturn($password ?: $this->getFaker()->password)
+            ->getMock();
+    }
+
+    /**
+     * @param string|null $password
+     *
+     * @return UpdatePassword|MockInterface
+     */
+    private function createUpdatePasswordRequest(string $password = null): UpdatePassword
+    {
+        return m::spy(UpdatePassword::class)
+            ->shouldReceive('getUserPassword')
+            ->andReturn($password)
             ->getMock();
     }
 }

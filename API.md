@@ -5,6 +5,8 @@
     * [Authenticated User](#authenticated-user)
 * [Users](#users)
     * [Register](#register)
+    * [Update Data](#update-data)
+    * [Update Password](#update-password)
     
 ## Authentication
 
@@ -118,6 +120,7 @@ HTTP Status Codes:
 #### Parameters
 
 Parameter | Type | Required
+--------- | ---- | --------
 `email` | email | No
 
 #### Response
@@ -145,3 +148,38 @@ HTTP Status Codes:
 
 * `email.validation.email`
 * `email.validation.user_not_unique`
+
+### Update Password
+
+`PATCH /api/users/password`
+
+#### Parameters
+
+Parameter | Type | Required
+--- | --- | ---
+`password` | string | No
+
+#### Response
+
+HTTP Status Code `200`
+
+```json
+{
+  "user": {
+    "uuid": "1234-5678-90AB-CDEF",
+    "email": "example@email.com"
+  }
+}
+```
+
+#### Error Response
+
+HTTP Status Codes:
+
+* `401`: Not Authenticated
+* `422`: Validation Errors
+* `500`: Server Error
+
+##### Validation Errors
+
+* `password.validation.string`

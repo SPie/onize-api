@@ -41,6 +41,25 @@ final class UserDoctrineModelFactoryTest extends TestCase
         );
     }
 
+    /**
+     * @return void
+     */
+    public function testSetPassword(): void
+    {
+        $password = $this->getFaker()->password;
+        $hashedPassword = $this->getFaker()->sha256;
+        $passwordHasher = $this->createPasswordHasher();
+        $this->mockPasswordHasherHash($passwordHasher, $hashedPassword, $password);
+        $user = $this->createUserModel();
+        $this->mockUserModelSetPassword($user, $hashedPassword);
+
+        $this->assertEquals(
+            $user,
+            $this->getUserDoctrineModelFactory(null, $passwordHasher)->setPassword($user, $password)
+        );
+        $this->assertUserModelSetPassword($user, $hashedPassword);
+    }
+
     //endregion
 
     /**

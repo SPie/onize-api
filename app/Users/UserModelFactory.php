@@ -16,4 +16,12 @@ interface UserModelFactory
      * @return UserModel
      */
     public function create(string $email, string $password): UserModel;
+
+    /**
+     * @param UserModel $user
+     * @param string    $password
+     *
+     * @return UserModel
+     */
+    public function setPassword(UserModel $user, string $password): UserModel;
 }

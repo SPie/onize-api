@@ -89,6 +89,38 @@ trait UsersHelper
     }
 
     /**
+     * @param UserModel|MockInterface $user
+     * @param string                  $password
+     *
+     * @return $this
+     */
+    private function mockUserModelSetPassword(MockInterface $user, string $password): self
+    {
+        $user
+            ->shouldReceive('setPassword')
+            ->with($password)
+            ->andReturn($user);
+
+        return $this;
+    }
+
+    /**
+     * @param UserModel|MockInterface $user
+     * @param string                  $password
+     *
+     * @return $this
+     */
+    private function assertUserModelSetPassword(MockInterface $user, string $password): self
+    {
+        $user
+            ->shouldHaveReceived('setPassword')
+            ->with($password)
+            ->once();
+
+        return $this;
+    }
+
+    /**
      * @return UserManager|MockInterface
      */
     private function createUserManager(): UserManager
@@ -171,6 +203,28 @@ trait UsersHelper
     }
 
     /**
+     * @param UserManager|MockInterface $userManager
+     * @param UserModel                 $updatedUser
+     * @param UserModel                 $user
+     * @param string|null               $password
+     *
+     * @return $this
+     */
+    private function mockUserManagerUpdatePassword(
+        MockInterface $userManager,
+        UserModel $updatedUser,
+        UserModel $user,
+        ?string $password
+    ): self {
+        $userManager
+            ->shouldReceive('updatePassword')
+            ->with($user, $password)
+            ->andReturn($updatedUser);
+
+        return $this;
+    }
+
+    /**
      * @return UserModelFactory|MockInterface
      */
     private function createUserModelFactory(): UserModelFactory
@@ -196,6 +250,28 @@ trait UsersHelper
             ->shouldReceive('create')
             ->with($email, $password)
             ->andReturn($user);
+
+        return $this;
+    }
+
+    /**
+     * @param UserModelFactory|MockInterface $userModelFactory
+     * @param MockInterface                  $updatedUser
+     * @param MockInterface                  $user
+     * @param string                         $password
+     *
+     * @return $this
+     */
+    private function mockUserModelFactorySetPassword(
+        MockInterface $userModelFactory,
+        MockInterface $updatedUser,
+        MockInterface $user,
+        string $password
+    ): self {
+        $userModelFactory
+            ->shouldReceive('setPassword')
+            ->with($user, $password)
+            ->andReturn($updatedUser);
 
         return $this;
     }

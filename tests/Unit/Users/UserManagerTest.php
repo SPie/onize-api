@@ -172,6 +172,50 @@ final class UserManagerTest extends TestCase
         $userRepository->shouldNotHaveReceived('save');
     }
 
+    /**
+     * @return array
+     */
+    private function setUpUpdatePasswordTest(): array
+    {
+        $user = $this->createUserModel();
+        $password = $this->getFaker()->password;
+        $updatedUser = $this->createUserModel();
+        $userModelFactory = $this->createUserModelFactory();
+        $this->mockUserModelFactorySetPassword($userModelFactory, $updatedUser, $user, $password);
+        $userRepository = $this->createUserRepository();
+        $this->mockRepositorySave($userRepository, $updatedUser);
+        $userManager = $this->getUserManager($userRepository, $userModelFactory);
+
+        return [$userManager, $user, $password, $updatedUser, $userRepository];
+    }
+
+    /**
+     * @return void
+     */
+    public function testUpdatePassword(): void
+    {
+        /** @var UserManager $userManager */
+        [$userManager, $user, $password, $updatedUser, $userRepository] = $this->setUpUpdatePasswordTest();
+
+        $this->assertEquals($updatedUser, $userManager->updatePassword($user, $password));
+        $this->assertRepositorySave($userRepository, $updatedUser);
+    }
+
+    /**
+     * @return void
+     */
+    public function testUpdatePasswordWithoutPasswordChange(): void
+    {
+        /**
+         * @var UserManager                  $userManager
+         * @var UserRepository|MockInterface $userRepository
+         */
+        [$userManager, $user, $password, $updatedUser, $userRepository] = $this->setUpUpdatePasswordTest();
+
+        $this->assertEquals($user, $userManager->updatePassword($user, null));
+        $userRepository->shouldNotHaveReceived('save');
+    }
+
     //endregion
 
     /**

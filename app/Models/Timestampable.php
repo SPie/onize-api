@@ -29,7 +29,7 @@ interface Timestampable
      *
      * @return $this
      */
-    public function setUpdatedAt(?\DateTime $updatedAt): self;
+    public function setUpdatedAt(?\DateTime $updatedAt);
 
     /**
      * @return \DateTime|null

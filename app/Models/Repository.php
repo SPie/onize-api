@@ -59,5 +59,5 @@ interface Repository
     /**
      * @return $this
      */
-    public function flush(): self;
+    public function flush(): Repository;
 }

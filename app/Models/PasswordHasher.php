@@ -2,9 +2,6 @@
 
 namespace App\Models;
 
-
-use Illuminate\Contracts\Auth\Authenticatable;
-
 /**
  * Interface PasswordHasher
  *

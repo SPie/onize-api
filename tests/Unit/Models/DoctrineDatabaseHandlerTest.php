@@ -58,7 +58,7 @@ final class DoctrineDatabaseHandlerTest extends TestCase
     {
         [$doctrineDatabaseHandler, $id] = $this->setUpFindTest(false);
 
-        $doctrineDatabaseHandler->find($id);
+        $this->assertNull($doctrineDatabaseHandler->find($id));
     }
 
     private function setUpLoadTest(bool $withModel = true): array

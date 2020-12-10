@@ -13,11 +13,19 @@ abstract class AbstractDoctrineRepository implements Repository
 {
     private DatabaseHandler $databaseHandler;
 
+    /**
+     * AbstractDoctrineRepository constructor.
+     *
+     * @param DatabaseHandler $databaseHandler
+     */
     public function __construct(DatabaseHandler $databaseHandler)
     {
         $this->databaseHandler = $databaseHandler;
     }
 
+    /**
+     * @return DatabaseHandler
+     */
     protected function getDatabaseHandler(): DatabaseHandler
     {
         return $this->databaseHandler;

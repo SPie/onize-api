@@ -1,52 +1,49 @@
 <?php
 
-namespace App\Users;
+namespace App\Projects;
 
 use App\Models\Model;
 use App\Models\SoftDeletable;
 use App\Models\Timestampable;
 use App\Models\UuidModel;
-use App\Projects\MetaDataModel;
-use App\Projects\RoleModel;
 use Doctrine\Common\Collections\Collection;
-use Illuminate\Contracts\Auth\Authenticatable;
 
 /**
- * Interface UserModel
+ * Interface ProjectModel
  *
- * @package App\Users
+ * @package App\Projects
  */
-interface UserModel extends Model, Authenticatable, SoftDeletable, Timestampable, UuidModel
+interface ProjectModel extends Model, SoftDeletable, Timestampable, UuidModel
 {
-    const PROPERTY_EMAIL          = 'email';
-    const PROPERTY_PASSWORD       = 'password';
-    const PROPERTY_REFRESH_TOKENS = 'refreshTokens';
-    const PROPERTY_ROLES          = 'roles';
-    const PROPERTY_META_DATA      = 'metaData';
+    const PROPERTY_LABEL              = 'label';
+    const PROPERTY_DESCRIPTION        = 'description';
+    const PROPERTY_ROLES              = 'roles';
+    const PROPERTY_META_DATA_ELEMENTS = 'metaDataElements';
+    const PROPERTY_META_DATA          = 'metaData';
 
     /**
-     * @param string $email
+     * @param string $label
      *
      * @return $this
      */
-    public function setEmail(string $email): self;
+    public function setLabel(string $label): self;
 
     /**
      * @return string
      */
-    public function getEmail(): string;
+    public function getLabel(): string;
 
     /**
-     * @param string $password
+     * @param string $description
      *
      * @return $this
      */
-    public function setPassword(string $password): self;
+    public function setDescription(string $description): self;
 
     /**
      * @return string
      */
-    public function getPassword(): string;
+    public function getDescription(): string;
 
     /**
      * @param RoleModel[] $roles
@@ -66,6 +63,25 @@ interface UserModel extends Model, Authenticatable, SoftDeletable, Timestampable
      * @return RoleModel[]|Collection
      */
     public function getRoles(): Collection;
+
+    /**
+     * @param MetaDataElementModel[] $metaDataElements
+     *
+     * @return $this
+     */
+    public function setMetaDataElements(array $metaDataElements): self;
+
+    /**
+     * @param MetaDataElementModel $metaDataElement
+     *
+     * @return $this
+     */
+    public function addMetaDataElement(MetaDataElementModel $metaDataElement): self;
+
+    /**
+     * @return MetaDataElementModel[]|Collection
+     */
+    public function getMetaDataElements(): Collection;
 
     /**
      * @param MetaDataModel[] $metaData

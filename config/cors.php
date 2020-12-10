@@ -17,7 +17,7 @@ return [
 
     'paths' => ['api/*'],
 
-    'allowed_methods' => ['GET', 'POST', 'PUT', 'DELETE'],
+    'allowed_methods' => ['GET', 'POST', 'PUT', 'DELETE', 'PATCH'],
 
     'allowed_origins' => \explode(',', env('CORS_ALLOWED_ORIGINS')),
 

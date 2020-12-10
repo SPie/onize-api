@@ -6,6 +6,8 @@ use App\Models\AbstractDoctrineModel;
 use App\Models\SoftDelete;
 use App\Models\Timestamps;
 use App\Models\Uuid;
+use App\Projects\MetaDataModel;
+use App\Projects\RoleModel;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
@@ -41,6 +43,24 @@ class UserDoctrineModel extends AbstractDoctrineModel implements UserModel
     private string $password;
 
     /**
+     * @ORM\ManyToMany(targetEntity="App\Projects\RoleDoctrineModel", inversedBy="users")
+     * @ORM\JoinTable(name="roles_users",
+     *     joinColumns={@ORM\JoinColumn(name="user_id", referencedColumnName="id")},
+     *     inverseJoinColumns={@ORM\JoinColumn(name="role_id", referencedColumnName="id")}
+     *     )
+     *
+     * @var RoleModel[]|Collection
+     */
+    private Collection $roles;
+
+    /**
+     * @ORM\OneToMany(targetEntity="App\Projects\MetaDataDoctrineModel", mappedBy="user", cascade={"persist"})
+     *
+     * @var MetaDataModel[]|Collection
+     */
+    private Collection $metaData;
+
+    /**
      * UserDoctrineModel constructor.
      *
      * @param string $uuid
@@ -52,6 +72,8 @@ class UserDoctrineModel extends AbstractDoctrineModel implements UserModel
         $this->uuid = $uuid;
         $this->email = $email;
         $this->password = $password;
+        $this->roles = new ArrayCollection();
+        $this->metaData = new ArrayCollection();
     }
 
     /**
@@ -92,6 +114,74 @@ class UserDoctrineModel extends AbstractDoctrineModel implements UserModel
     public function getPassword(): string
     {
         return $this->password;
+    }
+
+    /**
+     * @param RoleModel[] $roles
+     *
+     * @return $this|UserModel
+     */
+    public function setRoles(array $roles): UserModel
+    {
+        $this->roles = new ArrayCollection($roles);
+
+        return $this;
+    }
+
+    /**
+     * @param RoleModel $role
+     *
+     * @return $this|UserModel
+     */
+    public function addRole(RoleModel $role): UserModel
+    {
+        if (!$this->getRoles()->contains($role)) {
+            $this->getRoles()->add($role);
+        }
+
+        return $this;
+    }
+
+    /**
+     * @return RoleModel[]|Collection
+     */
+    public function getRoles(): Collection
+    {
+        return $this->roles;
+    }
+
+    /**
+     * @param MetaDataModel[] $metaData
+     *
+     * @return UserModel
+     */
+    public function setMetaData(array $metaData): UserModel
+    {
+        $this->metaData = new ArrayCollection($metaData);
+
+        return $this;
+    }
+
+    /**
+     * @param MetaDataModel $metaData
+     *
+     * @return UserModel
+     */
+    public function addMetaData(MetaDataModel $metaData): UserModel
+    {
+        if (!$this->getMetaData()->contains($metaData)) {
+            $this->getMetaData()->add($metaData);
+        }
+
+        return $this;
+    }
+
+    /**
+     * @return MetaDataModel[]|Collection
+     */
+    public function getMetaData(): Collection
+    {
+        return $this->metaData;
     }
 
     /**

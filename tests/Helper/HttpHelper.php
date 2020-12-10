@@ -7,6 +7,8 @@ use App\Http\Requests\Users\Register;
 use App\Http\Requests\Users\UpdatePassword;
 use App\Http\Requests\Validators\UniqueUser;
 use Illuminate\Contracts\Routing\ResponseFactory;
+use Illuminate\Contracts\Support\MessageBag;
+use Illuminate\Contracts\Validation\Validator;
 use Illuminate\Http\JsonResponse;
 use Mockery as m;
 use Mockery\MockInterface;
@@ -70,6 +72,115 @@ trait HttpHelper
             ->shouldReceive('json')
             ->withArgs($arguments)
             ->andReturn($response);
+
+        return $this;
+    }
+
+    /**
+     * @return MessageBag|MockInterface
+     */
+    private function createMessageBag(): MessageBag
+    {
+        return m::spy(MessageBag::class);
+    }
+
+    /**
+     * @return Validator|MockInterface
+     */
+    private function createValidator(): Validator
+    {
+        return m::spy(Validator::class);
+    }
+
+    /**
+     * @param Validator|MockInterface $validator
+     * @param MessageBag              $messageBag
+     *
+     * @return $this
+     */
+    private function mockValidatorGetMessageBag(MockInterface $validator, MessageBag $messageBag): self
+    {
+        $validator
+            ->shouldReceive('getMessageBag')
+            ->andReturn($messageBag);
+
+        return $this;
+    }
+
+    /**
+     * @param Validator|MockInterface $validator
+     * @param bool                    $valid
+     * @param mixed                   $value
+     *
+     * @return $this
+     */
+    private function mockValidatorValidateString(MockInterface $validator, bool $valid, string $attribute, $value): self
+    {
+        $validator
+            ->shouldReceive('validateString')
+            ->with($attribute, $value)
+            ->andReturn($valid);
+
+        return $this;
+    }
+
+    /**
+     * @param Validator|MockInterface $validator
+     * @param bool                    $valid
+     * @param string                  $attribute
+     * @param mixed                   $value
+     * @param array                   $params
+     *
+     * @return $this
+     */
+    private function mockValidatorValidateEmail(
+        MockInterface $validator,
+        bool $valid,
+        string $attribute,
+        $value,
+        array $params
+    ): self
+    {
+        $validator
+            ->shouldReceive('validateEmail')
+            ->with($attribute, $value, $params)
+            ->andReturn($valid);
+
+        return $this;
+    }
+
+    /**
+     * @param Validator|MockInterface $validator
+     * @param bool                    $valid
+     * @param string                  $attribute
+     * @param mixed                   $value
+     *
+     * @return $this
+     */
+    private function mockValidatorValidateNumeric(MockInterface $validator, bool $valid, string $attribute, $value): self
+    {
+        $validator
+            ->shouldReceive('validateNumeric')
+            ->with($attribute, $value)
+            ->andReturn($valid);
+
+        return $this;
+    }
+
+    /**
+     * @param Validator|MockInterface $validator
+     * @param bool                    $valid
+     * @param string                  $attribute
+     * @param mixed                   $value
+     *
+     * @return $this
+     */
+    private function mockValidatorValidateDate(MockInterface $validator, bool $valid, string $attribute, $value): self
+    {
+        $validator
+            ->shouldReceive('validateDate')
+            ->with($attribute, $value)
+            ->andReturn($valid);
 
         return $this;
     }

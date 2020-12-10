@@ -202,15 +202,22 @@ trait ModelHelper
     /**
      * @param Repository|MockInterface $repository
      * @param Model                    $model
+     * @param bool|null                $flush
+     * @param Model|null               $savedModel
      *
      * @return $this
      */
-    private function mockRepositorySave(MockInterface $repository, Model $model): self
+    private function mockRepositorySave(MockInterface $repository, Model $model, bool $flush = null, Model $savedModel = null): self
     {
+        $arguments = [$model];
+        if ($flush !== null) {
+            $arguments[] = $flush;
+        }
+
         $repository
             ->shouldReceive('save')
-            ->with($model)
-            ->andReturn($model);
+            ->withArgs($arguments)
+            ->andReturn($savedModel ?: $model);
 
         return $this;
     }
@@ -218,15 +225,20 @@ trait ModelHelper
     /**
      * @param Repository|MockInterface $repository
      * @param Model                    $model
+     * @param bool|null                $flush
      *
      * @return $this
      */
-    private function assertRepositorySave(MockInterface $repository, Model $model): self
+    private function assertRepositorySave(MockInterface $repository, Model $model, bool $flush = null): self
     {
+        $arguments = [$model];
+        if ($flush !== null) {
+            $arguments[] = $flush;
+        }
+
         $repository
             ->shouldHaveReceived('save')
-            ->with(m::on(fn (Model $actual) => $model == $actual))
-            ->with($model)
+            ->withArgs($arguments)
             ->once();
 
         return $this;
@@ -245,6 +257,18 @@ trait ModelHelper
             ->shouldReceive('find')
             ->with($id)
             ->andReturn($model);
+
+        return $this;
+    }
+
+    /**
+     * @param Repository|MockInterface $repository
+     *
+     * @return $this
+     */
+    private function assertRepositoryFlush(MockInterface $repository): self
+    {
+        $repository->shouldHaveReceived('flush')->once();
 
         return $this;
     }

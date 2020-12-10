@@ -21,6 +21,11 @@ final class Version20200515211800 extends AbstractMigration
     {
         $this
             ->createUsersTable($schema)
+            ->createProjectsTable($schema)
+            ->createMetaDataElementsTable($schema)
+            ->createRolesTable($schema)
+            ->createRolesUsersTable($schema)
+            ->createMetaDataTable($schema)
 //            ->createLoginAttemptsTable($schema)
 //            ->createProjectsTable($schema)
 //            ->createProjectInvitesTable($schema)
@@ -55,14 +60,16 @@ final class Version20200515211800 extends AbstractMigration
      *
      * @return $this
      */
-    private function createLoginAttemptsTable(Schema $schema): self
+    private function createProjectsTable(Schema $schema): self
     {
-        (new Builder($schema))->create('login_attempts', function (Table $table) {
+        (new Builder($schema))->create('projects', function (Table $table) {
             $table->increments('id');
-            $table->string('ip_address');
-            $table->string('identifier');
-            $table->dateTime('attempted_at');
-            $table->boolean('success');
+            $table->string('uuid');
+            $table->unique('uuid');
+            $table->string('name');
+            $table->string('description');
+            $table->timestamps();
+            $table->softDeletes();
         });
 
         return $this;
@@ -73,18 +80,96 @@ final class Version20200515211800 extends AbstractMigration
      *
      * @return $this
      */
-    private function createProjectsTable(Schema $schema): self
+    private function createMetaDataElementsTable(Schema $schema): self
     {
-        (new Builder($schema))->create('projects', function (Table $table) {
+        (new Builder($schema))->create('meta_data_elements', function (Table $table) {
+            $table->increments('id');
+            $table->integer('project_id', false, true);
+            $table->foreign('projects', 'project_id', 'id');
+            $table->string('name');
+            $table->string('label');
+            $table->boolean('required');
+            $table->boolean('in_list');
+            $table->string('type');
+            $table->unique(['project_id', 'name']);
+        });
+
+        return $this;
+    }
+
+    /**
+     * @param Schema $schema
+     *
+     * @return $this
+     */
+    private function createRolesTable(Schema $schema): self
+    {
+        (new Builder($schema))->create('roles', function (Table $table) {
             $table->increments('id');
             $table->string('uuid');
-            $table->unique('uuid');
             $table->string('label');
-            $table->string('description')->setNotnull(false);
-            $table->integer('user_id', false, true);
-            $table->foreign('users', 'user_id', 'id');
+            $table->boolean('owner');
+            $table->integer('project_id', false, true);
+            $table->foreign('projects', 'project_id', 'id');
             $table->timestamps();
             $table->softDeletes();
+        });
+
+        return $this;
+    }
+
+    /**
+     * @param Schema $schema
+     *
+     * @return $this
+     */
+    private function createRolesUsersTable(Schema $schema): self
+    {
+        (new Builder($schema))->create('roles_users', function (Table $table) {
+            $table->increments('id');
+            $table->integer('role_id', false, true);
+            $table->foreign('roles', 'role_id', 'id');
+            $table->integer('user_id', false, true);
+            $table->foreign('users', 'user_id', 'id');
+            $table->unique(['role_id', 'user_id']);
+        });
+
+        return $this;
+    }
+
+    /**
+     * @param Schema $schema
+     *
+     * @return $this
+     */
+    private function createMetaDataTable(Schema $schema): self
+    {
+        (new Builder($schema))->create('meta_data', function (Table $table) {
+            $table->increments('id');
+            $table->integer('user_id', false, true);
+            $table->foreign('users', 'user_id', 'id');
+            $table->integer('project_id', false, true);
+            $table->foreign('projects', 'project_id', 'id');
+            $table->string('name');
+            $table->string('value');
+        });
+
+        return $this;
+    }
+
+    /**
+     * @param Schema $schema
+     *
+     * @return $this
+     */
+    private function createLoginAttemptsTable(Schema $schema): self
+    {
+        (new Builder($schema))->create('login_attempts', function (Table $table) {
+            $table->increments('id');
+            $table->string('ip_address');
+            $table->string('identifier');
+            $table->dateTime('attempted_at');
+            $table->boolean('success');
         });
 
         return $this;

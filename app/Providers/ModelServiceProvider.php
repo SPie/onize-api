@@ -8,6 +8,30 @@ use App\Models\LaravelPasswordHasher;
 use App\Models\PasswordHasher;
 use App\Models\RamseyUuidGenerator;
 use App\Models\UuidGenerator;
+use App\Projects\MetaDataDoctrineModel;
+use App\Projects\MetaDataDoctrineModelFactory;
+use App\Projects\MetaDataDoctrineRepository;
+use App\Projects\MetaDataElementDoctrineModel;
+use App\Projects\MetaDataElementDoctrineModelFactory;
+use App\Projects\MetaDataElementDoctrineRepository;
+use App\Projects\MetaDataElementModel;
+use App\Projects\MetaDataElementModelFactory;
+use App\Projects\MetaDataElementRepository;
+use App\Projects\MetaDataModel;
+use App\Projects\MetaDataModelFactory;
+use App\Projects\MetaDataRepository;
+use App\Projects\ProjectDoctrineModel;
+use App\Projects\ProjectDoctrineModelFactory;
+use App\Projects\ProjectDoctrineRepository;
+use App\Projects\ProjectModel;
+use App\Projects\ProjectModelFactory;
+use App\Projects\ProjectRepository;
+use App\Projects\RoleDoctrineModel;
+use App\Projects\RoleDoctrineModelFactory;
+use App\Projects\RoleDoctrineRepository;
+use App\Projects\RoleModel;
+use App\Projects\RoleModelFactory;
+use App\Projects\RoleRepository;
 use App\Users\UserDoctrineModel;
 use App\Users\UserDoctrineModelFactory;
 use App\Users\UserDoctrineRepository;
@@ -47,6 +71,10 @@ final class ModelServiceProvider extends ServiceProvider
     private function bindModels(): self
     {
         $this->app->bind(UserModel::class, UserDoctrineModel::class);
+        $this->app->bind(ProjectModel::class, ProjectDoctrineModel::class);
+        $this->app->bind(MetaDataElementModel::class, MetaDataElementDoctrineModel::class);
+        $this->app->bind(RoleModel::class, RoleDoctrineModel::class);
+        $this->app->bind(MetaDataModel::class, MetaDataDoctrineModel::class);
 
         return $this;
     }
@@ -57,6 +85,10 @@ final class ModelServiceProvider extends ServiceProvider
     private function bindModelFactories(): self
     {
         $this->app->singleton(UserModelFactory::class, UserDoctrineModelFactory::class);
+        $this->app->singleton(ProjectModelFactory::class, ProjectDoctrineModelFactory::class);
+        $this->app->singleton(MetaDataElementModelFactory::class, MetaDataElementDoctrineModelFactory::class);
+        $this->app->singleton(RoleModelFactory::class, RoleDoctrineModelFactory::class);
+        $this->app->singleton(MetaDataModelFactory::class, MetaDataDoctrineModelFactory::class);
 
         return $this;
     }
@@ -92,6 +124,22 @@ final class ModelServiceProvider extends ServiceProvider
         $this->app->singleton(
             UserRepository::class,
             fn () => new UserDoctrineRepository($this->makeDatabaseHandler(UserDoctrineModel::class))
+        );
+        $this->app->singleton(
+            ProjectRepository::class,
+            fn () => new ProjectDoctrineRepository($this->makeDatabaseHandler(ProjectDoctrineModel::class))
+        );
+        $this->app->singleton(
+            MetaDataElementRepository::class,
+            fn () => new MetaDataElementDoctrineRepository($this->makeDatabaseHandler(MetaDataElementDoctrineModel::class))
+        );
+        $this->app->singleton(
+            RoleRepository::class,
+            fn () => new RoleDoctrineRepository($this->makeDatabaseHandler(RoleDoctrineModel::class))
+        );
+        $this->app->singleton(
+            MetaDataRepository::class,
+            fn () => new MetaDataDoctrineRepository($this->makeDatabaseHandler(MetaDataDoctrineModel::class))
         );
 
         return $this;

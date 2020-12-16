@@ -92,12 +92,10 @@ class ProjectManager
      */
     public function createProject(string $label, string $description, array $metaDataElements): ProjectModel
     {
-        $project = $this->getProjectRepository()->save(
-            $this->getProjectModelFactory()->create($label, $description)
-        );
+        $project = $this->getProjectModelFactory()->create($label, $description);
 
         foreach ($metaDataElements as $metaDataElement) {
-            $this->getMetaDataElementRepository()->save(
+            $project->addMetaDataElement(
                 $this->getMetaDataElementModelFactory()->create(
                     $project,
                     $metaDataElement[MetaDataElementModel::PROPERTY_NAME],
@@ -109,6 +107,6 @@ class ProjectManager
             );
         }
 
-        return $project;
+        return $this->getProjectRepository()->save($project);
     }
 }

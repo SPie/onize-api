@@ -17,7 +17,7 @@ interface Timestampable
      *
      * @return $this
      */
-    public function setCreatedAt(?\DateTime $createdAt): self;
+    public function setCreatedAt(?\DateTime $createdAt);
 
     /**
      * @return \DateTime|null

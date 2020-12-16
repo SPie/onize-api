@@ -23,7 +23,7 @@ trait SoftDelete
      *
      * @return $this
      */
-    public function setDeletedAt(?\DateTime $deletedAt): self
+    public function setDeletedAt(?\DateTime $deletedAt)
     {
         $this->deletedAt = $deletedAt;
 

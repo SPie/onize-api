@@ -63,7 +63,9 @@ final class ProjectsController extends Controller
             $request->getMetaDataElements()
         );
 
-        $roleManager->createOwnerRole($project, $authManager->authenticatedUser(), $request->getMetaData());
+        $project->addRole(
+            $roleManager->createOwnerRole($project, $authManager->authenticatedUser(), $request->getMetaData())
+        );
 
         return $this->getResponseFactory()->json(
             [self::RESPONSE_PARAMETER_PROJECT => $project->toArray()],

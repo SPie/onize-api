@@ -68,4 +68,9 @@ interface MetaDataElementModel extends Model
      * @return bool
      */
     public function isInList(): bool;
+
+    /**
+     * @return array
+     */
+    public function toArray(): array;
 }

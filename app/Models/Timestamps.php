@@ -28,7 +28,7 @@ trait Timestamps
      *
      * @return $this
      */
-    public function setCreatedAt(?\DateTime $createdAt): self
+    public function setCreatedAt(?\DateTime $createdAt)
     {
         $this->createdAt = $createdAt;
 

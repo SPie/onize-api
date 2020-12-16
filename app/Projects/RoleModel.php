@@ -68,4 +68,9 @@ interface RoleModel extends Model, SoftDeletable, Timestampable, UuidModel
      * @return UserModel[]|Collection
      */
     public function getUsers(): Collection;
+
+    /**
+     * @return array
+     */
+    public function toArray(): array;
 }

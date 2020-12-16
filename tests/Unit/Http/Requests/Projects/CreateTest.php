@@ -31,7 +31,7 @@ final class CreateTest extends TestCase
             [
                 'label'                       => ['required', 'string'],
                 'description'                 => ['required', 'string'],
-                'metaDataElements'            => ['array'],
+                'metaDataElements'            => ['present', 'array'],
                 'metaDataElements.*.name'     => ['required', 'string'],
                 'metaDataElements.*.label'    => ['required', 'string'],
                 'metaDataElements.*.required' => ['boolean'],
@@ -40,7 +40,7 @@ final class CreateTest extends TestCase
                     'required',
                     \sprintf('in:%s', \implode(',', ['email', 'string', 'date', 'numeric'])),
                 ],
-                'metaData'                    => [function () {}],
+                'metaData'                    => ['present', function () {}],
             ],
             $this->getCreate()->rules()
         );
@@ -143,6 +143,10 @@ final class CreateTest extends TestCase
                 'required' => false,
                 'type' => 'date',
             ],
+            [
+                'name' => 'test',
+                'type' => 'string',
+            ]
         ];
         $messageBag = $this->createMessageBag();
         $validator = $this->createValidator();
@@ -221,7 +225,7 @@ final class CreateTest extends TestCase
     /**
      * @return void
      */
-    public function testValidateMetaDataRuleWithoutExistingMetaDataelement(): void
+    public function testValidateMetaDataRuleWithoutExistingMetaDataElement(): void
     {
         /** @var MessageBag|MockInterface $messageBag */
         [$rule, $metaDataElements, $metaData, $messageBag] = $this->setUpTestValidateMetaDataRuleTest();

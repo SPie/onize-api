@@ -41,21 +41,21 @@ final class ProjectDoctrineModel extends AbstractDoctrineModel implements Projec
     private string $description;
 
     /**
-     * @ORM\OneToMany(targetEntity="App\Projects\RoleDoctrineModel", mappedBy="project", cascade={"persist"}
+     * @ORM\OneToMany(targetEntity="App\Projects\RoleDoctrineModel", mappedBy="project", cascade={"persist"})
      *
      * @var RoleModel[]|Collection
      */
     private Collection $roles;
 
     /**
-     * @ORM\OneToMany(targetEntity="App\Projects\MetaDataElementDoctrineModel", mappedBy="project", cascade={"persist"}
+     * @ORM\OneToMany(targetEntity="App\Projects\MetaDataElementDoctrineModel", mappedBy="project", cascade={"persist"})
      *
      * @var MetaDataElementModel[]|Collection
      */
     private Collection $metaDataElements;
 
     /**
-     * @ORM\OneToMany(targetEntity="App\Projects\MetaDataDoctrineModel", mappedBy="project", cascade={"persist"}
+     * @ORM\OneToMany(targetEntity="App\Projects\MetaDataDoctrineModel", mappedBy="project", cascade={"persist"})
      *
      * @var ArrayCollection|Collection
      */
@@ -226,7 +226,15 @@ final class ProjectDoctrineModel extends AbstractDoctrineModel implements Projec
     public function toArray(): array
     {
         return [
-            // TODO
+            self::PROPERTY_UUID               => $this->getUuid(),
+            self::PROPERTY_LABEL              => $this->getLabel(),
+            self::PROPERTY_DESCRIPTION        => $this->getDescription(),
+            self::PROPERTY_META_DATA_ELEMENTS => $this->getMetaDataElements()
+                ->map(fn (MetaDataElementModel $metaDataElement) => $metaDataElement->toArray())
+                ->toArray(),
+            self::PROPERTY_ROLES              => $this->getRoles()
+                ->map(fn (RoleModel $role) => $role->toArray())
+                ->toArray(),
         ];
     }
 }

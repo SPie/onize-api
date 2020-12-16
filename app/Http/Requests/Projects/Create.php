@@ -30,7 +30,7 @@ class Create extends FormRequest
         return [
             self::PARAMETER_LABEL                                                         => ['required', 'string'],
             self::PARAMETER_DESCRIPTION                                                   => ['required', 'string'],
-            self::PARAMETER_META_DATA_ELEMENTS                                            => ['array'],
+            self::PARAMETER_META_DATA_ELEMENTS                                            => ['present', 'array'],
             self::PARAMETER_META_DATA_ELEMENTS . '.*.' . self::META_DATA_ELEMENT_NAME     => ['required', 'string'],
             self::PARAMETER_META_DATA_ELEMENTS . '.*.' . self::META_DATA_ELEMENT_LABEL    => ['required', 'string'],
             self::PARAMETER_META_DATA_ELEMENTS . '.*.' . self::META_DATA_ELEMENT_REQUIRED => ['boolean'],
@@ -39,7 +39,7 @@ class Create extends FormRequest
                 'required',
                 \sprintf('in:%s', \implode(',', ['email', 'string', 'date', 'numeric'])),
             ],
-            self::PARAMETER_META_DATA                                                     => [$this->getValidateMetaDataRule()],
+            self::PARAMETER_META_DATA                                                     => ['present', $this->getValidateMetaDataRule()],
         ];
     }
 
@@ -90,12 +90,13 @@ class Create extends FormRequest
             $metaDataElements = [];
             $errors = [];
             foreach ($this->getMetaDataElements() as $metaDataElement) {
-                $metaDataElements[$metaDataElement['name']] = [
-                    'required' => $metaDataElement['required'],
-                    'type'     => $metaDataElement['type'],
-                ];
+                $metaDataElements[$metaDataElement['name']] = $metaDataElement['type'];
 
-                if ($metaDataElement['required'] && empty($metaData[$metaDataElement['name']])) {
+                if (
+                    isset($metaDataElement['required'])
+                    && $metaDataElement['required']
+                    && empty($metaData[$metaDataElement['name']])
+                ) {
                     $errors[$metaDataElement['name']] = ['validation.required'];
                 }
             }
@@ -104,13 +105,13 @@ class Create extends FormRequest
                 $metaDataErrors = [];
                 if (!isset($metaDataElements[$name])) {
                     $metaDataErrors[] = 'validation.not-existing';
-                } elseif ($metaDataElements[$name]['type'] == 'string' && $this->isInvalidString($value)) {
+                } elseif ($metaDataElements[$name] == 'string' && $this->isInvalidString($value)) {
                     $metaDataErrors[] = 'validation.string';
-                } elseif ($metaDataElements[$name]['type'] == 'email' && $this->isInvalidEmail($value)) {
+                } elseif ($metaDataElements[$name] == 'email' && $this->isInvalidEmail($value)) {
                     $metaDataErrors[] = 'validation.email';
-                } elseif ($metaDataElements[$name]['type'] == 'numeric' && $this->isInvalidNumeric($value)) {
+                } elseif ($metaDataElements[$name] == 'numeric' && $this->isInvalidNumeric($value)) {
                     $metaDataErrors[] = 'validation.numeric';
-                } elseif ($metaDataElements[$name]['type'] == 'date' && $this->isInvalidDate($value)) {
+                } elseif ($metaDataElements[$name] == 'date' && $this->isInvalidDate($value)) {
                     $metaDataErrors[] = 'validation.date';
                 }
 

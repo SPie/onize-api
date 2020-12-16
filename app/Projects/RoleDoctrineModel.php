@@ -157,4 +157,16 @@ final class RoleDoctrineModel extends AbstractDoctrineModel implements RoleModel
     {
         return $this->users;
     }
+
+    /**
+     * @return array
+     */
+    public function toArray(): array
+    {
+        return [
+            self::PROPERTY_UUID  => $this->getUuid(),
+            self::PROPERTY_LABEL => $this->getLabel(),
+            self::PROPERTY_OWNER => $this->isOwner(),
+        ];
+    }
 }

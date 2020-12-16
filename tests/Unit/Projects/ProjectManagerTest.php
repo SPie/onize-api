@@ -53,19 +53,18 @@ final class ProjectManagerTest extends TestCase
         $this->mockMetaDataElementModelFactoryCreate(
             $metaDataElementModelFactory,
             $metaDataElementModel,
-            $savedProject,
+            $project,
             $metaDataElements[0]['name'],
             $metaDataElements[0]['label'],
             $metaDataElements[0]['type'],
             $withOptionalMetaDataElementProperties ? $metaDataElements[0]['required'] : false,
             $withOptionalMetaDataElementProperties ? $metaDataElements[0]['inList'] : false,
         );
-        $metaDataElementRepository = $this->createMetaDataElementRepository();
-        $this->mockRepositorySave($metaDataElementRepository, $metaDataElementModel);
+        $this->mockProjectModelAddMetaDataElement($project, $metaDataElementModel);
         $projectManager = $this->getProjectManager(
             $projectRepository,
             $projectModelFactory,
-            $metaDataElementRepository,
+            null,
             $metaDataElementModelFactory
         );
 
@@ -74,9 +73,7 @@ final class ProjectManagerTest extends TestCase
             $name,
             $description,
             $metaDataElements,
-            $savedProject,
-            $metaDataElementRepository,
-            $metaDataElementModel,
+            $savedProject
         ];
     }
 
@@ -86,18 +83,9 @@ final class ProjectManagerTest extends TestCase
     public function testCreateProject(): void
     {
         /** @var ProjectManager $projectManager */
-        [
-            $projectManager,
-            $name,
-            $description,
-            $metaDataElements,
-            $project,
-            $metaDataElementRepository,
-            $metaDataElementModel,
-        ] = $this->setUpCreateProjectTest();
+        [$projectManager, $name, $description, $metaDataElements, $project] = $this->setUpCreateProjectTest();
 
         $this->assertEquals($project, $projectManager->createProject($name, $description, $metaDataElements));
-        $this->assertRepositorySave($metaDataElementRepository, $metaDataElementModel);
     }
 
     /**
@@ -106,18 +94,9 @@ final class ProjectManagerTest extends TestCase
     public function testCreateProjectWithoutOptionalMetaDataElementProperties(): void
     {
         /** @var ProjectManager $projectManager */
-        [
-            $projectManager,
-            $name,
-            $description,
-            $metaDataElements,
-            $project,
-            $metaDataElementRepository,
-            $metaDataElementModel,
-        ] = $this->setUpCreateProjectTest(false);
+        [$projectManager, $name, $description, $metaDataElements, $project] = $this->setUpCreateProjectTest(false);
 
         $this->assertEquals($project, $projectManager->createProject($name, $description, $metaDataElements));
-        $this->assertRepositorySave($metaDataElementRepository, $metaDataElementModel);
     }
 
     //endregion

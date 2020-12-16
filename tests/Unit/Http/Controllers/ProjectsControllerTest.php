@@ -53,6 +53,7 @@ final class ProjectsControllerTest extends TestCase
         $role = $this->createRoleModel();
         $roleManager = $this->createRoleManager();
         $this->mockRoleManagerCreateOwnerRole($roleManager, $role, $project, $user, $metaData);
+        $this->mockProjectModelAddRole($project, $role);
         $response = $this->createJsonResponse();
         $responseFactory = $this->createResponseFactory();
         $this->mockResponseFactoryJson($responseFactory, $response, ['project' => $projectData], 201);

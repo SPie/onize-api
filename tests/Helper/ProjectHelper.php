@@ -37,6 +37,42 @@ trait ProjectHelper
 
     /**
      * @param ProjectModel|MockInterface $projectModel
+     * @param RoleModel                  $role
+     *
+     * @return $this
+     */
+    private function mockProjectModelAddRole(MockInterface $projectModel, RoleModel $role): self
+    {
+        $projectModel
+            ->shouldReceive('addRole')
+            ->with($role)
+            ->andReturn($projectModel)
+            ->once();
+
+        return $this;
+    }
+
+    /**
+     * @param ProjectModel|MockInterface $projectModel
+     * @param MetaDataElementModel       $metaDataElement
+     *
+     * @return $this
+     */
+    private function mockProjectModelAddMetaDataElement(
+        MockInterface $projectModel,
+        MetaDataElementModel $metaDataElement
+    ): self {
+        $projectModel
+            ->shouldReceive('addMetaDataElement')
+            ->with($metaDataElement)
+            ->andReturn($projectModel)
+            ->once();
+
+        return $this;
+    }
+
+    /**
+     * @param ProjectModel|MockInterface $projectModel
      * @param array                      $data
      *
      * @return $this
@@ -161,6 +197,21 @@ trait ProjectHelper
     }
 
     /**
+     * @param RoleModel|MockInterface $roleModel
+     * @param array                   $data
+     *
+     * @return $this
+     */
+    private function mockRoleModelToArray(MockInterface $roleModel, array $data): self
+    {
+        $roleModel
+            ->shouldReceive('toArray')
+            ->andReturn($data);
+
+        return $this;
+    }
+
+    /**
      * @return RoleManager|MockInterface
      */
     private function createRoleManager(): RoleManager
@@ -220,6 +271,21 @@ trait ProjectHelper
     private function createMetaDataElementModel(): MetaDataElementModel
     {
         return m::spy(MetaDataElementModel::class);
+    }
+
+    /**
+     * @param MetaDataElementModel|MockInterface $metaDataElementModel
+     * @param array                              $data
+     *
+     * @return $this
+     */
+    private function mockMetaDataElementModelToArray(MockInterface $metaDataElementModel, array $data): self
+    {
+        $metaDataElementModel
+            ->shouldReceive('toArray')
+            ->andReturn($data);
+
+        return $this;
     }
 
     /**

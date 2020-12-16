@@ -44,14 +44,14 @@ final class MetaDataElementDoctrineModel extends AbstractDoctrineModel implement
     private string $type;
 
     /**
-     * @ORM\Column(name="required", type="bool")
+     * @ORM\Column(name="required", type="boolean")
      *
      * @var bool
      */
     private bool $required;
 
     /**
-     * @ORM\Column(name="in_list", type="bool")
+     * @ORM\Column(name="in_list", type="boolean")
      *
      * @var bool
      */
@@ -165,5 +165,19 @@ final class MetaDataElementDoctrineModel extends AbstractDoctrineModel implement
     public function isInList(): bool
     {
         return $this->inList;
+    }
+
+    /**
+     * @return array
+     */
+    public function toArray(): array
+    {
+        return [
+            self::PROPERTY_NAME     => $this->getName(),
+            self::PROPERTY_LABEL    => $this->getLabel(),
+            self::PROPERTY_TYPE     => $this->getType(),
+            self::PROPERTY_REQUIRED => $this->isRequired(),
+            self::PROPERTY_IN_LIST  => $this->isInList(),
+        ];
     }
 }

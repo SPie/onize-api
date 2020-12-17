@@ -11,16 +11,16 @@ use Illuminate\Foundation\Http\FormRequest;
  */
 class Create extends FormRequest
 {
-    const PARAMETER_LABEL              = 'label';
-    const PARAMETER_DESCRIPTION        = 'description';
-    const PARAMETER_META_DATA_ELEMENTS = 'metaDataElements';
-    const PARAMETER_META_DATA          = 'metaData';
+    public const PARAMETER_LABEL              = 'label';
+    public const PARAMETER_DESCRIPTION        = 'description';
+    public const PARAMETER_META_DATA_ELEMENTS = 'metaDataElements';
+    public const PARAMETER_META_DATA          = 'metaData';
 
-    const META_DATA_ELEMENT_NAME     = 'name';
-    const META_DATA_ELEMENT_LABEL    = 'label';
-    const META_DATA_ELEMENT_REQUIRED = 'required';
-    const META_DATA_ELEMENT_IN_LIST  = 'inList';
-    const META_DATA_ELEMENT_TYPE     = 'type';
+    public const META_DATA_ELEMENT_NAME     = 'name';
+    public const META_DATA_ELEMENT_LABEL    = 'label';
+    public const META_DATA_ELEMENT_REQUIRED = 'required';
+    public const META_DATA_ELEMENT_IN_LIST  = 'inList';
+    public const META_DATA_ELEMENT_TYPE     = 'type';
 
     /**
      * @return array

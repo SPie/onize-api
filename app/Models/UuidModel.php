@@ -9,7 +9,7 @@ namespace App\Models;
  */
 interface UuidModel
 {
-    const PROPERTY_UUID = 'uuid';
+    public const PROPERTY_UUID = 'uuid';
 
     /**
      * @return string

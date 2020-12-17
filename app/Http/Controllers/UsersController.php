@@ -17,11 +17,11 @@ use Illuminate\Http\JsonResponse;
  */
 final class UsersController extends Controller
 {
-    const ROUTE_NAME_REGISTER        = 'user.register';
-    const ROUTE_NAME_UPDATE          = 'user.update';
-    const ROUTE_NAME_UPDATE_PASSWORD = 'user.updatePassword';
+    public const ROUTE_NAME_REGISTER        = 'user.register';
+    public const ROUTE_NAME_UPDATE          = 'user.update';
+    public const ROUTE_NAME_UPDATE_PASSWORD = 'user.updatePassword';
 
-    const RESPONSE_PARAMETER_USER = 'user';
+    public const RESPONSE_PARAMETER_USER = 'user';
 
     /**
      * @var UserManager

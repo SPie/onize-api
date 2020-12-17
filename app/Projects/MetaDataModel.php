@@ -12,10 +12,10 @@ use App\Users\UserModel;
  */
 interface MetaDataModel extends Model
 {
-    const PROPERTY_PROJECT = 'project';
-    const PROPERTY_USER    = 'user';
-    const PROPERTY_NAME    = 'name';
-    const PROPERTY_VALUE   = 'value';
+    public const PROPERTY_PROJECT = 'project';
+    public const PROPERTY_USER    = 'user';
+    public const PROPERTY_NAME    = 'name';
+    public const PROPERTY_VALUE   = 'value';
 
     /**
      * @return ProjectModel

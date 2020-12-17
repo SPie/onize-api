@@ -16,10 +16,10 @@ use Doctrine\Common\Collections\Collection;
  */
 interface RoleModel extends Model, SoftDeletable, Timestampable, UuidModel
 {
-    const PROPERTY_LABEL   = 'label';
-    const PROPERTY_OWNER   = 'owner';
-    const PROPERTY_PROJECT = 'project';
-    const PROPERTY_USERS   = 'users';
+    public const PROPERTY_LABEL   = 'label';
+    public const PROPERTY_OWNER   = 'owner';
+    public const PROPERTY_PROJECT = 'project';
+    public const PROPERTY_USERS   = 'users';
 
     /**
      * @param string $label

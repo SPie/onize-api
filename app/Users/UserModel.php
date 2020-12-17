@@ -18,11 +18,11 @@ use Illuminate\Contracts\Auth\Authenticatable;
  */
 interface UserModel extends Model, Authenticatable, SoftDeletable, Timestampable, UuidModel
 {
-    const PROPERTY_EMAIL          = 'email';
-    const PROPERTY_PASSWORD       = 'password';
-    const PROPERTY_REFRESH_TOKENS = 'refreshTokens';
-    const PROPERTY_ROLES          = 'roles';
-    const PROPERTY_META_DATA      = 'metaData';
+    public const PROPERTY_EMAIL          = 'email';
+    public const PROPERTY_PASSWORD       = 'password';
+    public const PROPERTY_REFRESH_TOKENS = 'refreshTokens';
+    public const PROPERTY_ROLES          = 'roles';
+    public const PROPERTY_META_DATA      = 'metaData';
 
     /**
      * @param string $email

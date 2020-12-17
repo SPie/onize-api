@@ -69,5 +69,4 @@ final class UserDoctrineRepositoryTest extends TestCase
     {
         return new UserDoctrineRepository($databaseHandler ?: $this->createDatabaseHandler());
     }
-
 }

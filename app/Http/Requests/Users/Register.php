@@ -12,8 +12,8 @@ use Illuminate\Foundation\Http\FormRequest;
  */
 class Register extends FormRequest
 {
-    const PARAMETER_EMAIL    = 'email';
-    const PARAMETER_PASSWORD = 'password';
+    public const PARAMETER_EMAIL    = 'email';
+    public const PARAMETER_PASSWORD = 'password';
 
     /**
      * @var UniqueUser

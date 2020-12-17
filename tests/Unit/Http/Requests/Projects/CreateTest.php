@@ -40,7 +40,8 @@ final class CreateTest extends TestCase
                     'required',
                     \sprintf('in:%s', \implode(',', ['email', 'string', 'date', 'numeric'])),
                 ],
-                'metaData'                    => ['present', function () {}],
+                'metaData'                    => ['present', function () {
+                }],
             ],
             $this->getCreate()->rules()
         );
@@ -180,7 +181,8 @@ final class CreateTest extends TestCase
     {
         [$rule, $metaDataElements, $metaData] = $this->setUpTestValidateMetaDataRuleTest();
 
-        $this->assertTrue($rule('metaData', $metaData, function () {}));
+        $this->assertTrue($rule('metaData', $metaData, function () {
+        }));
     }
 
     /**
@@ -204,7 +206,8 @@ final class CreateTest extends TestCase
     {
         [$rule, $metaDataElements, $metaData] = $this->setUpTestValidateMetaDataRuleTest(false);
 
-        $this->assertTrue($rule('metaData', $metaData, function () {}));
+        $this->assertTrue($rule('metaData', $metaData, function () {
+        }));
     }
 
     /**
@@ -215,7 +218,8 @@ final class CreateTest extends TestCase
         /** @var MessageBag|MockInterface $messageBag */
         [$rule, $metaDataElements, $metaData, $messageBag] = $this->setUpTestValidateMetaDataRuleTest(true, false);
 
-        $this->assertFalse($rule('metaData', [], function () {}));
+        $this->assertFalse($rule('metaData', [], function () {
+        }));
         $messageBag
             ->shouldHaveReceived('merge')
             ->with(['metaData' => [$metaDataElements[1]['name'] => [\sprintf('validation.required')]]])
@@ -231,7 +235,8 @@ final class CreateTest extends TestCase
         [$rule, $metaDataElements, $metaData, $messageBag] = $this->setUpTestValidateMetaDataRuleTest();
         $metaData = \array_merge($metaData, ['phone' => $this->getFaker()->phoneNumber]);
 
-        $this->assertFalse($rule('metaData', $metaData, function () {}));
+        $this->assertFalse($rule('metaData', $metaData, function () {
+        }));
         $messageBag
             ->shouldHaveReceived('merge')
             ->with(['metaData' => ['phone' => [\sprintf('validation.not-existing')]]])
@@ -250,7 +255,8 @@ final class CreateTest extends TestCase
             false
         );
 
-        $this->assertFalse($rule('metaData', $metaData, function () {}));
+        $this->assertFalse($rule('metaData', $metaData, function () {
+        }));
         $messageBag
             ->shouldHaveReceived('merge')
             ->with(['metaData' => [

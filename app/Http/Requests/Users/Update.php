@@ -13,7 +13,7 @@ use Illuminate\Foundation\Http\FormRequest;
  */
 class Update extends FormRequest
 {
-    const PARAMETER_EMAIL = 'email';
+    public const PARAMETER_EMAIL = 'email';
     /**
      * @var UniqueUser
      */
@@ -62,7 +62,6 @@ class Update extends FormRequest
      */
     public function rules(): array
     {
-
         return [
             self::PARAMETER_EMAIL => [
                 'email',

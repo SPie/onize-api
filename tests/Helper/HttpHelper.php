@@ -139,8 +139,7 @@ trait HttpHelper
         string $attribute,
         $value,
         array $params
-    ): self
-    {
+    ): self {
         $validator
             ->shouldReceive('validateEmail')
             ->with($attribute, $value, $params)

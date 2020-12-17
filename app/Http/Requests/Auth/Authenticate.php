@@ -11,8 +11,8 @@ use Illuminate\Foundation\Http\FormRequest;
  */
 class Authenticate extends FormRequest
 {
-    const PARAMETER_EMAIl    = 'email';
-    const PARAMETER_PASSWORD = 'password';
+    public const PARAMETER_EMAIl    = 'email';
+    public const PARAMETER_PASSWORD = 'password';
 
     /**
      * @return array

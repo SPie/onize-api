@@ -11,12 +11,12 @@ use App\Models\Model;
  */
 interface MetaDataElementModel extends Model
 {
-    const PROPERTY_PROJECT  = 'project';
-    const PROPERTY_NAME     = 'name';
-    const PROPERTY_LABEL    = 'label';
-    const PROPERTY_REQUIRED = 'required';
-    const PROPERTY_IN_LIST  = 'inList';
-    const PROPERTY_TYPE     = 'type';
+    public const PROPERTY_PROJECT  = 'project';
+    public const PROPERTY_NAME     = 'name';
+    public const PROPERTY_LABEL    = 'label';
+    public const PROPERTY_REQUIRED = 'required';
+    public const PROPERTY_IN_LIST  = 'inList';
+    public const PROPERTY_TYPE     = 'type';
 
     /**
      * @return ProjectModel

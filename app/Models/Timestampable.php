@@ -9,8 +9,8 @@ namespace App\Models;
  */
 interface Timestampable
 {
-    const PROPERTY_CREATED_AT = 'createdAt';
-    const PROPERTY_UPDATED_AT = 'updatedAt';
+    public const PROPERTY_CREATED_AT = 'createdAt';
+    public const PROPERTY_UPDATED_AT = 'updatedAt';
 
     /**
      * @param \DateTime|null $createdAt

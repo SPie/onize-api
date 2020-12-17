@@ -9,7 +9,7 @@ namespace App\Models;
  */
 interface Model
 {
-    const PROPERTY_ID = 'id';
+    public const PROPERTY_ID = 'id';
 
     /**
      * @param int|null $id

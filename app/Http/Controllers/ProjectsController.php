@@ -16,9 +16,9 @@ use Illuminate\Http\JsonResponse;
  */
 final class ProjectsController extends Controller
 {
-    const ROUTE_NAME_CREATE = 'projects.create';
+    public const ROUTE_NAME_CREATE = 'projects.create';
 
-    const RESPONSE_PARAMETER_PROJECT = 'project';
+    public const RESPONSE_PARAMETER_PROJECT = 'project';
 
     /**
      * @var ProjectManager

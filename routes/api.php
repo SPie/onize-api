@@ -27,7 +27,6 @@ $router->group(['prefix' => 'users'], function (Router $router) {
 $router->post('auth')->name(AuthController::ROUTE_NAME_AUTHENTICATE)->uses('AuthController@authenticate');
 
 $router->group(['middleware' => 'auth'], function (Router $router) {
-
     $router->get('/me')->name(AuthController::ROUTE_NAME_AUTHENTICATED)->uses('AuthController@authenticated');
     $router->post('/logout')->name(AuthController::ROUTE_NAME_LOGOUT)->uses('AuthController@logout');
 
@@ -39,5 +38,4 @@ $router->group(['middleware' => 'auth'], function (Router $router) {
     $router->group(['prefix' => 'projects'], function (Router $router) {
         $router->post('')->name(ProjectsController::ROUTE_NAME_CREATE)->uses('ProjectsController@create');
     });
-
 });

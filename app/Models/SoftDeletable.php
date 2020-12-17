@@ -9,7 +9,7 @@ namespace App\Models;
  */
 interface SoftDeletable
 {
-    const PROPERTY_DELETED_AT = 'deletedAt';
+    public const PROPERTY_DELETED_AT = 'deletedAt';
 
     /**
      * @param \DateTime|null $deletedAt

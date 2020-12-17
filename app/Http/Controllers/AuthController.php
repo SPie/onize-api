@@ -14,11 +14,11 @@ use Illuminate\Http\JsonResponse;
  */
 final class AuthController extends Controller
 {
-    const ROUTE_NAME_AUTHENTICATE  = 'auth.authenticate';
-    const ROUTE_NAME_AUTHENTICATED = 'auth.authenticated';
-    const ROUTE_NAME_LOGOUT        = 'auth.logout';
+    public const ROUTE_NAME_AUTHENTICATE  = 'auth.authenticate';
+    public const ROUTE_NAME_AUTHENTICATED = 'auth.authenticated';
+    public const ROUTE_NAME_LOGOUT        = 'auth.logout';
 
-    const RESPONSE_PARAMETER_USER = 'user';
+    public const RESPONSE_PARAMETER_USER = 'user';
 
     /**
      * @var AuthManager

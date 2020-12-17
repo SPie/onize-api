@@ -15,11 +15,11 @@ use Doctrine\Common\Collections\Collection;
  */
 interface ProjectModel extends Model, SoftDeletable, Timestampable, UuidModel
 {
-    const PROPERTY_LABEL              = 'label';
-    const PROPERTY_DESCRIPTION        = 'description';
-    const PROPERTY_ROLES              = 'roles';
-    const PROPERTY_META_DATA_ELEMENTS = 'metaDataElements';
-    const PROPERTY_META_DATA          = 'metaData';
+    public const PROPERTY_LABEL              = 'label';
+    public const PROPERTY_DESCRIPTION        = 'description';
+    public const PROPERTY_ROLES              = 'roles';
+    public const PROPERTY_META_DATA_ELEMENTS = 'metaDataElements';
+    public const PROPERTY_META_DATA          = 'metaData';
 
     /**
      * @param string $label

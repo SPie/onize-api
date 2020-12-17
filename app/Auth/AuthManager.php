@@ -15,7 +15,6 @@ use Illuminate\Contracts\Auth\StatefulGuard;
  */
 class AuthManager
 {
-
     /**
      * @var StatefulGuard
      */

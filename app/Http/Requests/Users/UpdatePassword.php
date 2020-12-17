@@ -11,7 +11,7 @@ use Illuminate\Foundation\Http\FormRequest;
  */
 class UpdatePassword extends FormRequest
 {
-    const PARAMETER_PASSWORD = 'password';
+    public const PARAMETER_PASSWORD = 'password';
 
     /**
      * @return array

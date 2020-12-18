@@ -2,6 +2,7 @@
 
 namespace Tests\Helper;
 
+use App\Projects\RoleModel;
 use App\Users\UserDoctrineModel;
 use App\Users\UserManager;
 use App\Users\UserModel;
@@ -116,6 +117,21 @@ trait UsersHelper
             ->shouldHaveReceived('setPassword')
             ->with($password)
             ->once();
+
+        return $this;
+    }
+
+    /**
+     * @param UserModel|MockInterface $user
+     * @param RoleModel[]|Collection  $roles
+     *
+     * @return $this
+     */
+    private function mockUserModelGetRoles(MockInterface $user, Collection $roles): self
+    {
+        $user
+            ->shouldReceive('getRoles')
+            ->andReturn($roles);
 
         return $this;
     }

@@ -5,6 +5,7 @@ namespace Tests\Unit\Http\Controllers;
 use App\Http\Controllers\ProjectsController;
 use App\Http\Requests\Projects\Create;
 use App\Projects\ProjectManager;
+use Doctrine\Common\Collections\ArrayCollection;
 use Illuminate\Contracts\Routing\ResponseFactory;
 use Mockery as m;
 use Mockery\MockInterface;
@@ -72,6 +73,54 @@ final class ProjectsControllerTest extends TestCase
 
         $this->assertEquals($response, $projectsController->create($request, $authManager, $roleManager));
         $this->assertRoleManagerCreateOwnerRole($roleManager, $project, $user, $request->getMetaData());
+    }
+
+    /**
+     * @param bool $withProjects
+     *
+     * @return array
+     */
+    private function setUpUsersProjectsTest(bool $withProjects = true): array
+    {
+        $roleData = [$this->getFaker()->word => $this->getFaker()->word];
+        $role = $this->createRoleModel();
+        $this->mockRoleModelToArray($role, $roleData, true);
+        $user = $this->createUserModel();
+        $this->mockUserModelGetRoles($user, new ArrayCollection($withProjects ? [$role] : []));
+        $authManager = $this->createAuthManager();
+        $this->mockAuthManagerAuthenticatedUser($authManager, $user);
+        $response = $this->createJsonResponse();
+        $responseFactory = $this->createResponseFactory();
+        $this->mockResponseFactoryJson(
+            $responseFactory,
+            $response,
+            ['projects' => $withProjects ? [$roleData] : []]
+        );
+        $projectsController = $this->getProjectsController(null, $responseFactory);
+
+        return [$projectsController, $authManager, $response];
+    }
+
+    /**
+     * @return void
+     */
+    public function testUsersProjects(): void
+    {
+        /** @var ProjectsController $projectsController */
+        [$projectsController, $authManager, $response] = $this->setUpUsersProjectsTest();
+
+        $this->assertEquals($response, $projectsController->usersProjects($authManager));
+    }
+
+    /**
+     * @return void
+     */
+    public function testUsersProjectsWithoutProjects(): void
+    {
+        /** @var ProjectsController $projectsController */
+        [$projectsController, $authManager, $response] = $this->setUpUsersProjectsTest(false);
+
+        $this->assertEquals($response, $projectsController->usersProjects($authManager));
     }
 
     //endregion

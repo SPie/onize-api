@@ -35,6 +35,27 @@ final class RoleDoctrineModelTest extends TestCase
         );
     }
 
+    /**
+     * @return void
+     */
+    public function testToArrayWithProject(): void
+    {
+        $projectData = [$this->getFaker()->word => $this->getFaker()->word];
+        $project = $this->createProjectModel();
+        $this->mockProjectModelToArray($project, $projectData);
+        $role = $this->getRoleDoctrineModel(null, $project);
+
+        $this->assertEquals(
+            [
+                'uuid'    => $role->getUuid(),
+                'label'   => $role->getLabel(),
+                'owner'   => false,
+                'project' => $projectData,
+            ],
+            $role->toArray(true)
+        );
+    }
+
     //endregion
 
     /**

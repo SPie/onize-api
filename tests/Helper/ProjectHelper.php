@@ -8,15 +8,18 @@ use App\Projects\MetaDataElementRepository;
 use App\Projects\MetaDataModel;
 use App\Projects\MetaDataModelFactory;
 use App\Projects\MetaDataRepository;
+use App\Projects\ProjectDoctrineModel;
 use App\Projects\ProjectManager;
 use App\Projects\ProjectModel;
 use App\Projects\ProjectModelFactory;
 use App\Projects\ProjectRepository;
+use App\Projects\RoleDoctrineModel;
 use App\Projects\RoleManager;
 use App\Projects\RoleModel;
 use App\Projects\RoleModelFactory;
 use App\Projects\RoleRepository;
 use App\Users\UserModel;
+use Doctrine\Common\Collections\Collection;
 use Mockery as m;
 use Mockery\MockInterface;
 
@@ -84,6 +87,17 @@ trait ProjectHelper
             ->andReturn($data);
 
         return $this;
+    }
+
+    /**
+     * @param int   $times
+     * @param array $attributes
+     *
+     * @return ProjectDoctrineModel[]|Collection
+     */
+    private function createProjectEntities(int $times = 1, array $attributes = []): Collection
+    {
+        return $this->createModelEntities(ProjectDoctrineModel::class, $times, $attributes);
     }
 
     /**
@@ -199,16 +213,34 @@ trait ProjectHelper
     /**
      * @param RoleModel|MockInterface $roleModel
      * @param array                   $data
+     * @param bool|null               $withProject
      *
      * @return $this
      */
-    private function mockRoleModelToArray(MockInterface $roleModel, array $data): self
+    private function mockRoleModelToArray(MockInterface $roleModel, array $data, bool $withProject = null): self
     {
+        $arguments = [];
+        if ($withProject !== null) {
+            $arguments[] = $withProject;
+        }
+
         $roleModel
             ->shouldReceive('toArray')
+            ->withArgs($arguments)
             ->andReturn($data);
 
         return $this;
+    }
+
+    /**
+     * @param int   $times
+     * @param array $attributes
+     *
+     * @return RoleDoctrineModel[]|Collection
+     */
+    private function createRoleEntities(int $times = 1, array $attributes = []): Collection
+    {
+        return $this->createModelEntities(RoleDoctrineModel::class, $times, $attributes);
     }
 
     /**

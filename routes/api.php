@@ -36,6 +36,7 @@ $router->group(['middleware' => 'auth'], function (Router $router) {
     });
 
     $router->group(['prefix' => 'projects'], function (Router $router) {
+        $router->get('')->name(ProjectsController::ROUTE_NAME_USERS_PROJECTS)->uses('ProjectsController@usersProjects');
         $router->post('')->name(ProjectsController::ROUTE_NAME_CREATE)->uses('ProjectsController@create');
     });
 });

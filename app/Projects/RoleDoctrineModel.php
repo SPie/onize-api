@@ -159,14 +159,21 @@ final class RoleDoctrineModel extends AbstractDoctrineModel implements RoleModel
     }
 
     /**
+     * @param bool $withProject
+     *
      * @return array
      */
-    public function toArray(): array
+    public function toArray(bool $withProject = false): array
     {
-        return [
+        $data = [
             self::PROPERTY_UUID  => $this->getUuid(),
             self::PROPERTY_LABEL => $this->getLabel(),
             self::PROPERTY_OWNER => $this->isOwner(),
         ];
+        if ($withProject) {
+            $data[self::PROPERTY_PROJECT] = $this->getProject()->toArray();
+        }
+
+        return $data;
     }
 }

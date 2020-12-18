@@ -3,16 +3,17 @@
 namespace Tests\Feature\ApiCalls;
 
 use App\Http\Controllers\ProjectsController;
-use App\Projects\MetaDataElementModel;
 use App\Projects\MetaDataRepository;
 use App\Projects\ProjectModel;
 use App\Projects\ProjectRepository;
+use App\Projects\RoleModel;
 use App\Projects\RoleRepository;
 use App\Users\UserModel;
 use LaravelDoctrine\Migrations\Testing\DatabaseMigrations;
 use Tests\Feature\FeatureTestCase;
 use Tests\Helper\ApiHelper;
 use Tests\Helper\ModelHelper;
+use Tests\Helper\ProjectHelper;
 use Tests\Helper\UsersHelper;
 
 /**
@@ -25,6 +26,7 @@ final class ProjectsApiCallsTest extends FeatureTestCase
     use ApiHelper;
     use DatabaseMigrations;
     use ModelHelper;
+    use ProjectHelper;
     use UsersHelper;
 
     //region Tests
@@ -602,6 +604,91 @@ final class ProjectsApiCallsTest extends FeatureTestCase
                 'metaData'         => [$metaDataName => $metaDataValue],
             ]
         );
+
+        $response->assertStatus(401);
+    }
+
+    /**
+     * @param bool $withProjects
+     * @param bool $withAuthenticatedUser
+     *
+     * @return array
+     */
+    private function setUpUsersProjectsTest(bool $withProjects = true, bool $withAuthenticatedUser = true): array
+    {
+        $project = $this->createProjectEntities()->first();
+        $role = $this->createRoleEntities(1, [RoleModel::PROPERTY_PROJECT => $project])->first();
+        $project->addRole($role);
+        $user = $this->createUserEntities()->first();
+        if ($withProjects) {
+            $user->addRole($role);
+        }
+        if ($withAuthenticatedUser) {
+            $this->actingAs($user);
+        }
+
+        return [$project, $role];
+    }
+
+    /**
+     * @return void
+     */
+    public function testUsersProjectsWithProjects(): void
+    {
+        /**
+         * @var ProjectModel $project
+         * @var RoleModel    $role
+         */
+        [$project, $role] = $this->setUpUsersProjectsTest();
+
+        $response = $this->doApiCall('GET', $this->getUrl(ProjectsController::ROUTE_NAME_USERS_PROJECTS));
+
+        $response->assertOk();
+        $response->assertJsonFragment([
+            'projects' => [
+                [
+                    'uuid'    => $role->getUuid(),
+                    'label'   => $role->getLabel(),
+                    'owner'   => $role->isOwner(),
+                    'project' => [
+                        'uuid'             => $project->getUuid(),
+                        'label'            => $project->getLabel(),
+                        'description'      => $project->getDescription(),
+                        'roles'            => [
+                            [
+                                'uuid'  => $role->getUuid(),
+                                'label' => $role->getLabel(),
+                                'owner' => $role->isOwner(),
+                            ],
+                        ],
+                        'metaDataElements' => [],
+                    ],
+                ],
+            ]
+        ]);
+    }
+
+    /**
+     * @return void
+     */
+    public function testUsersProjectsWithoutProjects(): void
+    {
+        $this->setUpUsersProjectsTest(false);
+
+        $response = $this->doApiCall('GET', $this->getUrl(ProjectsController::ROUTE_NAME_USERS_PROJECTS));
+
+        $response->assertOk();
+        $response->assertJsonFragment(['projects' => []]);
+    }
+
+    /**
+     * @return void
+     */
+    public function testUsersProjectsWithoutAuthenticatedUser(): void
+    {
+        $this->setUpUsersProjectsTest(true, false);
+
+        $response = $this->doApiCall('GET', $this->getUrl(ProjectsController::ROUTE_NAME_USERS_PROJECTS));
 
         $response->assertStatus(401);
     }

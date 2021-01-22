@@ -2,6 +2,7 @@
 
 namespace App\Projects;
 
+use App\Models\Exceptions\ModelNotFoundException;
 use App\Models\Model;
 
 /**
@@ -108,5 +109,20 @@ class ProjectManager
         }
 
         return $this->getProjectRepository()->save($project);
+    }
+
+    /**
+     * @param string $uuid
+     *
+     * @return ProjectModel
+     */
+    public function getProject(string $uuid): ProjectModel
+    {
+        $project = $this->getProjectRepository()->findOneByUuid($uuid);
+        if (!$project) {
+            throw new ModelNotFoundException(\sprintf('Project with uuid %s not found', $uuid));
+        }
+
+        return $project;
     }
 }

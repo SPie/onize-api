@@ -133,11 +133,48 @@ trait ProjectHelper
     }
 
     /**
+     * @param ProjectManager|MockInterface $projectManager
+     * @param ProjectModel|\Exception      $project
+     * @param string                       $uuid
+     *
+     * @return $this
+     */
+    private function mockProjectManagerGetProject(MockInterface $projectManager, $project, string $uuid): self
+    {
+        $projectManager
+            ->shouldReceive('getProject')
+            ->with($uuid)
+            ->andThrow($project);
+
+        return $this;
+    }
+
+    /**
      * @return ProjectRepository|MockInterface
      */
     private function createProjectRepository(): ProjectRepository
     {
         return m::spy(ProjectRepository::class);
+    }
+
+    /**
+     * @param ProjectRepository|MockInterface $projectRepository
+     * @param ProjectModel|null               $project
+     * @param string                          $uuid
+     *
+     * @return $this
+     */
+    private function mockProjectRepositoryFindOneByUuid(
+        MockInterface $projectRepository,
+        ?ProjectModel $project,
+        string $uuid
+    ): self {
+        $projectRepository
+            ->shouldReceive('findOneByUuid')
+            ->with($uuid)
+            ->andReturn($project);
+
+        return $this;
     }
 
     /**

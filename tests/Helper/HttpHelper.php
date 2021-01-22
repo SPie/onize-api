@@ -3,13 +3,15 @@
 namespace Tests\Helper;
 
 use App\Http\Requests\Auth\Authenticate;
-use App\Http\Requests\Users\Register;
 use App\Http\Requests\Users\UpdatePassword;
 use App\Http\Requests\Validators\UniqueUser;
+use Illuminate\Contracts\Routing\Registrar;
 use Illuminate\Contracts\Routing\ResponseFactory;
 use Illuminate\Contracts\Support\MessageBag;
 use Illuminate\Contracts\Validation\Validator;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
+use Illuminate\Routing\Route;
 use Mockery as m;
 use Mockery\MockInterface;
 
@@ -20,6 +22,61 @@ use Mockery\MockInterface;
  */
 trait HttpHelper
 {
+    /**
+     * @return Request|MockInterface
+     */
+    private function createRequest(): Request
+    {
+        return m::spy(Request::class);
+    }
+
+    /**
+     * @param Request|MockInterface $request
+     * @param Route                 $route
+     *
+     * @return $this
+     */
+    private function mockRequestRoute(MockInterface $request, Route $route): self
+    {
+        $request
+            ->shouldReceive('route')
+            ->andReturn($route);
+
+        return $this;
+    }
+
+    /**
+     * @return Route|MockInterface
+     */
+    private function createRoute(): Route
+    {
+        return m::spy(Route::class);
+    }
+
+    /**
+     * @return Registrar|MockInterface
+     */
+    private function createRouter(): Registrar
+    {
+        return m::spy(Registrar::class);
+    }
+
+    /**
+     * @param Registrar|MockInterface $router
+     * @param Route                   $route
+     *
+     * @return $this
+     */
+    private function mockRouterSubstituteBindings(MockInterface $router, Route $route): self
+    {
+        $router
+            ->shouldReceive('substituteBindings')
+            ->with($route)
+            ->once();
+
+        return $this;
+    }
+
     /**
      * @return JsonResponse|MockInterface
      */

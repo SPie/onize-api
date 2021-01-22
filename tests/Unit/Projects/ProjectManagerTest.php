@@ -2,6 +2,7 @@
 
 namespace Tests\Unit\Projects;
 
+use App\Models\Exceptions\ModelNotFoundException;
 use App\Projects\MetaDataElementModelFactory;
 use App\Projects\MetaDataElementRepository;
 use App\Projects\ProjectManager;
@@ -97,6 +98,46 @@ final class ProjectManagerTest extends TestCase
         [$projectManager, $name, $description, $metaDataElements, $project] = $this->setUpCreateProjectTest(false);
 
         $this->assertEquals($project, $projectManager->createProject($name, $description, $metaDataElements));
+    }
+
+    /**
+     * @param bool $withProject
+     *
+     * @return array
+     */
+    private function setUpGetProjectTest(bool $withProject = true): array
+    {
+        $uuid = $this->getFaker()->uuid;
+        $project = $this->createProjectModel();
+        $projectRepository = $this->createProjectRepository();
+        $this->mockProjectRepositoryFindOneByUuid($projectRepository, $withProject ? $project : null, $uuid);
+        $projectManager = $this->getProjectManager($projectRepository);
+
+        return [$projectManager, $uuid, $project];
+    }
+
+    /**
+     * @return void
+     */
+    public function testGetProject(): void
+    {
+        /** @var ProjectManager $projectManager */
+        [$projectManager, $uuid, $project] = $this->setUpGetProjectTest();
+
+        $this->assertEquals($project, $projectManager->getProject($uuid));
+    }
+
+    /**
+     * @return void
+     */
+    public function testGetProjectWithoutProject(): void
+    {
+        /** @var ProjectManager $projectManager */
+        [$projectManager, $uuid] = $this->setUpGetProjectTest(false);
+
+        $this->expectException(ModelNotFoundException::class);
+
+        $projectManager->getProject($uuid);
     }
 
     //endregion

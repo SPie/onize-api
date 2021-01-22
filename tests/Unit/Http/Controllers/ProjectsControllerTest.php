@@ -123,6 +123,33 @@ final class ProjectsControllerTest extends TestCase
         $this->assertEquals($response, $projectsController->usersProjects($authManager));
     }
 
+    /**
+     * @return array
+     */
+    private function setUpShowTest(): array
+    {
+        $projectData = [$this->getFaker()->word => $this->getFaker()->word];
+        $project = $this->createProjectModel();
+        $this->mockProjectModelToArray($project, $projectData);
+        $response = $this->createJsonResponse();
+        $responseFactory = $this->createResponseFactory();
+        $this->mockResponseFactoryJson($responseFactory, $response, ['project' => $projectData]);
+        $projectsController = $this->getProjectsController(null, $responseFactory);
+
+        return [$projectsController, $project, $response];
+    }
+
+    /**
+     * @return void
+     */
+    public function testShow(): void
+    {
+        /** @var ProjectsController $projectsController */
+        [$projectsController, $project, $response] = $this->setUpShowTest();
+
+        $this->assertEquals($response, $projectsController->show($project));
+    }
+
     //endregion
 
     /**

@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Auth\AuthManager;
 use App\Http\Requests\Projects\Create;
 use App\Projects\ProjectManager;
+use App\Projects\ProjectModel;
 use App\Projects\RoleManager;
 use App\Projects\RoleModel;
 use Illuminate\Contracts\Routing\ResponseFactory;
@@ -18,7 +19,8 @@ use Illuminate\Http\JsonResponse;
 final class ProjectsController extends Controller
 {
     public const ROUTE_NAME_CREATE         = 'projects.create';
-    public const ROUTE_NAME_USERS_PROJECTS = 'project.usersProjects';
+    public const ROUTE_NAME_USERS_PROJECTS = 'projects.usersProjects';
+    public const ROUTE_NAME_SHOW           = 'projects.show';
 
     private const RESPONSE_PARAMETER_PROJECT  = 'project';
     private const RESPONSE_PARAMETER_PROJECTS = 'projects';
@@ -89,6 +91,16 @@ final class ProjectsController extends Controller
                 ->toArray()
         ]);
     }
+
+    /**
+     * @param ProjectModel $project
+     *
+     * @return JsonResponse
+     */
+   public function show(ProjectModel $project): JsonResponse
+   {
+       return $this->getResponseFactory()->json([self::RESPONSE_PARAMETER_PROJECT => $project->toArray()]);
+   }
 
     //endregion
 }

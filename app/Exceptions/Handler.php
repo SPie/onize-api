@@ -2,7 +2,9 @@
 
 namespace App\Exceptions;
 
+use App\Models\Exceptions\ModelNotFoundException;
 use Illuminate\Foundation\Exceptions\Handler as ExceptionHandler;
+use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Throwable;
 
 class Handler extends ExceptionHandler
@@ -25,6 +27,16 @@ class Handler extends ExceptionHandler
         'password',
         'password_confirmation',
     ];
+
+    /**
+     * @return void
+     */
+    public function register()
+    {
+        parent::register();
+
+        $this->map(ModelNotFoundException::class, fn (ModelNotFoundException $e) => new NotFoundHttpException($e->getMessage(), $e));
+    }
 
     /**
      * Report or log an exception.

@@ -693,6 +693,67 @@ final class ProjectsApiCallsTest extends FeatureTestCase
         $response->assertStatus(401);
     }
 
+    /**
+     * @return array
+     */
+    private function setUpShowProjectTest(bool $withAuthenticatedUser = true): array
+    {
+        $user = $this->createUserEntities()->first();
+        if ($withAuthenticatedUser) {
+            $this->actingAs($user);
+        }
+        $project = $this->createProjectEntities()->first();
+
+        return [$project];
+    }
+
+    /**
+     * @return void
+     */
+    public function testShowProject(): void
+    {
+        /** @var ProjectModel $project */
+        [$project] = $this->setUpShowProjectTest();
+
+        $response = $this->doApiCall('GET', $this->getUrl(ProjectsController::ROUTE_NAME_SHOW, ['project' => $project->getUuid()]));
+
+        $response->assertOk();
+        $response->assertJsonFragment([
+            'project' => [
+                'uuid'             => $project->getUuid(),
+                'label'            => $project->getLabel(),
+                'description'      => $project->getDescription(),
+                'roles'            => [],
+                'metaDataElements' => [],
+            ]
+        ]);
+    }
+
+    /**
+     * @return void
+     */
+    public function testShowProjectWithoutProject(): void
+    {
+        $this->setUpShowProjectTest();
+
+        $response = $this->doApiCall('GET', $this->getUrl(ProjectsController::ROUTE_NAME_SHOW, ['project' => $this->getFaker()->uuid]));
+
+        $response->assertNotFound();
+    }
+
+    /**
+     * @return void
+     */
+    public function testShowProjectWithoutAuthenticatedUser(): void
+    {
+        /** @var ProjectModel $project */
+        [$project] = $this->setUpShowProjectTest(false);
+
+        $response = $this->doApiCall('GET', $this->getUrl(ProjectsController::ROUTE_NAME_SHOW, ['project' => $project->getUuid()]));
+
+        $response->assertStatus(401);
+    }
+
     //endregion
 
     /**

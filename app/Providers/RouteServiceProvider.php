@@ -2,9 +2,15 @@
 
 namespace App\Providers;
 
+use App\Http\Binders\ProjectBinder;
 use Illuminate\Foundation\Support\Providers\RouteServiceProvider as ServiceProvider;
 use Illuminate\Support\Facades\Route;
 
+/**
+ * Class RouteServiceProvider
+ *
+ * @package App\Providers
+ */
 class RouteServiceProvider extends ServiceProvider
 {
     /**
@@ -23,9 +29,19 @@ class RouteServiceProvider extends ServiceProvider
      */
     public function boot()
     {
-        //
+        $this->bootBinders();
 
         parent::boot();
+    }
+
+    /**
+     * @return $this
+     */
+    private function bootBinders(): self
+    {
+        Route::bind('project', ProjectBinder::class);
+
+        return $this;
     }
 
     /**

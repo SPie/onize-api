@@ -36,11 +36,12 @@ abstract class FeatureTestCase extends TestCase
 
     /**
      * @param string $routeName
+     * @param array  $parameters
      *
      * @return string
      */
-    protected function getUrl(string $routeName): string
+    protected function getUrl(string $routeName, array $parameters = []): string
     {
-        return URL::route($routeName);
+        return URL::route($routeName, $parameters);
     }
 }

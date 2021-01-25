@@ -694,15 +694,19 @@ final class ProjectsApiCallsTest extends FeatureTestCase
     }
 
     /**
+     * @param bool $withAuthenticatedUser
+     * @param bool $withAuthorizedUser
+     *
      * @return array
      */
-    private function setUpShowProjectTest(bool $withAuthenticatedUser = true): array
+    private function setUpShowProjectTest(bool $withAuthenticatedUser = true, bool $withAuthorizedUser = true): array
     {
-        $user = $this->createUserEntities()->first();
+        $project = $this->createProjectEntities()->first();
+        $role = $this->createRoleEntities(1, [RoleModel::PROPERTY_PROJECT => $project])->first();
+        $user = $withAuthorizedUser ? $this->createUserWithRole($role) : $this->createUserEntities()->first();
         if ($withAuthenticatedUser) {
             $this->actingAs($user);
         }
-        $project = $this->createProjectEntities()->first();
 
         return [$project];
     }
@@ -752,6 +756,19 @@ final class ProjectsApiCallsTest extends FeatureTestCase
         $response = $this->doApiCall('GET', $this->getUrl(ProjectsController::ROUTE_NAME_SHOW, ['project' => $project->getUuid()]));
 
         $response->assertStatus(401);
+    }
+
+    /**
+     * @return void
+     */
+    public function testShowProjectWithoutAuthorizedUser(): void
+    {
+        /** @var ProjectModel $project */
+        [$project] = $this->setUpShowProjectTest(true, false);
+
+        $response = $this->doApiCall('GET', $this->getUrl(ProjectsController::ROUTE_NAME_SHOW, ['project' => $project->getUuid()]));
+
+        $response->assertStatus(403);
     }
 
     //endregion

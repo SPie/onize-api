@@ -3,6 +3,7 @@
 namespace Tests\Unit\Projects;
 
 use App\Projects\ProjectDoctrineModel;
+use App\Users\UserDoctrineModel;
 use Tests\Helper\ProjectHelper;
 use Tests\TestCase;
 

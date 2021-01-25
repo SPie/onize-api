@@ -270,6 +270,21 @@ trait ProjectHelper
     }
 
     /**
+     * @param RoleModel|MockInterface $roleModel
+     * @param ProjectModel            $project
+     *
+     * @return $this
+     */
+    private function mockRoleModelGetProject(MockInterface $roleModel, ProjectModel $project): self
+    {
+        $roleModel
+            ->shouldReceive('getProject')
+            ->andReturn($project);
+
+        return $this;
+    }
+
+    /**
      * @param int   $times
      * @param array $attributes
      *

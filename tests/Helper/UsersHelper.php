@@ -2,12 +2,14 @@
 
 namespace Tests\Helper;
 
+use App\Projects\ProjectModel;
 use App\Projects\RoleModel;
 use App\Users\UserDoctrineModel;
 use App\Users\UserManager;
 use App\Users\UserModel;
 use App\Users\UserModelFactory;
 use App\Users\UserRepository;
+use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Mockery as m;
 use Mockery\MockInterface;
@@ -132,6 +134,23 @@ trait UsersHelper
         $user
             ->shouldReceive('getRoles')
             ->andReturn($roles);
+
+        return $this;
+    }
+
+    /**
+     * @param UserModel|MockInterface $userModel
+     * @param bool          $isMember
+     * @param ProjectModel  $project
+     *
+     * @return $this
+     */
+    private function mockUserModelIsMemberOfProject(MockInterface $userModel, bool $isMember, ProjectModel $project): self
+    {
+        $userModel
+            ->shouldReceive('isMemberOfProject')
+            ->with($project)
+            ->andReturn($isMember);
 
         return $this;
     }
@@ -326,5 +345,15 @@ trait UsersHelper
     private function createUserEntities(int $times = 1, array $attributes = []): Collection
     {
         return $this->createModelEntities(UserDoctrineModel::class, $times, $attributes);
+    }
+
+    /**
+     * @param RoleModel $role
+     *
+     * @return UserModel
+     */
+    private function createUserWithRole(RoleModel $role): UserModel
+    {
+        return $this->createUserEntities(1, [UserModel::PROPERTY_ROLES => new ArrayCollection([$role])])->first();
     }
 }

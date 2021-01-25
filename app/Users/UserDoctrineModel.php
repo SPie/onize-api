@@ -7,6 +7,7 @@ use App\Models\SoftDelete;
 use App\Models\Timestamps;
 use App\Models\Uuid;
 use App\Projects\MetaDataModel;
+use App\Projects\ProjectModel;
 use App\Projects\RoleModel;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
@@ -240,5 +241,17 @@ class UserDoctrineModel extends AbstractDoctrineModel implements UserModel
             self::PROPERTY_UUID  => $this->getUuid(),
             self::PROPERTY_EMAIL => $this->getEmail(),
         ];
+    }
+
+    /**
+     * @param ProjectModel $project
+     *
+     * @return bool
+     */
+    public function isMemberOfProject(ProjectModel $project): bool
+    {
+        return $this->getRoles()->exists(
+            fn (int $i, RoleModel $role) => $role->getProject()->getId() === $project->getId()
+        );
     }
 }

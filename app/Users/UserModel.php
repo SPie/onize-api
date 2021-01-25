@@ -7,6 +7,7 @@ use App\Models\SoftDeletable;
 use App\Models\Timestampable;
 use App\Models\UuidModel;
 use App\Projects\MetaDataModel;
+use App\Projects\ProjectModel;
 use App\Projects\RoleModel;
 use Doctrine\Common\Collections\Collection;
 use Illuminate\Contracts\Auth\Authenticatable;
@@ -90,4 +91,11 @@ interface UserModel extends Model, Authenticatable, SoftDeletable, Timestampable
      * @return array
      */
     public function toArray(): array;
+
+    /**
+     * @param ProjectModel $project
+     *
+     * @return bool
+     */
+    public function isMemberOfProject(ProjectModel $project): bool;
 }

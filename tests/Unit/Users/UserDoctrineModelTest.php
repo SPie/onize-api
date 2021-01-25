@@ -3,6 +3,8 @@
 namespace Tests\Unit\Users;
 
 use App\Users\UserDoctrineModel;
+use Tests\Helper\ModelHelper;
+use Tests\Helper\ProjectHelper;
 use Tests\TestCase;
 
 /**
@@ -12,6 +14,9 @@ use Tests\TestCase;
  */
 final class UserDoctrineModelTest extends TestCase
 {
+    use ModelHelper;
+    use ProjectHelper;
+
     //region Tests
 
     /**
@@ -47,6 +52,61 @@ final class UserDoctrineModelTest extends TestCase
     public function testGetAuthIdentifierName(): void
     {
         $this->assertEquals('id', $this->getUserDoctrineModel()->getAuthIdentifierName());
+    }
+
+    /**
+     * @param bool $isMember
+     * @param bool $withRoles
+     *
+     * @return array
+     */
+    private function setUpIsMemberOfProjectTest(bool $isMember = true, bool $withRoles = true): array
+    {
+        $project = $this->createProjectModel();
+        $this->mockModelGetId($project, $this->getFaker()->numberBetween());
+        $otherProject = $this->createProjectModel();
+        $this->mockModelGetId($otherProject, $project->getId() + 1);
+        $role = $this->createRoleModel();
+        $this->mockRoleModelGetProject($role, $isMember ? $project : $otherProject);
+        $user = $this->getUserDoctrineModel();
+        if ($withRoles) {
+            $user->addRole($role);
+        }
+
+        return [$user, $project];
+    }
+
+    /**
+     * @return void
+     */
+    public function testIsMemberOfProjectWithMember(): void
+    {
+        /** @var UserDoctrineModel $user */
+        [$user, $project] = $this->setUpIsMemberOfProjectTest();
+
+        $this->assertTrue($user->isMemberOfProject($project));
+    }
+
+    /**
+     * @return void
+     */
+    public function testIsMemberOfProjectWithoutMember(): void
+    {
+        /** @var UserDoctrineModel $user */
+        [$user, $project] = $this->setUpIsMemberOfProjectTest(false);
+
+        $this->assertFalse($user->isMemberOfProject($project));
+    }
+
+    /**
+     * @return void
+     */
+    public function testIsMemberOfProjectWithoutRoles(): void
+    {
+        /** @var UserDoctrineModel $user */
+        [$user, $project] = $this->setUpIsMemberOfProjectTest(true, false);
+
+        $this->assertFalse($user->isMemberOfProject($project));
     }
 
     //endregion

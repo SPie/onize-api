@@ -3,7 +3,7 @@
 namespace App\Http\Requests\Users;
 
 use App\Auth\AuthManager;
-use App\Http\Requests\Validators\UniqueUser;
+use App\Http\Rules\UniqueUser;
 use Illuminate\Foundation\Http\FormRequest;
 
 /**

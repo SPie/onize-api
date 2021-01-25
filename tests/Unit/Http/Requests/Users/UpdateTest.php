@@ -4,7 +4,7 @@ namespace Tests\Unit\Http\Requests\Users;
 
 use App\Auth\AuthManager;
 use App\Http\Requests\Users\Update;
-use App\Http\Requests\Validators\UniqueUser;
+use App\Http\Rules\UniqueUser;
 use Tests\Helper\AuthHelper;
 use Tests\Helper\HttpHelper;
 use Tests\Helper\ModelHelper;

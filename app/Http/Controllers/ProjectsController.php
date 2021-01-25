@@ -97,10 +97,10 @@ final class ProjectsController extends Controller
      *
      * @return JsonResponse
      */
-   public function show(ProjectModel $project): JsonResponse
-   {
+    public function show(ProjectModel $project): JsonResponse
+    {
        return $this->getResponseFactory()->json([self::RESPONSE_PARAMETER_PROJECT => $project->toArray()]);
-   }
+    }
 
     //endregion
 }

@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Http\Requests\Validators;
+namespace App\Http\Rules;
 
 use App\Models\Exceptions\ModelNotFoundException;
 use App\Users\UserManager;
@@ -10,7 +10,7 @@ use Illuminate\Contracts\Validation\Rule;
 /**
  * Class UniqueUser
  *
- * @package App\Http\Requests\Validators
+ * @package App\Http\Rules
  */
 class UniqueUser implements Rule
 {

@@ -3,7 +3,7 @@
 namespace Tests\Unit\Http\Requests\Users;
 
 use App\Http\Requests\Users\Register;
-use App\Http\Requests\Validators\UniqueUser;
+use App\Http\Rules\UniqueUser;
 use Tests\Helper\HttpHelper;
 use Tests\TestCase;
 

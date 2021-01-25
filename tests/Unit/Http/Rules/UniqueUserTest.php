@@ -1,8 +1,8 @@
 <?php
 
-namespace Tests\Unit\Http\Requests\Validators;
+namespace Tests\Unit\Http\Rules;
 
-use App\Http\Requests\Validators\UniqueUser;
+use App\Http\Rules\UniqueUser;
 use App\Models\Exceptions\ModelNotFoundException;
 use App\Users\UserManager;
 use Tests\Helper\ModelHelper;
@@ -12,7 +12,7 @@ use Tests\TestCase;
 /**
  * Class UniqueUserTest
  *
- * @package Tests\Unit\Http\Requests\Validators
+ * @package Tests\Unit\Http\Rules
  */
 final class UniqueUserTest extends TestCase
 {

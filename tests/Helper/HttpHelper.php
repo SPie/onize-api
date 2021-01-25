@@ -4,7 +4,7 @@ namespace Tests\Helper;
 
 use App\Http\Requests\Auth\Authenticate;
 use App\Http\Requests\Users\UpdatePassword;
-use App\Http\Requests\Validators\UniqueUser;
+use App\Http\Rules\UniqueUser;
 use Illuminate\Contracts\Routing\Registrar;
 use Illuminate\Contracts\Routing\ResponseFactory;
 use Illuminate\Contracts\Support\MessageBag;

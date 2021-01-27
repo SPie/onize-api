@@ -156,6 +156,38 @@ trait UsersHelper
     }
 
     /**
+     * @param MockInterface $userModel
+     * @param array         $memberData
+     *
+     * @return $this
+     */
+    private function mockUserModelMemberData(MockInterface $userModel, array $memberData): self
+    {
+        $userModel
+            ->shouldReceive('memberData')
+            ->andReturn($memberData);
+
+        return $this;
+    }
+
+    /**
+     * @param UserModel|MockInterface $userModel
+     * @param array                   $metaData
+     *
+     * @return $this
+     */
+    private function mockUserModelSetMetaData(MockInterface $userModel, array $metaData): self
+    {
+        $userModel
+            ->shouldReceive('setMetaData')
+            ->with($metaData)
+            ->andReturn($userModel)
+            ->once();
+
+        return $this;
+    }
+
+    /**
      * @return UserManager|MockInterface
      */
     private function createUserManager(): UserManager

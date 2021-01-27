@@ -98,4 +98,9 @@ interface UserModel extends Model, Authenticatable, SoftDeletable, Timestampable
      * @return bool
      */
     public function isMemberOfProject(ProjectModel $project): bool;
+
+    /**
+     * @return array
+     */
+    public function memberData(): array;
 }

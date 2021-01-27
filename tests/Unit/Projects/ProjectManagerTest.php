@@ -8,8 +8,10 @@ use App\Projects\MetaDataElementRepository;
 use App\Projects\ProjectManager;
 use App\Projects\ProjectModelFactory;
 use App\Projects\ProjectRepository;
+use Doctrine\Common\Collections\ArrayCollection;
 use Tests\Helper\ModelHelper;
 use Tests\Helper\ProjectHelper;
+use Tests\Helper\UsersHelper;
 use Tests\TestCase;
 
 /**
@@ -19,8 +21,9 @@ use Tests\TestCase;
  */
 final class ProjectManagerTest extends TestCase
 {
-    use ProjectHelper;
     use ModelHelper;
+    use ProjectHelper;
+    use UsersHelper;
 
     //region Tests
 
@@ -138,6 +141,60 @@ final class ProjectManagerTest extends TestCase
         $this->expectException(ModelNotFoundException::class);
 
         $projectManager->getProject($uuid);
+    }
+
+    /**
+     * @return array
+     */
+    private function setUpGetMembersTest(bool $withMembers = true, bool $withMetaData = true): array
+    {
+        $member = $this->createUserModel();
+        $this->mockModelGetId($member, $this->getFaker()->numberBetween());
+        $metaData = $this->createMetaDataModel();
+        $this->mockMetaDataModelGetUser($metaData, $member);
+        $project = $this->createProjectModel();
+        $this
+            ->mockProjectModelGetMembers($project, new ArrayCollection($withMembers ? [$member] : []))
+            ->mockProjectModelGetMetaData($project, new ArrayCollection($withMetaData ? [$metaData] : []));
+        if ($withMembers) {
+            $this->mockUserModelSetMetaData($member, $withMetaData ? [$metaData] : []);
+        }
+        $projectManager = $this->getProjectManager();
+
+        return [$projectManager, $project, $member];
+    }
+
+    /**
+     * @return void
+     */
+    public function testGetMembers(): void
+    {
+        /** @var ProjectManager $projectManager */
+        [$projectManager, $project, $member] = $this->setUpGetMembersTest();
+
+        $this->assertEquals(new ArrayCollection([$member]), $projectManager->getProjectMembers($project));
+    }
+
+    /**
+     * @return void
+     */
+    public function testGetMembersWithoutMembers(): void
+    {
+        /** @var ProjectManager $projectManager */
+        [$projectManager, $project] = $this->setUpGetMembersTest(false);
+
+        $this->assertEquals(new ArrayCollection(), $projectManager->getProjectMembers($project));
+    }
+
+    /**
+     * @return void
+     */
+    public function testGetMembersWithoutMetaData(): void
+    {
+        /** @var ProjectManager $projectManager */
+        [$projectManager, $project, $member] = $this->setUpGetMembersTest(true, false);
+
+        $this->assertEquals(new ArrayCollection([$member]), $projectManager->getProjectMembers($project));
     }
 
     //endregion

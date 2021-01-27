@@ -40,6 +40,8 @@ $router->group(['middleware' => 'auth'], function (Router $router) {
         $router->get('')->name(ProjectsController::ROUTE_NAME_USERS_PROJECTS)->uses('ProjectsController@usersProjects');
         $router->post('')->name(ProjectsController::ROUTE_NAME_CREATE)->uses('ProjectsController@create');
 
+        $router->get('{project}/members')->name(ProjectsController::ROUTE_NAME_MEMBERS)->uses('ProjectsController@members');
+
         $router->get('{project}')->name(ProjectsController::ROUTE_NAME_SHOW)->middleware('can:show,project')->uses('ProjectsController@show');
     });
 });

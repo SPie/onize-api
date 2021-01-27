@@ -2,6 +2,7 @@
 
 namespace Tests\Helper;
 
+use App\Projects\MetaDataDoctrineModel;
 use App\Projects\MetaDataElementModel;
 use App\Projects\MetaDataElementModelFactory;
 use App\Projects\MetaDataElementRepository;
@@ -90,6 +91,36 @@ trait ProjectHelper
     }
 
     /**
+     * @param ProjectModel|MockInterface $projectModel
+     * @param UserModel[]|Collection     $members
+     *
+     * @return $this
+     */
+    private function mockProjectModelGetMembers(MockInterface $projectModel, Collection $members): self
+    {
+        $projectModel
+            ->shouldReceive('getMembers')
+            ->andReturn($members);
+
+        return $this;
+    }
+
+    /**
+     * @param ProjectModel|MockInterface $projectModel
+     * @param MetaDataModel[]|Collection $metaData
+     *
+     * @return $this
+     */
+    private function mockProjectModelGetMetaData(MockInterface $projectModel, Collection $metaData): self
+    {
+        $projectModel
+            ->shouldReceive('getMetaData')
+            ->andReturn($metaData);
+
+        return $this;
+    }
+
+    /**
      * @param int   $times
      * @param array $attributes
      *
@@ -145,6 +176,26 @@ trait ProjectHelper
             ->shouldReceive('getProject')
             ->with($uuid)
             ->andThrow($project);
+
+        return $this;
+    }
+
+    /**
+     * @param ProjectManager|MockInterface $projectManager
+     * @param UserModel[]|Collection       $members
+     * @param ProjectModel                 $project
+     *
+     * @return $this
+     */
+    private function mockProjectManagerGetProjectMembers(
+        MockInterface $projectManager,
+        Collection $members,
+        ProjectModel $project
+    ): self {
+        $projectManager
+            ->shouldReceive('getProjectMembers')
+            ->with($project)
+            ->andReturn($members);
 
         return $this;
     }
@@ -280,6 +331,21 @@ trait ProjectHelper
         $roleModel
             ->shouldReceive('getProject')
             ->andReturn($project);
+
+        return $this;
+    }
+
+    /**
+     * @param RoleModel|MockInterface $roleModel
+     * @param UserModel[]|Collection  $users
+     *
+     * @return $this
+     */
+    private function mockRoleModelGetUsers(MockInterface $roleModel, Collection $users): self
+    {
+        $roleModel
+            ->shouldReceive('getUsers')
+            ->andReturn($users);
 
         return $this;
     }
@@ -484,6 +550,62 @@ trait ProjectHelper
     private function createMetaDataModel(): MetaDataModel
     {
         return m::spy(MetaDataModel::class);
+    }
+
+    /**
+     * @param MetaDataModel|MockInterface $metaDataModel
+     * @param UserModel                   $user
+     *
+     * @return $this
+     */
+    private function mockMetaDataModelGetUser(MockInterface $metaDataModel, UserModel $user): self
+    {
+        $metaDataModel
+            ->shouldReceive('getUser')
+            ->andReturn($user);
+
+        return $this;
+    }
+
+    /**
+     * @param MetaDataModel|MockInterface $metaDataModel
+     * @param string                      $name
+     *
+     * @return $this
+     */
+    private function mockMetaDataModelGetName(MockInterface $metaDataModel, string $name): self
+    {
+        $metaDataModel
+            ->shouldReceive('getName')
+            ->andReturn($name);
+
+        return $this;
+    }
+
+    /**
+     * @param MetaDataModel|MockInterface $metaDataModel
+     * @param string                      $value
+     *
+     * @return $this
+     */
+    private function mockMetaDataModelGetValue(MockInterface $metaDataModel, string $value): self
+    {
+        $metaDataModel
+            ->shouldReceive('getValue')
+            ->andReturn($value);
+
+        return $this;
+    }
+
+    /**
+     * @param int   $times
+     * @param array $attributes
+     *
+     * @return MetaDataDoctrineModel[]|Collection
+     */
+    private function createMetaDataEntities(int $times = 1, array $attributes = []): Collection
+    {
+        return $this->createModelEntities(MetaDataDoctrineModel::class, $times, $attributes);
     }
 
     /**

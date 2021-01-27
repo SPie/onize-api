@@ -150,6 +150,47 @@ final class ProjectsControllerTest extends TestCase
         $this->assertEquals($response, $projectsController->show($project));
     }
 
+    /**
+     * @return array
+     */
+    private function setUpMembersTest(bool $withMembers = true): array
+    {
+        $project = $this->createProjectModel();
+        $memberData = [$this->getFaker()->word => $this->getFaker()->word];
+        $member = $this->createUserModel();
+        $this->mockUserModelMemberData($member, $memberData);
+        $projectManager = $this->createProjectManager();
+        $this->mockProjectManagerGetProjectMembers($projectManager, new ArrayCollection($withMembers ? [$member] : []), $project);
+        $response = $this->createJsonResponse();
+        $responseFactory = $this->createResponseFactory();
+        $this->mockResponseFactoryJson($responseFactory, $response, ['members' => $withMembers ? [$memberData] : []]);
+        $projectsController = $this->getProjectsController($projectManager, $responseFactory);
+
+        return [$projectsController, $project, $response];
+    }
+
+    /**
+     * @return void
+     */
+    public function testMembers(): void
+    {
+        /** @var ProjectsController $projectsController */
+        [$projectsController, $project, $response] = $this->setUpMembersTest();
+
+        $this->assertEquals($response, $projectsController->members($project));
+    }
+
+    /**
+     * @return void
+     */
+    public function testMembersWithoutMembers(): void
+    {
+        /** @var ProjectsController $projectsController */
+        [$projectsController, $project, $response] = $this->setUpMembersTest(false);
+
+        $this->assertEquals($response, $projectsController->members($project));
+    }
+
     //endregion
 
     /**

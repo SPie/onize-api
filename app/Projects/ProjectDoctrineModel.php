@@ -6,6 +6,7 @@ use App\Models\AbstractDoctrineModel;
 use App\Models\SoftDelete;
 use App\Models\Timestamps;
 use App\Models\Uuid;
+use App\Users\UserModel;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
@@ -236,5 +237,20 @@ final class ProjectDoctrineModel extends AbstractDoctrineModel implements Projec
                 ->map(fn (RoleModel $role) => $role->toArray())
                 ->toArray(),
         ];
+    }
+
+    /**
+     * @return UserModel[]|Collection
+     */
+    public function getMembers(): Collection
+    {
+        $members = new ArrayCollection([]);
+        foreach ($this->getRoles() as $role) {
+            foreach ($role->getUsers() as $member) {
+                $members->add($member);
+            }
+        }
+
+        return $members;
     }
 }

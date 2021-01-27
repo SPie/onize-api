@@ -3,8 +3,11 @@
 namespace Tests\Unit\Projects;
 
 use App\Projects\ProjectDoctrineModel;
+use App\Projects\ProjectModel;
 use App\Users\UserDoctrineModel;
+use Doctrine\Common\Collections\ArrayCollection;
 use Tests\Helper\ProjectHelper;
+use Tests\Helper\UsersHelper;
 use Tests\TestCase;
 
 /**
@@ -15,6 +18,7 @@ use Tests\TestCase;
 final class ProjectDoctrineModelTest extends TestCase
 {
     use ProjectHelper;
+    use UsersHelper;
 
     //region Tests
 
@@ -62,6 +66,55 @@ final class ProjectDoctrineModelTest extends TestCase
             ],
             $project->toArray()
         );
+    }
+
+    /**
+     * @param bool $withRoles
+     * @param bool $withUsers
+     *
+     * @return array
+     */
+    private function setUpGetMembersTest(bool $withRoles = true, bool $withUsers = true): array
+    {
+        $member = $this->createUserModel();
+        $role = $this->createRoleModel();
+        $this->mockRoleModelGetUsers($role, new ArrayCollection($withUsers ? [$member] : []));
+        $project = $this->getProjectDoctrineModel()->setRoles($withRoles ? [$role] : []);
+
+        return [$project, $member];
+    }
+
+    /**
+     * @return void
+     */
+    public function testGetMembers(): void
+    {
+        /** @var ProjectModel $project */
+        [$project, $member] = $this->setUpGetMembersTest();
+
+        $this->assertEquals(new ArrayCollection([$member]), $project->getMembers());
+    }
+
+    /**
+     * @return void
+     */
+    public function testGetMembersWithoutRoles(): void
+    {
+        /** @var ProjectModel $project */
+        [$project] = $this->setUpGetMembersTest(false);
+
+        $this->assertTrue($project->getMembers()->isEmpty());
+    }
+
+    /**
+     * @return void
+     */
+    public function testGetMembersWithoutUsersOnRoles(): void
+    {
+        /** @var ProjectModel $project */
+        [$project] = $this->setUpGetMembersTest(true, false);
+
+        $this->assertTrue($project->getMembers()->isEmpty());
     }
 
     //endregion

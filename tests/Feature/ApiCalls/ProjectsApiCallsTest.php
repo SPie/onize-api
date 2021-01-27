@@ -3,12 +3,14 @@
 namespace Tests\Feature\ApiCalls;
 
 use App\Http\Controllers\ProjectsController;
+use App\Projects\MetaDataModel;
 use App\Projects\MetaDataRepository;
 use App\Projects\ProjectModel;
 use App\Projects\ProjectRepository;
 use App\Projects\RoleModel;
 use App\Projects\RoleRepository;
 use App\Users\UserModel;
+use Doctrine\Common\Collections\ArrayCollection;
 use LaravelDoctrine\Migrations\Testing\DatabaseMigrations;
 use Tests\Feature\FeatureTestCase;
 use Tests\Helper\ApiHelper;
@@ -769,6 +771,193 @@ final class ProjectsApiCallsTest extends FeatureTestCase
         $response = $this->doApiCall('GET', $this->getUrl(ProjectsController::ROUTE_NAME_SHOW, ['project' => $project->getUuid()]));
 
         $response->assertStatus(403);
+    }
+
+    /**
+     * @param bool $withMembers
+     * @param bool $withRoles
+     * @param bool $withMetaData
+     * @param bool $withMetaDataOfUser
+     * @param bool $withAuthenticatedUser
+     *
+     * @return array
+     */
+    private function setUpMembersTest(
+        bool $withMembers = true,
+        bool $withRoles = true,
+        bool $withMetaData = true,
+        bool $withMetaDataOfUser = true,
+        bool $withAuthenticatedUser = true
+    ): array {
+        $user = $this->createUserEntities()->first();
+        if ($withAuthenticatedUser) {
+            $this->actingAs($user);
+        }
+        $role = $this->createRoleEntities(1, [RoleModel::PROPERTY_USERS => new ArrayCollection($withMembers ? [$user] : [])])->first();
+        $project = $this->createProjectEntities(1, [ProjectModel::PROPERTY_ROLES => new ArrayCollection($withRoles ? [$role] : [])])->first();
+        $metaData = $this->createMetaDataEntities(
+            1,
+            [
+                MetaDataModel::PROPERTY_USER    => $withMetaDataOfUser ? $user : $this->createUserEntities()->first(),
+                MetaDataModel::PROPERTY_PROJECT => $project,
+            ]
+        )->first();
+        $project->setMetaData($withMetaData ? [$metaData] : []);
+        $user->setMetaData($withMetaData ? [$metaData] : []);
+
+        return [$project, $user, $metaData];
+    }
+
+    /**
+     * @return void
+     */
+    public function testMembers(): void
+    {
+        /**
+         * @var ProjectModel  $project
+         * @var UserModel     $user
+         * @var MetaDataModel $metaData
+         */
+        [$project, $user, $metaData] = $this->setUpMembersTest();
+
+        $response = $this->doApiCall(
+            'GET',
+            $this->getUrl(ProjectsController::ROUTE_NAME_MEMBERS, ['project' => $project->getUuid()])
+        );
+
+        $response->assertOk();
+        $response->assertJsonFragment([
+            'members' => [
+                [
+                    UserModel::PROPERTY_UUID      => $user->getUuid(),
+                    UserModel::PROPERTY_EMAIL     => $user->getEmail(),
+                    UserModel::PROPERTY_META_DATA => [
+                        $metaData->getName() => $metaData->getValue(),
+                    ]
+                ],
+            ]
+        ]);
+    }
+
+    /**
+     * @return void
+     */
+    public function testMembersWithoutMembers(): void
+    {
+        /** @var ProjectModel $project */
+        [$project] = $this->setUpMembersTest(false);
+
+        $response = $this->doApiCall(
+            'GET',
+            $this->getUrl(ProjectsController::ROUTE_NAME_MEMBERS, ['project' => $project->getUuid()])
+        );
+
+        $response->assertOk();
+        $response->assertJsonFragment(['members' => []]);
+    }
+
+    /**
+     * @return void
+     */
+    public function testMembersWithoutRoles(): void
+    {
+        /** @var ProjectModel $project */
+        [$project] = $this->setUpMembersTest(true, false);
+
+        $response = $this->doApiCall(
+            'GET',
+            $this->getUrl(ProjectsController::ROUTE_NAME_MEMBERS, ['project' => $project->getUuid()])
+        );
+
+        $response->assertOk();
+        $response->assertJsonFragment(['members' => []]);
+    }
+
+    /**
+     * @return void
+     */
+    public function testMembersWithoutMetaData(): void
+    {
+        /**
+         * @var ProjectModel  $project
+         * @var UserModel     $user
+         */
+        [$project, $user] = $this->setUpMembersTest(true, true, false);
+
+        $response = $this->doApiCall(
+            'GET',
+            $this->getUrl(ProjectsController::ROUTE_NAME_MEMBERS, ['project' => $project->getUuid()])
+        );
+
+        $response->assertOk();
+        $response->assertJsonFragment([
+           'members' => [
+               [
+                   UserModel::PROPERTY_UUID      => $user->getUuid(),
+                   UserModel::PROPERTY_EMAIL     => $user->getEmail(),
+                   UserModel::PROPERTY_META_DATA => []
+               ],
+           ]
+       ]);
+    }
+
+    /**
+     * @return void
+     */
+    public function testMembersWithoutMetaDataOfUser(): void
+    {
+        /**
+         * @var ProjectModel  $project
+         * @var UserModel     $user
+         */
+        [$project, $user] = $this->setUpMembersTest(true, true, true, false);
+
+        $response = $this->doApiCall(
+            'GET',
+            $this->getUrl(ProjectsController::ROUTE_NAME_MEMBERS, ['project' => $project->getUuid()])
+        );
+
+        $response->assertOk();
+        $response->assertJsonFragment([
+           'members' => [
+               [
+                   UserModel::PROPERTY_UUID      => $user->getUuid(),
+                   UserModel::PROPERTY_EMAIL     => $user->getEmail(),
+                   UserModel::PROPERTY_META_DATA => []
+               ],
+           ]
+       ]);
+    }
+
+    /**
+     * @return void
+     */
+    public function testMembersWithoutProject(): void
+    {
+        $this->setUpMembersTest(true, true, true, true);
+
+        $response = $this->doApiCall(
+            'GET',
+            $this->getUrl(ProjectsController::ROUTE_NAME_MEMBERS, ['project' => $this->getFaker()->uuid])
+        );
+
+        $response->assertNotFound();
+    }
+
+    /**
+     * @return void
+     */
+    public function testMembersWithoutAuthenticatedUser(): void
+    {
+        /** @var ProjectModel $project */
+        [$project] = $this->setUpMembersTest(true, true, true, true, false);
+
+        $response = $this->doApiCall(
+            'GET',
+            $this->getUrl(ProjectsController::ROUTE_NAME_MEMBERS, ['project' => $project->getUuid()])
+        );
+
+        $response->assertStatus(401);
     }
 
     //endregion

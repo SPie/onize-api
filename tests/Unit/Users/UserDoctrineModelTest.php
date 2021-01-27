@@ -109,6 +109,31 @@ final class UserDoctrineModelTest extends TestCase
         $this->assertFalse($user->isMemberOfProject($project));
     }
 
+    /**
+     * @return void
+     */
+    public function testMemberData(): void
+    {
+        $metaDataName = $this->getFaker()->word;
+        $metaDataValue = $this->getFaker()->word;
+        $metaData = $this->createMetaDataModel();
+        $this
+            ->mockMetaDataModelGetName($metaData, $metaDataName)
+            ->mockMetaDataModelGetValue($metaData, $metaDataValue);
+        $user = $this->getUserDoctrineModel()->setMetaData([$metaData]);
+
+        $this->assertEquals(
+            [
+                'uuid' => $user->getUuid(),
+                'email' => $user->getEmail(),
+                'metaData' => [
+                    $metaDataName => $metaDataValue
+                ]
+            ],
+            $user->memberData()
+        );
+    }
+
     //endregion
 
     /**

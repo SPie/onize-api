@@ -4,6 +4,8 @@ namespace App\Projects;
 
 use App\Models\Exceptions\ModelNotFoundException;
 use App\Models\Model;
+use App\Users\UserModel;
+use Doctrine\Common\Collections\Collection;
 
 /**
  * Class ProjectManager
@@ -124,5 +126,26 @@ class ProjectManager
         }
 
         return $project;
+    }
+
+    /**
+     * @param ProjectModel $project
+     *
+     * @return Collection
+     */
+    public function getProjectMembers(ProjectModel $project): Collection
+    {
+        $metaDataMap = [];
+        foreach ($project->getMetaData() as $metaData) {
+            if (empty($metaDataMap[$metaData->getUser()->getId()])) {
+                $metaDataMap[$metaData->getUser()->getId()] = [];
+            }
+
+            $metaDataMap[$metaData->getUser()->getId()][] = $metaData;
+        }
+
+        return $project->getMembers()->map(
+            fn (UserModel $user) => $user->setMetaData($metaDataMap[$user->getId()] ?? [])
+        );
     }
 }

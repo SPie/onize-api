@@ -254,4 +254,20 @@ class UserDoctrineModel extends AbstractDoctrineModel implements UserModel
             fn (int $i, RoleModel $role) => $role->getProject()->getId() === $project->getId()
         );
     }
+
+    /**
+     * @return array
+     */
+    public function memberData(): array
+    {
+        $metaDataArray = [];
+        foreach ($this->getMetaData() as $metaData) {
+            $metaDataArray[$metaData->getName()] = $metaData->getValue();
+        }
+
+        return \array_merge(
+            $this->toArray(),
+            [self::PROPERTY_META_DATA => $metaDataArray]
+        );
+    }
 }

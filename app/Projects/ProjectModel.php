@@ -6,6 +6,7 @@ use App\Models\Model;
 use App\Models\SoftDeletable;
 use App\Models\Timestampable;
 use App\Models\UuidModel;
+use App\Users\UserModel;
 use Doctrine\Common\Collections\Collection;
 
 /**
@@ -106,4 +107,9 @@ interface ProjectModel extends Model, SoftDeletable, Timestampable, UuidModel
      * @return array
      */
     public function toArray(): array;
+
+    /**
+     * @return UserModel[]|Collection
+     */
+    public function getMembers(): Collection;
 }

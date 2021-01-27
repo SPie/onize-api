@@ -8,6 +8,7 @@ use App\Projects\ProjectManager;
 use App\Projects\ProjectModel;
 use App\Projects\RoleManager;
 use App\Projects\RoleModel;
+use App\Users\UserModel;
 use Illuminate\Contracts\Routing\ResponseFactory;
 use Illuminate\Http\JsonResponse;
 
@@ -21,9 +22,11 @@ final class ProjectsController extends Controller
     public const ROUTE_NAME_CREATE         = 'projects.create';
     public const ROUTE_NAME_USERS_PROJECTS = 'projects.usersProjects';
     public const ROUTE_NAME_SHOW           = 'projects.show';
+    public const ROUTE_NAME_MEMBERS        = 'projects.members';
 
     private const RESPONSE_PARAMETER_PROJECT  = 'project';
     private const RESPONSE_PARAMETER_PROJECTS = 'projects';
+    private const RESPONSE_PARAMETER_MEMBERS  = 'members';
 
     /**
      * @var ProjectManager
@@ -99,7 +102,21 @@ final class ProjectsController extends Controller
      */
     public function show(ProjectModel $project): JsonResponse
     {
-       return $this->getResponseFactory()->json([self::RESPONSE_PARAMETER_PROJECT => $project->toArray()]);
+        return $this->getResponseFactory()->json([self::RESPONSE_PARAMETER_PROJECT => $project->toArray()]);
+    }
+
+    /**
+     * @param ProjectModel $project
+     *
+     * @return JsonResponse
+     */
+    public function members(ProjectModel $project): JsonResponse
+    {
+        return $this->getResponseFactory()->json([
+            self::RESPONSE_PARAMETER_MEMBERS => $this->getProjectManager()->getProjectMembers($project)
+                ->map(fn (UserModel $member) => $member->memberData())
+                ->getValues()
+        ]);
     }
 
     //endregion

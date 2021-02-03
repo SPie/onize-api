@@ -1,0 +1,46 @@
+<?php
+
+namespace Database\Migrations;
+
+use App\Projects\PermissionModel;
+use Doctrine\DBAL\Schema\Schema;
+use Doctrine\Migrations\AbstractMigration;
+
+/**
+ * Class Version20210202203900
+ *
+ * @package Database\Migrations
+ */
+final class Version20210202203900 extends AbstractMigration
+{
+    /**
+     * @param Schema $schema
+     *
+     * @return void
+     */
+    public function up(Schema $schema): void
+    {
+        $this->createPermissions();
+    }
+
+    /**
+     * @return $this
+     */
+    private function createPermissions(): self
+    {
+        $this->addSql('INSERT INTO `permissions` (`name`, `description`) VALUES
+(\'' . PermissionModel::PERMISSION_PROJECTS_MEMBERS_SHOW . '\', \'Show projects members\')');
+
+        return $this;
+    }
+
+    /**
+     * @param Schema $schema
+     *
+     * @return void
+     */
+    public function down(Schema $schema): void
+    {
+        //no rollback
+    }
+}

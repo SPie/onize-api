@@ -16,10 +16,11 @@ use Doctrine\Common\Collections\Collection;
  */
 interface RoleModel extends Model, SoftDeletable, Timestampable, UuidModel
 {
-    public const PROPERTY_LABEL   = 'label';
-    public const PROPERTY_OWNER   = 'owner';
-    public const PROPERTY_PROJECT = 'project';
-    public const PROPERTY_USERS   = 'users';
+    public const PROPERTY_LABEL       = 'label';
+    public const PROPERTY_OWNER       = 'owner';
+    public const PROPERTY_PROJECT     = 'project';
+    public const PROPERTY_USERS       = 'users';
+    public const PROPERTY_PERMISSIONS = 'permissions';
 
     /**
      * @param string $label
@@ -68,6 +69,32 @@ interface RoleModel extends Model, SoftDeletable, Timestampable, UuidModel
      * @return UserModel[]|Collection
      */
     public function getUsers(): Collection;
+
+    /**
+     * @param PermissionModel[] $permissions
+     *
+     * @return $this
+     */
+    public function setPermissions(array $permissions): self;
+
+    /**
+     * @param PermissionModel $permission
+     *
+     * @return $this
+     */
+    public function addPermission(PermissionModel $permission): self;
+
+    /**
+     * @return PermissionModel[]|Collection
+     */
+    public function getPermissions(): Collection;
+
+    /**
+     * @param string $permissionName
+     *
+     * @return bool
+     */
+    public function hasPermission(string $permissionName): bool;
 
     /**
      * @param bool $withProject

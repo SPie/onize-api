@@ -3,6 +3,8 @@
 namespace Tests\Unit\Policies;
 
 use App\Policies\ProjectPolicy;
+use App\Projects\PermissionModel;
+use App\Projects\RoleManager;
 use Tests\Helper\ProjectHelper;
 use Tests\Helper\UsersHelper;
 use Tests\TestCase;
@@ -54,13 +56,59 @@ final class ProjectPolicyTest extends TestCase
         $this->assertFalse($projectPolicy->show($user, $project));
     }
 
+    /**
+     * @param bool $allowed
+     *
+     * @return array
+     */
+    private function setUpMembersTest(bool $allowed = true): array
+    {
+        $user = $this->createUserModel();
+        $project = $this->createProjectModel();
+        $roleManager = $this->createRoleManager();
+        $this->mockRoleManagerHasPermissionForAction(
+            $roleManager,
+            $allowed,
+            $project,
+            $user,
+            PermissionModel::PERMISSION_PROJECTS_MEMBERS_SHOW
+        );
+        $projectPolicy = $this->getProjectPolicy($roleManager);
+
+        return [$projectPolicy, $user, $project];
+    }
+
+    /**
+     * @return void
+     */
+    public function testMembers(): void
+    {
+        /** @var ProjectPolicy $projectPolicy */
+        [$projectPolicy, $user, $project] = $this->setUpMembersTest();
+
+        $this->assertTrue($projectPolicy->members($user, $project));
+    }
+
+    /**
+     * @return void
+     */
+    public function testMembersWithoutPermission(): void
+    {
+        /** @var ProjectPolicy $projectPolicy */
+        [$projectPolicy, $user, $project] = $this->setUpMembersTest(false);
+
+        $this->assertFalse($projectPolicy->members($user, $project));
+    }
+
     //endregion
 
     /**
+     * @param RoleManager|null $roleManager
+     *
      * @return ProjectPolicy
      */
-    private function getProjectPolicy(): ProjectPolicy
+    private function getProjectPolicy(RoleManager $roleManager = null): ProjectPolicy
     {
-        return new ProjectPolicy();
+        return new ProjectPolicy($roleManager ?: $this->createRoleManager());
     }
 }

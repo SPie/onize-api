@@ -779,6 +779,8 @@ final class ProjectsApiCallsTest extends FeatureTestCase
      * @param bool $withMetaData
      * @param bool $withMetaDataOfUser
      * @param bool $withAuthenticatedUser
+     * @param bool $withAuthorizedUser
+     * @param bool $withOwner
      *
      * @return array
      */
@@ -787,14 +789,22 @@ final class ProjectsApiCallsTest extends FeatureTestCase
         bool $withRoles = true,
         bool $withMetaData = true,
         bool $withMetaDataOfUser = true,
-        bool $withAuthenticatedUser = true
+        bool $withAuthenticatedUser = true,
+        bool $withAuthorizedUser = true,
+        bool $withOwner = false
     ): array {
-        $user = $this->createUserEntities()->first();
+        if ($withAuthorizedUser) {
+            $role = $this->createRoleWithPermission($this->getProjectsMembersShowPermission());
+        } elseif ($withOwner) {
+            $role = $this->createOwnerRole();
+        } else {
+            $role = $this->createRoleEntities()->first();
+        }
+        $user = $this->createUserWithRole($role);
         if ($withAuthenticatedUser) {
             $this->actingAs($user);
         }
-        $role = $this->createRoleEntities(1, [RoleModel::PROPERTY_USERS => new ArrayCollection($withMembers ? [$user] : [])])->first();
-        $project = $this->createProjectEntities(1, [ProjectModel::PROPERTY_ROLES => new ArrayCollection($withRoles ? [$role] : [])])->first();
+        $project = $role->getProject();
         $metaData = $this->createMetaDataEntities(
             1,
             [
@@ -802,6 +812,12 @@ final class ProjectsApiCallsTest extends FeatureTestCase
                 MetaDataModel::PROPERTY_PROJECT => $project,
             ]
         )->first();
+        if ($withMembers) {
+            $role->addUser($user);
+        }
+        if ($withRoles) {
+            $project->addRole($role);
+        }
         $project->setMetaData($withMetaData ? [$metaData] : []);
         $user->setMetaData($withMetaData ? [$metaData] : []);
 
@@ -958,6 +974,46 @@ final class ProjectsApiCallsTest extends FeatureTestCase
         );
 
         $response->assertStatus(401);
+    }
+
+    /**
+     * @return void
+     */
+    public function testMembersWithoutAuthorizedUser(): void
+    {
+        /** @var ProjectModel $project */
+        [$project] = $this->setUpMembersTest(true, true, true, true, true, false);
+
+        $response = $this->doApiCall(
+            'GET',
+            $this->getUrl(ProjectsController::ROUTE_NAME_MEMBERS, ['project' => $project->getUuid()])
+        );
+
+        $response->assertStatus(403);
+    }
+
+    /**
+     * @return void
+     */
+    public function testMembersWithoutOwner(): void
+    {
+        /** @var ProjectModel $project */
+        [$project] = $this->setUpMembersTest(
+            true,
+            true,
+            true,
+            true,
+            true,
+            false,
+            true
+        );
+
+        $response = $this->doApiCall(
+            'GET',
+            $this->getUrl(ProjectsController::ROUTE_NAME_MEMBERS, ['project' => $project->getUuid()])
+        );
+
+        $response->assertOk();
     }
 
     //endregion

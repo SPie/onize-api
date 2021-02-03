@@ -152,6 +152,22 @@ class UserDoctrineModel extends AbstractDoctrineModel implements UserModel
     }
 
     /**
+     * @param ProjectModel $project
+     *
+     * @return RoleModel|null
+     */
+    public function getRoleForProject(ProjectModel $project): ?RoleModel
+    {
+        foreach ($this->getRoles() as $role) {
+            if ($role->getProject()->getId() === $project->getId()) {
+                return $role;
+            }
+        }
+
+        return null;
+    }
+
+    /**
      * @param MetaDataModel[] $metaData
      *
      * @return UserModel

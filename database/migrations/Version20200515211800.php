@@ -26,6 +26,8 @@ final class Version20200515211800 extends AbstractMigration
             ->createRolesTable($schema)
             ->createRolesUsersTable($schema)
             ->createMetaDataTable($schema)
+            ->createPermissionsTable($schema)
+            ->createRolesPermissionsTable($schema)
 //            ->createLoginAttemptsTable($schema)
 //            ->createProjectsTable($schema)
 //            ->createProjectInvitesTable($schema)
@@ -152,6 +154,41 @@ final class Version20200515211800 extends AbstractMigration
             $table->foreign('projects', 'project_id', 'id');
             $table->string('name');
             $table->string('value');
+        });
+
+        return $this;
+    }
+
+    /**
+     * @param Schema $schema
+     *
+     * @return $this
+     */
+    private function createPermissionsTable(Schema $schema): self
+    {
+        (new Builder($schema))->create('permissions', function (Table $table) {
+            $table->increments('id');
+            $table->string('name');
+            $table->unique('name');
+            $table->string('description');
+        });
+
+        return $this;
+    }
+
+    /**
+     * @param Schema $schema
+     *
+     * @return $this
+     */
+    private function createRolesPermissionsTable(Schema $schema): self
+    {
+        (new Builder($schema))->create('roles_permissions', function (Table $table) {
+            $table->increments('id');
+            $table->integer('role_id', false, true);
+            $table->foreign('roles', 'role_id', 'id');
+            $table->integer('permission_id', false, true);
+            $table->foreign('permissions', 'permission_id', 'id');
         });
 
         return $this;

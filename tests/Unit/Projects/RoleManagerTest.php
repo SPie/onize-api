@@ -84,6 +84,75 @@ final class RoleManagerTest extends TestCase
             ->assertRepositoryFlush($metaDataRepository);
     }
 
+    /**
+     * @param bool $withPermission
+     * @param bool $withRole
+     * @param bool $withOwner
+     *
+     * @return array
+     */
+    private function setUpHasPermissionForActionTest(
+        bool $withPermission = true,
+        bool $withRole = true,
+        bool $withOwner = false
+    ): array {
+        $permissionName = $this->getFaker()->word;
+        $project = $this->createProjectModel();
+        $role = $this->createRoleModel();
+        $this
+            ->mockRoleModelHasPermission($role, $withPermission, $permissionName)
+            ->mockRoleModelIsOwner($role, $withOwner);
+        $user = $this->createUserModel();
+        $this->mockUserModelGetRoleForProject($user, $withRole ? $role : null, $project);
+        $roleManager = $this->getRoleManager();
+
+        return [$roleManager, $project, $user, $permissionName];
+    }
+
+    /**
+     * @return void
+     */
+    public function testHasPermissionForAction(): void
+    {
+        /** @var RoleManager $roleManager */
+        [$roleManager, $project, $user, $permissionName] = $this->setUpHasPermissionForActionTest();
+
+        $this->assertTrue($roleManager->hasPermissionForAction($project, $user, $permissionName));
+    }
+
+    /**
+     * @return void
+     */
+    public function testHasPermissionForActionWithoutPermission(): void
+    {
+        /** @var RoleManager $roleManager */
+        [$roleManager, $project, $user, $permissionName] = $this->setUpHasPermissionForActionTest(false);
+
+        $this->assertFalse($roleManager->hasPermissionForAction($project, $user, $permissionName));
+    }
+
+    /**
+     * @return void
+     */
+    public function testHasPermissionForActionWithoutRole(): void
+    {
+        /** @var RoleManager $roleManager */
+        [$roleManager, $project, $user, $permissionName] = $this->setUpHasPermissionForActionTest(true, false);
+
+        $this->assertFalse($roleManager->hasPermissionForAction($project, $user, $permissionName));
+    }
+
+    /**
+     * @return void
+     */
+    public function testHasPermissionForActionWithOwner(): void
+    {
+        /** @var RoleManager $roleManager */
+        [$roleManager, $project, $user, $permissionName] = $this->setUpHasPermissionForActionTest(false, true, true);
+
+        $this->assertTrue($roleManager->hasPermissionForAction($project, $user, $permissionName));
+    }
+
     //endregion
 
     /**

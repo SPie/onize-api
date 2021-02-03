@@ -188,6 +188,23 @@ trait UsersHelper
     }
 
     /**
+     * @param UserModel|MockInterface $userModel
+     * @param RoleModel|null          $role
+     * @param ProjectModel            $project
+     *
+     * @return $this
+     */
+    private function mockUserModelGetRoleForProject(MockInterface $userModel, ?RoleModel $role, ProjectModel $project): self
+    {
+        $userModel
+            ->shouldReceive('getRoleForProject')
+            ->with($project)
+            ->andReturn($role);
+
+        return $this;
+    }
+
+    /**
      * @return UserManager|MockInterface
      */
     private function createUserManager(): UserManager

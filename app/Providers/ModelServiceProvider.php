@@ -20,6 +20,10 @@ use App\Projects\MetaDataElementRepository;
 use App\Projects\MetaDataModel;
 use App\Projects\MetaDataModelFactory;
 use App\Projects\MetaDataRepository;
+use App\Projects\PermissionDoctrineModel;
+use App\Projects\PermissionDoctrineRepository;
+use App\Projects\PermissionModel;
+use App\Projects\PermissionRepository;
 use App\Projects\ProjectDoctrineModel;
 use App\Projects\ProjectDoctrineModelFactory;
 use App\Projects\ProjectDoctrineRepository;
@@ -75,6 +79,7 @@ final class ModelServiceProvider extends ServiceProvider
         $this->app->bind(MetaDataElementModel::class, MetaDataElementDoctrineModel::class);
         $this->app->bind(RoleModel::class, RoleDoctrineModel::class);
         $this->app->bind(MetaDataModel::class, MetaDataDoctrineModel::class);
+        $this->app->bind(PermissionModel::class, PermissionDoctrineModel::class);
 
         return $this;
     }
@@ -140,6 +145,10 @@ final class ModelServiceProvider extends ServiceProvider
         $this->app->singleton(
             MetaDataRepository::class,
             fn () => new MetaDataDoctrineRepository($this->makeDatabaseHandler(MetaDataDoctrineModel::class))
+        );
+        $this->app->singleton(
+            PermissionRepository::class,
+            fn () => new PermissionDoctrineRepository($this->makeDatabaseHandler(PermissionDoctrineModel::class))
         );
 
         return $this;

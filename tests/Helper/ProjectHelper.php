@@ -9,6 +9,9 @@ use App\Projects\MetaDataElementRepository;
 use App\Projects\MetaDataModel;
 use App\Projects\MetaDataModelFactory;
 use App\Projects\MetaDataRepository;
+use App\Projects\PermissionDoctrineModel;
+use App\Projects\PermissionModel;
+use App\Projects\PermissionRepository;
 use App\Projects\ProjectDoctrineModel;
 use App\Projects\ProjectManager;
 use App\Projects\ProjectModel;
@@ -20,6 +23,7 @@ use App\Projects\RoleModel;
 use App\Projects\RoleModelFactory;
 use App\Projects\RoleRepository;
 use App\Users\UserModel;
+use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Mockery as m;
 use Mockery\MockInterface;
@@ -351,6 +355,38 @@ trait ProjectHelper
     }
 
     /**
+     * @param RoleModel|MockInterface $roleModel
+     * @param bool                    $hasPermission
+     * @param string                  $permissionName
+     *
+     * @return $this
+     */
+    private function mockRoleModelHasPermission(MockInterface $roleModel, bool $hasPermission, string $permissionName): self
+    {
+        $roleModel
+            ->shouldReceive('hasPermission')
+            ->with($permissionName)
+            ->andReturn($hasPermission);
+
+        return $this;
+    }
+
+    /**
+     * @param RoleModel|MockInterface $roleModel
+     * @param bool                    $owner
+     *
+     * @return $this
+     */
+    private function mockRoleModelIsOwner(MockInterface $roleModel, bool $owner): self
+    {
+        $roleModel
+            ->shouldReceive('isOwner')
+            ->andReturn($owner);
+
+        return $this;
+    }
+
+    /**
      * @param int   $times
      * @param array $attributes
      *
@@ -359,6 +395,24 @@ trait ProjectHelper
     private function createRoleEntities(int $times = 1, array $attributes = []): Collection
     {
         return $this->createModelEntities(RoleDoctrineModel::class, $times, $attributes);
+    }
+
+    /**
+     * @param PermissionModel $permission
+     *
+     * @return RoleModel
+     */
+    private function createRoleWithPermission(PermissionModel $permission): RoleModel
+    {
+        return $this->createRoleEntities(1, [RoleModel::PROPERTY_PERMISSIONS => new ArrayCollection([$permission])])->first();
+    }
+
+    /**
+     * @return RoleModel
+     */
+    private function createOwnerRole(): RoleModel
+    {
+        return $this->createRoleEntities(1, [RoleModel::PROPERTY_OWNER => true])->first();
     }
 
     /**
@@ -411,6 +465,30 @@ trait ProjectHelper
             ->shouldHaveReceived('createOwnerRole')
             ->with($project, $user, $metaData)
             ->once();
+
+        return $this;
+    }
+
+    /**
+     * @param RoleManager|MockInterface $roleManager
+     * @param bool                      $allowed
+     * @param ProjectModel              $project
+     * @param UserModel                 $user
+     * @param string                    $permission
+     *
+     * @return $this
+     */
+    private function mockRoleManagerHasPermissionForAction(
+        MockInterface $roleManager,
+        bool $allowed,
+        ProjectModel $project,
+        UserModel $user,
+        string $permission
+    ): self {
+        $roleManager
+            ->shouldReceive('hasPermissionForAction')
+            ->with($project, $user, $permission)
+            ->andReturn($allowed);
 
         return $this;
     }
@@ -648,5 +726,57 @@ trait ProjectHelper
             ->andReturn($metaDataModel);
 
         return $this;
+    }
+
+    /**
+     * @return PermissionModel|MockInterface
+     */
+    private function createPermissionModel(): PermissionModel
+    {
+        return m::spy(PermissionModel::class);
+    }
+
+    /**
+     * @param PermissionModel|MockInterface $permissionModel
+     * @param string                        $name
+     *
+     * @return $this
+     */
+    private function mockPermissionModelGetName(MockInterface $permissionModel, string $name): self
+    {
+        $permissionModel
+            ->shouldReceive('getName')
+            ->andReturn($name);
+
+        return $this;
+    }
+
+    /**
+     * @param int   $times
+     * @param array $attributes
+     *
+     * @return Collection
+     */
+    private function createPermissionEntities(int $times, array $attributes = []): Collection
+    {
+        return $this->createModelEntities(PermissionDoctrineModel::class, $times, $attributes);
+    }
+
+    /**
+     * @param string $name
+     *
+     * @return PermissionModel
+     */
+    private function getConcretePermission(string $name): PermissionModel
+    {
+        return $this->app->get(PermissionRepository::class)->findOneBy([PermissionModel::PROPERTY_NAME => $name]);
+    }
+
+    /**
+     * @return PermissionModel
+     */
+    private function getProjectsMembersShowPermission(): PermissionModel
+    {
+        return $this->getConcretePermission(PermissionModel::PERMISSION_PROJECTS_MEMBERS_SHOW);
     }
 }

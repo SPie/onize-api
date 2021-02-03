@@ -114,4 +114,18 @@ class RoleManager
 
         return $role;
     }
+
+    /**
+     * @param ProjectModel $project
+     * @param UserModel    $user
+     * @param string       $permission
+     *
+     * @return bool
+     */
+    public function hasPermissionForAction(ProjectModel $project, UserModel $user, string $permission): bool
+    {
+        $role = $user->getRoleForProject($project);
+
+        return $role && ($role->isOwner() || $role->hasPermission($permission));
+    }
 }

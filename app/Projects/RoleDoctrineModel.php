@@ -60,6 +60,17 @@ final class RoleDoctrineModel extends AbstractDoctrineModel implements RoleModel
     private Collection $users;
 
     /**
+     * @ORM\ManyToMany(targetEntity="App\Projects\PermissionDoctrineModel", inversedBy="roles")
+     * @ORM\JoinTable(name="roles_permissions",
+     *     joinColumns={@ORM\JoinColumn(name="role_id", referencedColumnName="id")},
+     *     inverseJoinColumns={@ORM\JoinColumn(name="permission_id", referencedColumnName="id")}
+     *     )
+     *
+     * @var PermissionModel[]|Collection
+     */
+    private Collection $permissions;
+
+    /**
      * RoleDoctrineModel constructor.
      *
      * @param string       $uuid
@@ -74,6 +85,7 @@ final class RoleDoctrineModel extends AbstractDoctrineModel implements RoleModel
         $this->label = $label;
         $this->owner = $owner;
         $this->users = new ArrayCollection();
+        $this->permissions = new ArrayCollection();
     }
 
     /**
@@ -156,6 +168,52 @@ final class RoleDoctrineModel extends AbstractDoctrineModel implements RoleModel
     public function getUsers(): Collection
     {
         return $this->users;
+    }
+
+    /**
+     * @param PermissionModel[] $permissions
+     *
+     * @return $this
+     */
+    public function setPermissions(array $permissions): self
+    {
+        $this->permissions = new ArrayCollection($permissions);
+
+        return $this;
+    }
+
+    /**
+     * @param PermissionModel $permission
+     *
+     * @return RoleModel
+     */
+    public function addPermission(PermissionModel $permission): RoleModel
+    {
+        if (!$this->permissions->contains($permission)) {
+            $this->permissions->add($permission);
+        }
+
+        return $this;
+    }
+
+    /**
+     * @return PermissionModel[]|Collection
+     */
+    public function getPermissions(): Collection
+    {
+        return $this->permissions;
+    }
+
+    /**
+     * @param string $permissionName
+     *
+     * @return bool
+     */
+    public function hasPermission(string $permissionName): bool
+    {
+        return $this->getPermissions()->exists(
+            fn (int $i, PermissionModel $permission) => $permission->getName() === $permissionName
+        );
     }
 
     /**

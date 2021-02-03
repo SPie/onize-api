@@ -134,6 +134,61 @@ final class UserDoctrineModelTest extends TestCase
         );
     }
 
+    /**
+     * @param bool $withRoles
+     * @param bool $withRoleForProject
+     *
+     * @return array
+     */
+    private function setUpGetRoleForProjectTest(bool $withRoles = true, bool $withRoleForProject = true): array
+    {
+        $project = $this->createProjectModel();
+        $this->mockModelGetId($project, $this->getFaker()->numberBetween());
+        $otherProject = $this->createProjectModel();
+        $this->mockModelGetId($otherProject, $project->getId() + 1);
+        $role = $this->createRoleModel();
+        $this->mockRoleModelGetProject($role, $withRoleForProject ? $project : $otherProject);
+        $otherRole = $this->createRoleModel();
+        $this->mockRoleModelGetProject($otherRole, $otherProject);
+        $user = $this->getUserDoctrineModel();
+        $user->setRoles($withRoles ? [$otherRole, $role] : []);
+
+        return [$user, $project, $role];
+    }
+
+    /**
+     * @return void
+     */
+    public function testGetRoleForProject(): void
+    {
+        /** @var UserDoctrineModel $user */
+        [$user, $project, $role] = $this->setUpGetRoleForProjectTest();
+
+        $this->assertEquals($role, $user->getRoleForProject($project));
+    }
+
+    /**
+     * @return void
+     */
+    public function testGetRoleForProjectWithoutRoles(): void
+    {
+        /** @var UserDoctrineModel $user */
+        [$user, $project] = $this->setUpGetRoleForProjectTest(false);
+
+        $this->assertNull($user->getRoleForProject($project));
+    }
+
+    /**
+     * @return void
+     */
+    public function testGetRoleForProjectWithoutRoleForProject(): void
+    {
+        /** @var UserDoctrineModel $user */
+        [$user, $project] = $this->setUpGetRoleForProjectTest(true, false);
+
+        $this->assertNull($user->getRoleForProject($project));
+    }
+
     //endregion
 
     /**

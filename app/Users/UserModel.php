@@ -69,6 +69,13 @@ interface UserModel extends Model, Authenticatable, SoftDeletable, Timestampable
     public function getRoles(): Collection;
 
     /**
+     * @param ProjectModel $project
+     *
+     * @return RoleModel|null
+     */
+    public function getRoleForProject(ProjectModel $project): ?RoleModel;
+
+    /**
      * @param MetaDataModel[] $metaData
      *
      * @return $this

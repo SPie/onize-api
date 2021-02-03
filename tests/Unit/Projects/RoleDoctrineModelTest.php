@@ -56,6 +56,55 @@ final class RoleDoctrineModelTest extends TestCase
         );
     }
 
+    /**
+     * @return array
+     */
+    private function setUpHasPermissionTest(bool $withPermission = true, bool $withPermissionName = true): array
+    {
+        $permissionName = $this->getFaker()->word;
+        $permission = $this->createPermissionModel();
+        $this->mockPermissionModelGetName($permission, $permissionName . ($withPermissionName ? '' : $this->getFaker()->word));
+        $role = $this->getRoleDoctrineModel();
+        if ($withPermission) {
+            $role->addPermission($permission);
+        }
+
+        return [$role, $permissionName];
+    }
+
+    /**
+     * @return void
+     */
+    public function testHasPermission(): void
+    {
+        /** @var RoleDoctrineModel $role */
+        [$role, $permissionName] = $this->setUpHasPermissionTest();
+
+        $this->assertTrue($role->hasPermission($permissionName));
+    }
+
+    /**
+     * @return void
+     */
+    public function testHasPermissionWithoutPermission(): void
+    {
+        /** @var RoleDoctrineModel $role */
+        [$role, $permissionName] = $this->setUpHasPermissionTest(false);
+
+        $this->assertFalse($role->hasPermission($permissionName));
+    }
+
+    /**
+     * @return void
+     */
+    public function testHasPermissionWithoutPermissionName(): void
+    {
+        /** @var RoleDoctrineModel $role */
+        [$role, $permissionName] = $this->setUpHasPermissionTest(true, false);
+
+        $this->assertFalse($role->hasPermission($permissionName));
+    }
+
     //endregion
 
     /**

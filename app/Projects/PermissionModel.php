@@ -12,11 +12,11 @@ use Doctrine\Common\Collections\Collection;
  */
 interface PermissionModel extends Model
 {
-    const PROPERTY_NAME        = 'name';
-    const PROPERTY_DESCRIPTION = 'description';
-    const PROPERTY_ROLES       = 'roles';
+    public const PROPERTY_NAME        = 'name';
+    public const PROPERTY_DESCRIPTION = 'description';
+    public const PROPERTY_ROLES       = 'roles';
 
-    const PERMISSION_PROJECTS_MEMBERS_SHOW = 'projects.members.show';
+    public const PERMISSION_PROJECTS_MEMBERS_SHOW = 'projects.members.show';
 
     /**
      * @return string

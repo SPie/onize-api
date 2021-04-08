@@ -4,6 +4,8 @@ namespace App\Http\Controllers;
 
 use App\Auth\AuthManager;
 use App\Http\Requests\Projects\Create;
+use App\Http\Requests\Projects\Invite;
+use App\Projects\Invites\InvitationManager;
 use App\Projects\ProjectManager;
 use App\Projects\ProjectModel;
 use App\Projects\RoleManager;
@@ -24,9 +26,10 @@ final class ProjectsController extends Controller
     public const ROUTE_NAME_SHOW           = 'projects.show';
     public const ROUTE_NAME_MEMBERS        = 'projects.members';
 
-    private const RESPONSE_PARAMETER_PROJECT  = 'project';
-    private const RESPONSE_PARAMETER_PROJECTS = 'projects';
-    private const RESPONSE_PARAMETER_MEMBERS  = 'members';
+    private const RESPONSE_PARAMETER_PROJECT    = 'project';
+    private const RESPONSE_PARAMETER_PROJECTS   = 'projects';
+    private const RESPONSE_PARAMETER_MEMBERS    = 'members';
+    private const RESPONSE_PARAMETER_INVITATION = 'invitation';
 
     /**
      * @var ProjectManager
@@ -117,6 +120,26 @@ final class ProjectsController extends Controller
                 ->map(fn (UserModel $member) => $member->memberData())
                 ->getValues()
         ]);
+    }
+
+    /**
+     * @param Invite            $invite
+     * @param InvitationManager $invitationManager
+     *
+     * @return JsonResponse
+     */
+    public function invite(Invite $invite, InvitationManager $invitationManager): JsonResponse
+    {
+        return $this->getResponseFactory()->json(
+            [
+                self::RESPONSE_PARAMETER_INVITATION => $invitationManager->inviteMember(
+                    $invite->getRole(),
+                    $invite->getEmail(),
+                    $invite->getMetaData()
+                )->toArray()
+            ],
+            JsonResponse::HTTP_CREATED
+        );
     }
 
     //endregion

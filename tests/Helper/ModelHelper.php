@@ -7,6 +7,7 @@ use App\Models\Model;
 use App\Models\PasswordHasher;
 use App\Models\Repository;
 use App\Models\UuidGenerator;
+use App\Models\UuidModel;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Mockery as m;
@@ -217,7 +218,8 @@ trait ModelHelper
         $repository
             ->shouldReceive('save')
             ->withArgs($arguments)
-            ->andReturn($savedModel ?: $model);
+            ->andReturn($savedModel ?: $model)
+            ->once();
 
         return $this;
     }
@@ -349,5 +351,20 @@ trait ModelHelper
         }
 
         return entity($className, $times)->create($attributes);
+    }
+
+    /**
+     * @param UuidModel|MockInterface $uuidModel
+     * @param string                  $uuid
+     *
+     * @return $this
+     */
+    private function mockUuidModelGetUuid(MockInterface $uuidModel, string $uuid): self
+    {
+        $uuidModel
+            ->shouldReceive('getUuid')
+            ->andReturn($uuid);
+
+        return $this;
     }
 }

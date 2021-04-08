@@ -112,4 +112,11 @@ interface ProjectModel extends Model, SoftDeletable, Timestampable, UuidModel
      * @return UserModel[]|Collection
      */
     public function getMembers(): Collection;
+
+    /**
+     * @param string $email
+     *
+     * @return bool
+     */
+    public function hasMemberWithEmail(string $email): bool;
 }

@@ -253,4 +253,14 @@ final class ProjectDoctrineModel extends AbstractDoctrineModel implements Projec
 
         return $members;
     }
+
+    /**
+     * @param string $email
+     *
+     * @return bool
+     */
+    public function hasMemberWithEmail(string $email): bool
+    {
+        // TODO: Implement hasMemberWithEmail() method.
+    }
 }

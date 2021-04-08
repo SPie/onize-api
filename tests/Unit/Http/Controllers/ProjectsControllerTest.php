@@ -4,7 +4,9 @@ namespace Tests\Unit\Http\Controllers;
 
 use App\Http\Controllers\ProjectsController;
 use App\Http\Requests\Projects\Create;
+use App\Http\Requests\Projects\Invite;
 use App\Projects\ProjectManager;
+use App\Projects\RoleModel;
 use Doctrine\Common\Collections\ArrayCollection;
 use Illuminate\Contracts\Routing\ResponseFactory;
 use Mockery as m;
@@ -191,6 +193,39 @@ final class ProjectsControllerTest extends TestCase
         $this->assertEquals($response, $projectsController->members($project));
     }
 
+    /**
+     * @return array
+     */
+    private function setUpInviteTest(): array
+    {
+        $email = $this->getFaker()->safeEmail;
+        $metaData = [$this->getFaker()->word => $this->getFaker()->word];
+        $role = $this->createRoleModel();
+        $request = $this->createInviteRequest($role, $email, $metaData);
+        $invitationData = [$this->getFaker()->word => $this->getFaker()->word];
+        $invitation = $this->createInvitationModel();
+        $this->mockInvitationModelToArray($invitation, $invitationData);
+        $invitationManager = $this->createInvitationManager();
+        $this->mockinvitationManagerInviteMember($invitationManager, $invitation, $role, $email, $metaData);
+        $response = $this->createJsonResponse();
+        $responseFactory = $this->createResponseFactory();
+        $this->mockResponseFactoryJson($responseFactory, $response, ['invitation' => $invitationData], 201);
+        $projectsController = $this->getProjectsController(null, $responseFactory);
+
+        return [$projectsController, $request, $invitationManager, $response];
+    }
+
+    /**
+     * @return void
+     */
+    public function testInvite(): void
+    {
+        /** @var ProjectsController $projectsController */
+        [$projectsController, $request, $invitationManager, $response] = $this->setUpInviteTest();
+
+        $this->assertEquals($response, $projectsController->invite($request, $invitationManager));
+    }
+
     //endregion
 
     /**
@@ -233,6 +268,27 @@ final class ProjectsControllerTest extends TestCase
             ->getMock()
             ->shouldReceive('getMetaDataElements')
             ->andReturn($metaDataElements)
+            ->getMock()
+            ->shouldReceive('getMetaData')
+            ->andReturn($metaData)
+            ->getMock();
+    }
+
+    /**
+     * @param RoleModel|null $role
+     * @param string|null    $email
+     * @param array          $metaData
+     *
+     * @return Invite
+     */
+    private function createInviteRequest(RoleModel $role = null, string $email = null, array $metaData = []): Invite
+    {
+        return m::spy(Invite::class)
+            ->shouldReceive('getRole')
+            ->andReturn($role ?: $this->createRoleModel())
+            ->getMock()
+            ->shouldReceive('getEmail')
+            ->andReturn($email ?: $this->getFaker()->safeEmail)
             ->getMock()
             ->shouldReceive('getMetaData')
             ->andReturn($metaData)

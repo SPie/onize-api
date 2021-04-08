@@ -9,6 +9,7 @@
     "license": "MIT",
     "require": {
         "php": "^7.4",
+        "ext-json": "*",
         "fideloper/proxy": "^4.2",
         "fruitcake/laravel-cors": "^2.0",
         "gedmo/doctrine-extensions": "^2.4",
@@ -16,7 +17,8 @@
         "laravel-doctrine/extensions": "^1.2",
         "laravel-doctrine/migrations": "^2.1",
         "laravel-doctrine/orm": "^1.6",
-        "laravel/framework": "^8.18"
+        "laravel/framework": "^8.18",
+        "nesbot/carbon": "^2.46"
     },
     "require-dev": {
         "facade/ignition": "^2.0",

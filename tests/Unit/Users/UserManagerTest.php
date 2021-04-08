@@ -132,13 +132,15 @@ final class UserManagerTest extends TestCase
     /**
      * @return array
      */
-    private function setUpUpdateUserDataTest(): array
+    private function setUpUpdateUserDataTest(bool $withChange = true): array
     {
         $email = $this->getFaker()->safeEmail;
         $user = $this->createUserModel();
         $this->mockUserModelSetEmail($user, $email);
         $userRepository = $this->createUserRepository();
-        $this->mockRepositorySave($userRepository, $user);
+        if ($withChange) {
+            $this->mockRepositorySave($userRepository, $user);
+        }
         $userManager = $this->getUserManager($userRepository);
 
         return [$userManager, $user, $email, $userRepository];
@@ -166,7 +168,7 @@ final class UserManagerTest extends TestCase
          * @var UserManager    $userManager
          * @var UserRepository|MockInterface $userRepository
          */
-        [$userManager, $user, $email, $userRepository] = $this->setUpUpdateUserDataTest();
+        [$userManager, $user, $email, $userRepository] = $this->setUpUpdateUserDataTest(false);
 
         $this->assertEquals($user, $userManager->updateUserData($user, null));
         $userRepository->shouldNotHaveReceived('save');
@@ -175,7 +177,7 @@ final class UserManagerTest extends TestCase
     /**
      * @return array
      */
-    private function setUpUpdatePasswordTest(): array
+    private function setUpUpdatePasswordTest(bool $withChange = true): array
     {
         $user = $this->createUserModel();
         $password = $this->getFaker()->password;
@@ -183,7 +185,9 @@ final class UserManagerTest extends TestCase
         $userModelFactory = $this->createUserModelFactory();
         $this->mockUserModelFactorySetPassword($userModelFactory, $updatedUser, $user, $password);
         $userRepository = $this->createUserRepository();
-        $this->mockRepositorySave($userRepository, $updatedUser);
+        if ($withChange) {
+            $this->mockRepositorySave($userRepository, $updatedUser);
+        }
         $userManager = $this->getUserManager($userRepository, $userModelFactory);
 
         return [$userManager, $user, $password, $updatedUser, $userRepository];
@@ -210,7 +214,7 @@ final class UserManagerTest extends TestCase
          * @var UserManager                  $userManager
          * @var UserRepository|MockInterface $userRepository
          */
-        [$userManager, $user, $password, $updatedUser, $userRepository] = $this->setUpUpdatePasswordTest();
+        [$userManager, $user, $password, $updatedUser, $userRepository] = $this->setUpUpdatePasswordTest(false);
 
         $this->assertEquals($user, $userManager->updatePassword($user, null));
         $userRepository->shouldNotHaveReceived('save');

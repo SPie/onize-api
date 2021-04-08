@@ -2,6 +2,10 @@
 
 namespace Tests\Helper;
 
+use App\Projects\Invites\InvitationManager;
+use App\Projects\Invites\InvitationModel;
+use App\Projects\Invites\InvitationModelFactory;
+use App\Projects\Invites\InvitationRepository;
 use App\Projects\MetaDataDoctrineModel;
 use App\Projects\MetaDataElementModel;
 use App\Projects\MetaDataElementModelFactory;
@@ -125,6 +129,23 @@ trait ProjectHelper
     }
 
     /**
+     * @param ProjectModel|MockInterface $projectModel
+     * @param bool                       $isMember
+     * @param string                     $email
+     *
+     * @return $this
+     */
+    private function mockProjectModelHasMemberWithEmail(MockInterface $projectModel, bool $isMember, string $email): self
+    {
+        $projectModel
+            ->shouldReceive('hasMemberWithEmail')
+            ->with($email)
+            ->andReturn($isMember);
+
+        return $this;
+    }
+
+    /**
      * @param int   $times
      * @param array $attributes
      *
@@ -200,6 +221,30 @@ trait ProjectHelper
             ->shouldReceive('getProjectMembers')
             ->with($project)
             ->andReturn($members);
+
+        return $this;
+    }
+
+    /**
+     * @param MockInterface              $projectManager
+     * @param InvitationModel|\Exception $invitation
+     * @param ProjectModel               $project
+     * @param string                     $email
+     * @param array                      $metaData
+     *
+     * @return $this
+     */
+    private function mockProjectManagerInviteMember(
+        MockInterface $projectManager,
+        $invitation,
+        ProjectModel $project,
+        string $email,
+        array $metaData
+    ): self {
+        $projectManager
+            ->shouldReceive('inviteMember')
+            ->with($project, $email, $metaData)
+            ->andThrow($invitation);
 
         return $this;
     }
@@ -778,5 +823,100 @@ trait ProjectHelper
     private function getProjectsMembersShowPermission(): PermissionModel
     {
         return $this->getConcretePermission(PermissionModel::PERMISSION_PROJECTS_MEMBERS_SHOW);
+    }
+
+    /**
+     * @return InvitationModel|MockInterface
+     */
+    private function createInvitationModel(): InvitationModel
+    {
+        return m::spy(InvitationModel::class);
+    }
+
+    /**
+     * @param InvitationModel|MockInterface $invitationModel
+     * @param array                         $data
+     *
+     * @return $this
+     */
+    private function mockInvitationModelToArray(MockInterface $invitationModel, array $data): self
+    {
+        $invitationModel
+            ->shouldReceive('toArray')
+            ->andReturn($data);
+
+        return $this;
+    }
+
+    /**
+     * @return InvitationModelFactory|MockInterface
+     */
+    private function createInvitationModelFactory(): InvitationModelFactory
+    {
+        return m::spy(InvitationModelFactory::class);
+    }
+
+    /**
+     * @param InvitationModelFactory|MockInterface $invitationModelFactory
+     * @param InvitationModel                      $invitationModel
+     * @param RoleModel                            $role
+     * @param string                               $email
+     * @param array                                $metaData
+     *
+     * @return $this
+     */
+    private function mockInvitationModelFactoryCreate(
+        MockInterface $invitationModelFactory,
+        InvitationModel $invitationModel,
+        RoleModel $role,
+        string $email,
+        array $metaData
+    ): self {
+        $invitationModelFactory
+            ->shouldReceive('create')
+            ->with($role, $email, $metaData)
+            ->andReturn($invitationModel);
+
+        return $this;
+    }
+
+    /**
+     * @return InvitationRepository|MockInterface
+     */
+    private function createInvitationRepository(): InvitationRepository
+    {
+        return m::spy(InvitationRepository::class);
+    }
+
+    /**
+     * @return InvitationManager|MockInterface
+     */
+    private function createInvitationManager(): InvitationManager
+    {
+        return m::spy(InvitationManager::class);
+    }
+
+    /**
+     * @param InvitationManager|MockInterface $invitationManager
+     * @param InvitationModel|\Exception      $invitation
+     * @param RoleModel                       $role
+     * @param string                          $email
+     * @param array                           $metaData
+     *
+     * @return $this
+     */
+    private function mockInvitationManagerInviteMember(
+        MockInterface $invitationManager,
+        $invitation,
+        RoleModel $role,
+        string $email,
+        array $metaData
+    ): self {
+        $invitationManager
+            ->shouldReceive('inviteMember')
+            ->with($role, $email, $metaData)
+            ->andThrow($invitation);
+
+        return $this;
     }
 }

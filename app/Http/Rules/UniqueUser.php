@@ -19,6 +19,9 @@ class UniqueUser implements Rule
      */
     private UserManager $userManager;
 
+    /**
+     * @var int|null
+     */
     private ?int $existingUserId;
 
     /**

@@ -205,6 +205,21 @@ trait UsersHelper
     }
 
     /**
+     * @param UserModel|MockInterface $userModel
+     * @param string                  $email
+     *
+     * @return $this
+     */
+    private function mockUserModelGetEmail(MockInterface $userModel, string $email): self
+    {
+        $userModel
+            ->shouldReceive('getEmail')
+            ->andReturn($email);
+
+        return $this;
+    }
+
+    /**
      * @return UserManager|MockInterface
      */
     private function createUserManager(): UserManager

@@ -84,6 +84,16 @@ class RoleManager
     }
 
     /**
+     * @param string $uuid
+     *
+     * @return RoleModel
+     */
+    public function getRole(string $uuid): RoleModel
+    {
+        // TODO
+    }
+
+    /**
      * @param ProjectModel $project
      * @param UserModel    $user
      * @param array        $metaData

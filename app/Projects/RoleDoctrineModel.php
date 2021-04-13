@@ -6,6 +6,7 @@ use App\Models\AbstractDoctrineModel;
 use App\Models\SoftDelete;
 use App\Models\Timestamps;
 use App\Models\Uuid;
+use App\Projects\Invites\InvitationModel;
 use App\Users\UserModel;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
@@ -71,6 +72,13 @@ final class RoleDoctrineModel extends AbstractDoctrineModel implements RoleModel
     private Collection $permissions;
 
     /**
+     * @ORM\OneToMany(targetEntity="App\Projects\Invites\InvitationDoctrineModel", mappedBy="role", cascade={"persist"})
+     *
+     * @var InvitationModel[]|Collection
+     */
+    private Collection $invitations;
+
+    /**
      * RoleDoctrineModel constructor.
      *
      * @param string       $uuid
@@ -86,6 +94,7 @@ final class RoleDoctrineModel extends AbstractDoctrineModel implements RoleModel
         $this->owner = $owner;
         $this->users = new ArrayCollection();
         $this->permissions = new ArrayCollection();
+        $this->invitations = new ArrayCollection();
     }
 
     /**
@@ -214,6 +223,40 @@ final class RoleDoctrineModel extends AbstractDoctrineModel implements RoleModel
         return $this->getPermissions()->exists(
             fn (int $i, PermissionModel $permission) => $permission->getName() === $permissionName
         );
+    }
+
+    /**
+     * @param InvitationModel[] $invitations
+     *
+     * @return RoleModel
+     */
+    public function setInvitations(array $invitations): RoleModel
+    {
+        $this->invitations = new ArrayCollection($invitations);
+
+        return $this;
+    }
+
+    /**
+     * @param InvitationModel $invitation
+     *
+     * @return RoleModel
+     */
+    public function addInvitation(InvitationModel $invitation): RoleModel
+    {
+        if (!$this->invitations->contains($invitation)) {
+            $this->invitations->add($invitation);
+        }
+
+        return $this;
+    }
+
+    /**
+     * @return InvitationModel[]|Collection
+     */
+    public function getInvitations(): Collection
+    {
+        return $this->invitations;
     }
 
     /**

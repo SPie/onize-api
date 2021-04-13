@@ -32,7 +32,7 @@ final class InvitationTest extends TestCase
         $this->assertEquals('emails.projects.invitation', $invitation->view);
         $this->assertEquals(['token' => $token, 'role' => $role], $invitation->viewData);
     }
-    
+
     //endregion
 
     /**

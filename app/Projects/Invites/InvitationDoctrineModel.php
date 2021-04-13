@@ -9,9 +9,15 @@ use App\Models\Timestamps;
 use App\Models\Uuid;
 use App\Projects\RoleModel;
 use Carbon\CarbonImmutable;
+use Doctrine\ORM\Mapping as ORM;
+use Gedmo\Mapping\Annotation as Gedmo;
 
 /**
  * Class InvitationDoctrineModel
+ *
+ * @ORM\Table(name="invitations")
+ * @ORM\Entity(repositoryClass="App\Projects\Invitations\InvitationDoctrineRepository")
+ * @Gedmo\SoftDeleteable(fieldName="deletedAt", timeAware=false)
  *
  * @package App\Projects\Invites
  */
@@ -23,31 +29,43 @@ final class InvitationDoctrineModel extends AbstractDoctrineModel implements Inv
     use Uuid;
 
     /**
+     * @ORM\Column(name="email", type="string", length=255, nullable=false)
+     *
      * @var string
      */
     private string $email;
 
     /**
+     * @ORM\ManyToOne(targetEntity="App\Projects\RoleDoctrineModel", inversedBy="invitations", cascade={"persist"})
+     *
      * @var RoleModel
      */
     private RoleModel $role;
 
     /**
+     * @ORM\Column(name="valid_until", type="datetime", nullable=false)
+     *
      * @var \DateTime
      */
     private \DateTime $validUntil;
 
     /**
+     * @ORM\Column(name="accepted_at", type="datetime", nullable=true)
+     *
      * @var \DateTime|null
      */
     private ?\DateTime $acceptedAt;
 
     /**
+     * @ORM\Column(name="declined_at", type="datetime", nullable=true)
+     *
      * @var \DateTime|null
      */
     private ?\DateTime $declinedAt;
 
     /**
+     * @ORM\Column(name="meta_data", type="string", length=255, nullable=false)
+     *
      * @var string
      */
     private string $metaData;

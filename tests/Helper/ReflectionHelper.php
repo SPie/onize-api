@@ -33,4 +33,18 @@ trait ReflectionHelper
 
         return $method->invoke($object, $arguments);
     }
+
+    /**
+     * @param mixed  $object
+     * @param string $propertyName
+     *
+     * @return mixed
+     */
+    private function getPrivateProperty($object, string $propertyName)
+    {
+        $property = $this->getReflectionObject($object)->getProperty($propertyName);
+        $property->setAccessible(true);
+
+        return $property->getValue($object);
+    }
 }

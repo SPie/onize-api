@@ -539,6 +539,23 @@ trait ProjectHelper
     }
 
     /**
+     * @param RoleManager|MockInterface $roleManager
+     * @param RoleModel|\Exception      $role
+     * @param string                    $uuid
+     *
+     * @return $this
+     */
+    private function mockRoleManagerGetRole(MockInterface $roleManager, $role, string $uuid): self
+    {
+        $roleManager
+            ->shouldReceive('getRole')
+            ->with($uuid)
+            ->andThrow($role);
+
+        return $this;
+    }
+
+    /**
      * @return MetaDataElementModel|MockInterface
      */
     private function createMetaDataElementModel(): MetaDataElementModel

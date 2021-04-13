@@ -261,6 +261,10 @@ final class ProjectDoctrineModel extends AbstractDoctrineModel implements Projec
      */
     public function hasMemberWithEmail(string $email): bool
     {
-        // TODO: Implement hasMemberWithEmail() method.
+        return $this->getRoles()->exists(
+            fn (int $i, RoleModel $role) => $role->getUsers()->exists(
+                fn (int $i, UserModel $user) => $user->getEmail() === $email
+            )
+        );
     }
 }

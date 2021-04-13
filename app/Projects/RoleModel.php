@@ -6,6 +6,7 @@ use App\Models\Model;
 use App\Models\SoftDeletable;
 use App\Models\Timestampable;
 use App\Models\UuidModel;
+use App\Projects\Invites\InvitationModel;
 use App\Users\UserModel;
 use Doctrine\Common\Collections\Collection;
 
@@ -21,6 +22,7 @@ interface RoleModel extends Model, SoftDeletable, Timestampable, UuidModel
     public const PROPERTY_PROJECT     = 'project';
     public const PROPERTY_USERS       = 'users';
     public const PROPERTY_PERMISSIONS = 'permissions';
+    public const PROPERTY_INVITATIONS = 'invitations';
 
     /**
      * @param string $label
@@ -95,6 +97,25 @@ interface RoleModel extends Model, SoftDeletable, Timestampable, UuidModel
      * @return bool
      */
     public function hasPermission(string $permissionName): bool;
+
+    /**
+     * @param InvitationModel[] $invitations
+     *
+     * @return $this
+     */
+    public function setInvitations(array $invitations): self;
+
+    /**
+     * @param InvitationModel $invitation
+     *
+     * @return $this
+     */
+    public function addInvitation(InvitationModel $invitation): self;
+
+    /**
+     * @return InvitationModel[]|Collection
+     */
+    public function getInvitations(): Collection;
 
     /**
      * @param bool $withProject

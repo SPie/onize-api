@@ -8,6 +8,12 @@ use App\Models\LaravelPasswordHasher;
 use App\Models\PasswordHasher;
 use App\Models\RamseyUuidGenerator;
 use App\Models\UuidGenerator;
+use App\Projects\Invites\InvitationDoctrineModel;
+use App\Projects\Invites\InvitationDoctrineModelFactory;
+use App\Projects\Invites\InvitationDoctrineRepository;
+use App\Projects\Invites\InvitationModel;
+use App\Projects\Invites\InvitationModelFactory;
+use App\Projects\Invites\InvitationRepository;
 use App\Projects\MetaDataDoctrineModel;
 use App\Projects\MetaDataDoctrineModelFactory;
 use App\Projects\MetaDataDoctrineRepository;
@@ -80,6 +86,7 @@ final class ModelServiceProvider extends ServiceProvider
         $this->app->bind(RoleModel::class, RoleDoctrineModel::class);
         $this->app->bind(MetaDataModel::class, MetaDataDoctrineModel::class);
         $this->app->bind(PermissionModel::class, PermissionDoctrineModel::class);
+        $this->app->bind(InvitationModel::class, InvitationDoctrineModel::class);
 
         return $this;
     }
@@ -94,6 +101,7 @@ final class ModelServiceProvider extends ServiceProvider
         $this->app->singleton(MetaDataElementModelFactory::class, MetaDataElementDoctrineModelFactory::class);
         $this->app->singleton(RoleModelFactory::class, RoleDoctrineModelFactory::class);
         $this->app->singleton(MetaDataModelFactory::class, MetaDataDoctrineModelFactory::class);
+        $this->app->singleton(InvitationModelFactory::class, InvitationDoctrineModelFactory::class);
 
         return $this;
     }
@@ -149,6 +157,10 @@ final class ModelServiceProvider extends ServiceProvider
         $this->app->singleton(
             PermissionRepository::class,
             fn () => new PermissionDoctrineRepository($this->makeDatabaseHandler(PermissionDoctrineModel::class))
+        );
+        $this->app->singleton(
+            InvitationRepository::class,
+            fn () => new InvitationDoctrineRepository($this->makeDatabaseHandler(InvitationDoctrineModel::class))
         );
 
         return $this;

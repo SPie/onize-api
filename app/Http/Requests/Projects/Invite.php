@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests\Projects;
 
+use App\Http\Rules\RoleExists;
 use App\Projects\RoleModel;
 use Illuminate\Foundation\Http\FormRequest;
 
@@ -15,13 +16,45 @@ class Invite extends FormRequest
     private const PARAMETER_ROLE = 'role';
     private const PARAMETER_EMAIL = 'email';
     private const PARAMETER_META_DATA = 'metaData';
+    private RoleExists $roleExists;
+
+    /**
+     * Invite constructor.
+     *
+     * @param RoleExists $roleExists
+     * @param array      $query
+     * @param array      $request
+     * @param array      $attributes
+     * @param array      $cookies
+     * @param array      $files
+     * @param array      $server
+     * @param null       $content
+     */
+    public function __construct(
+        RoleExists $roleExists,
+        array $query = [],
+        array $request = [],
+        array $attributes = [],
+        array $cookies = [],
+        array $files = [],
+        array $server = [],
+        $content = null
+    ) {
+        parent::__construct($query, $request, $attributes, $cookies, $files, $server, $content);
+
+        $this->roleExists = $roleExists;
+    }
 
     /**
      * @return array
      */
     public function rules(): array
     {
-        // TODO
+        return [
+            self::PARAMETER_ROLE      => ['required', $this->roleExists],
+            self::PARAMETER_EMAIL     => ['required', 'email'],
+            self::PARAMETER_META_DATA => ['array'],
+        ];
     }
 
     /**
@@ -29,7 +62,7 @@ class Invite extends FormRequest
      */
     public function getRole(): RoleModel
     {
-        // TODO
+        return $this->roleExists->getRole();
     }
 
     /**
@@ -37,7 +70,7 @@ class Invite extends FormRequest
      */
     public function getEmail(): string
     {
-        // TODO
+        return $this->get(self::PARAMETER_EMAIL);
     }
 
     /**
@@ -45,6 +78,6 @@ class Invite extends FormRequest
      */
     public function getMetaData(): array
     {
-        // TODO
+        return $this->get(self::PARAMETER_META_DATA, []);
     }
 }

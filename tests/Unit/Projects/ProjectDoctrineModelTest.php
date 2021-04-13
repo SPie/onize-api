@@ -117,6 +117,46 @@ final class ProjectDoctrineModelTest extends TestCase
         $this->assertTrue($project->getMembers()->isEmpty());
     }
 
+    /**
+     * @param bool $withMember
+     *
+     * @return array
+     */
+    private function setUpHasMemberWithEmailTest(bool $withMember = true): array
+    {
+        $email = $this->getFaker()->safeEmail;
+        $user = $this->createUserModel();
+        $this->mockUserModelGetEmail($user, ($withMember ? '' : $this->getFaker()->word) . $email);
+        $role = $this->createRoleModel();
+        $this->mockRoleModelGetUsers($role, new ArrayCollection([$user]));
+        $projectModel = $this->getProjectDoctrineModel();
+        $projectModel->addRole($role);
+
+        return [$projectModel, $email];
+    }
+
+    /**
+     * @return void
+     */
+    public function testHasMemberWithEmailWithMember(): void
+    {
+        /** @var ProjectDoctrineModel $projectModel */
+        [$projectModel, $email] = $this->setUpHasMemberWithEmailTest();
+
+        $this->assertTrue($projectModel->hasMemberWithEmail($email));
+    }
+
+    /**
+     * @return void
+     */
+    public function testHasMemberWithEmailWithoutMember(): void
+    {
+        /** @var ProjectDoctrineModel $projectModel */
+        [$projectModel, $email] = $this->setUpHasMemberWithEmailTest(false);
+
+        $this->assertFalse($projectModel->hasMemberWithEmail($email));
+    }
+
     //endregion
 
     /**

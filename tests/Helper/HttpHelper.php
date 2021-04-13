@@ -4,7 +4,9 @@ namespace Tests\Helper;
 
 use App\Http\Requests\Auth\Authenticate;
 use App\Http\Requests\Users\UpdatePassword;
+use App\Http\Rules\RoleExists;
 use App\Http\Rules\UniqueUser;
+use App\Projects\RoleModel;
 use Illuminate\Contracts\Routing\Registrar;
 use Illuminate\Contracts\Routing\ResponseFactory;
 use Illuminate\Contracts\Support\MessageBag;
@@ -309,5 +311,28 @@ trait HttpHelper
             ->shouldReceive('getUserPassword')
             ->andReturn($password)
             ->getMock();
+    }
+
+    /**
+     * @return RoleExists|MockInterface
+     */
+    private function createRoleExistsRule(): RoleExists
+    {
+        return m::spy(RoleExists::class);
+    }
+
+    /**
+     * @param RoleExists|MockInterface $roleExists
+     * @param RoleModel                $role
+     *
+     * @return $this
+     */
+    private function mockRoleExistsRuleGetRole(MockInterface $roleExists, RoleModel $role): self
+    {
+        $roleExists
+            ->shouldReceive('getRole')
+            ->andReturn($role);
+
+        return $this;
     }
 }

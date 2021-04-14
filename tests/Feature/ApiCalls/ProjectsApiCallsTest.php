@@ -10,7 +10,7 @@ use App\Projects\ProjectRepository;
 use App\Projects\RoleModel;
 use App\Projects\RoleRepository;
 use App\Users\UserModel;
-use Doctrine\Common\Collections\ArrayCollection;
+use Carbon\CarbonImmutable;
 use LaravelDoctrine\Migrations\Testing\DatabaseMigrations;
 use Tests\Feature\FeatureTestCase;
 use Tests\Helper\ApiHelper;
@@ -1014,6 +1014,59 @@ final class ProjectsApiCallsTest extends FeatureTestCase
         );
 
         $response->assertOk();
+    }
+
+    /**
+     * @return array
+     */
+    private function setUpInviteTest(): array
+    {
+        $role = $this->createRoleEntities()->first();
+        $user = $this->createUserWithRole($role);
+        $this->actingAs($user);
+        $email = $this->getFaker()->safeEmail;
+        $metaData = [$this->getFaker()->word => $this->getFaker()->word];
+        $now = new CarbonImmutable();
+        $this->setCarbonMock($now);
+        $validUntil = $now->addDays(3);
+
+        return [$email, $role, $metaData, $validUntil];
+    }
+
+    /**
+     * @return void
+     */
+    public function testInvite(): void
+    {
+        /**
+         * @var RoleModel       $role
+         * @var CarbonImmutable $validUntil
+         */
+        [$email, $role, $metaData, $validUntil] = $this->setUpInviteTest();
+
+        $response = $this->doApiCall(
+            'POST',
+            $this->getUrl(ProjectsController::ROUTE_NAME_INVITE),
+            [
+                'email'    => $email,
+                'role'     => $role->getUuid(),
+                'metaData' => $metaData,
+            ]
+        );
+
+        $response->assertCreated();
+        // TODO check for created invitation and get uuid
+        $response->assertJsonFragment([
+            'invitation' => [
+                'uuid'       => '', // TODO
+                'email'      => $email,
+                'role'       => $role->toArray(true),
+                'metaData'   => $metaData,
+                'validUntil' => $validUntil->format('Y-m-d H:i:s'),
+                'acceptedAt' => null,
+                'declinedAt' => null,
+            ]
+        ]);
     }
 
     //endregion

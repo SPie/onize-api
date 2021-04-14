@@ -28,6 +28,7 @@ final class Version20200515211800 extends AbstractMigration
             ->createMetaDataTable($schema)
             ->createPermissionsTable($schema)
             ->createRolesPermissionsTable($schema)
+            ->createInvitationsTable($schema);
 //            ->createLoginAttemptsTable($schema)
 //            ->createProjectsTable($schema)
 //            ->createProjectInvitesTable($schema)
@@ -109,6 +110,7 @@ final class Version20200515211800 extends AbstractMigration
         (new Builder($schema))->create('roles', function (Table $table) {
             $table->increments('id');
             $table->string('uuid');
+            $table->unique('uuid');
             $table->string('label');
             $table->boolean('owner');
             $table->integer('project_id', false, true);
@@ -189,6 +191,30 @@ final class Version20200515211800 extends AbstractMigration
             $table->foreign('roles', 'role_id', 'id');
             $table->integer('permission_id', false, true);
             $table->foreign('permissions', 'permission_id', 'id');
+        });
+
+        return $this;
+    }
+
+    /**
+     * @param Schema $schema
+     *
+     * @return $this
+     */
+    private function createInvitationsTable(Schema $schema): self
+    {
+        (new Builder($schema))->create('invitations', function (Table $table) {
+            $table->increments('id');
+            $table->string('uuid');
+            $table->unique('uuid');
+            $table->string('email');
+            $table->integer('role_id', false, true);
+            $table->foreign('roles', 'role_id');
+            $table->dateTime('valid_until');
+            $table->dateTime('accepted_at')->setNotnull(false)->setDefault(null);
+            $table->dateTime('declined_at')->setNotnull(false)->setDefault(null);
+            $table->json('meta_data');
+            $table->timestamps();
         });
 
         return $this;

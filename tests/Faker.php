@@ -2,6 +2,7 @@
 
 namespace Tests;
 
+use Carbon\CarbonImmutable;
 use Faker\Factory;
 use Faker\Generator;
 
@@ -27,5 +28,13 @@ trait Faker
         }
 
         return $this->faker;
+    }
+
+    /**
+     * @return CarbonImmutable
+     */
+    protected function getCarbonImmutable(): CarbonImmutable
+    {
+        return new CarbonImmutable($this->getFaker()->dateTime);
     }
 }

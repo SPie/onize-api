@@ -6,6 +6,7 @@ use Illuminate\Foundation\Testing\DatabaseMigrations as EloquentDatabaseMigratio
 use Illuminate\Foundation\Testing\TestCase;
 use Illuminate\Support\Facades\URL;
 use LaravelDoctrine\Migrations\Testing\DatabaseMigrations;
+use Tests\Carbon;
 use Tests\CreatesApplication;
 use Tests\Faker;
 
@@ -16,13 +17,14 @@ use Tests\Faker;
  */
 abstract class FeatureTestCase extends TestCase
 {
+    use Carbon;
     use CreatesApplication;
     use Faker;
 
     /**
      * @return void
      */
-    public function setUpTraits()
+    protected function setUpTraits()
     {
         parent::setUpTraits();
 

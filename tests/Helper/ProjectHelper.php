@@ -2,6 +2,7 @@
 
 namespace Tests\Helper;
 
+use App\Projects\Invites\InvitationDoctrineModel;
 use App\Projects\Invites\InvitationManager;
 use App\Projects\Invites\InvitationModel;
 use App\Projects\Invites\InvitationModelFactory;
@@ -935,5 +936,16 @@ trait ProjectHelper
             ->andThrow($invitation);
 
         return $this;
+    }
+
+    /**
+     * @param int   $times
+     * @param array $attributes
+     *
+     * @return InvitationModel[]|Collection
+     */
+    private function createInvitationEntities(int $times = 1, array $attributes = []): Collection
+    {
+        return $this->createModelEntities(InvitationDoctrineModel::class, $times, $attributes);
     }
 }

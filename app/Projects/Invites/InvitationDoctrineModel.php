@@ -4,7 +4,6 @@ namespace App\Projects\Invites;
 
 use App\Models\AbstractDoctrineModel;
 use App\Models\DateTimeCarbonConversion;
-use App\Models\SoftDelete;
 use App\Models\Timestamps;
 use App\Models\Uuid;
 use App\Projects\RoleModel;
@@ -17,14 +16,12 @@ use Gedmo\Mapping\Annotation as Gedmo;
  *
  * @ORM\Table(name="invitations")
  * @ORM\Entity(repositoryClass="App\Projects\Invitations\InvitationDoctrineRepository")
- * @Gedmo\SoftDeleteable(fieldName="deletedAt", timeAware=false)
  *
  * @package App\Projects\Invites
  */
 final class InvitationDoctrineModel extends AbstractDoctrineModel implements InvitationModel
 {
     use DateTimeCarbonConversion;
-    use SoftDelete;
     use Timestamps;
     use Uuid;
 
@@ -78,8 +75,14 @@ final class InvitationDoctrineModel extends AbstractDoctrineModel implements Inv
      * @param CarbonImmutable $validUntil
      * @param array           $metaData
      */
-    public function __construct(RoleModel $role, string $email, CarbonImmutable $validUntil, array $metaData = [])
-    {
+    public function __construct(
+        string $uuid,
+        RoleModel $role,
+        string $email,
+        CarbonImmutable $validUntil,
+        array $metaData = []
+    ) {
+        $this->uuid = $uuid;
         $this->role = $role;
         $this->email = $email;
         $this->validUntil = $validUntil->toDateTime();
@@ -165,6 +168,14 @@ final class InvitationDoctrineModel extends AbstractDoctrineModel implements Inv
      */
     public function toArray(): array
     {
-        // TODO: Implement toArray() method.
+        return [
+            self::PROPERTY_UUID        => $this->getUuid(),
+            self::PROPERTY_EMAIl       => $this->getEmail(),
+            self::PROPERTY_ROLE        => $this->getRole()->toArray(true),
+            self::PROPERTY_VALID_UNTIL => $this->getValidUntil()->format('Y-m-d H:i:s'),
+            self::PROPERTY_META_DATA   => $this->getMetaData(),
+            self::PROPERTY_ACCEPTED_AT => $this->getAcceptedAt()->format('Y-m-d H:i:s'),
+            self::PROPERTY_DECLINED_AT => $this->getDeclinedAt()->format('Y-m-d H:i:s'),
+        ];
     }
 }

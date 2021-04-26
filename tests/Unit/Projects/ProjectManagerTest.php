@@ -9,6 +9,7 @@ use App\Projects\ProjectManager;
 use App\Projects\ProjectModelFactory;
 use App\Projects\ProjectRepository;
 use Doctrine\Common\Collections\ArrayCollection;
+use Illuminate\Support\Arr;
 use Tests\Helper\ModelHelper;
 use Tests\Helper\ProjectHelper;
 use Tests\Helper\UsersHelper;

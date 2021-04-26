@@ -11,9 +11,11 @@ use App\Projects\MetaDataDoctrineModel;
 use App\Projects\MetaDataElementModel;
 use App\Projects\MetaDataElementModelFactory;
 use App\Projects\MetaDataElementRepository;
+use App\Projects\MetaData\MetaDataManager;
 use App\Projects\MetaDataModel;
 use App\Projects\MetaDataModelFactory;
 use App\Projects\MetaDataRepository;
+use App\Projects\MetaData\MetaDataValidator;
 use App\Projects\PermissionDoctrineModel;
 use App\Projects\PermissionModel;
 use App\Projects\PermissionRepository;
@@ -147,6 +149,21 @@ trait ProjectHelper
     }
 
     /**
+     * @param ProjectModel|MockInterface        $projectModel
+     * @param MetaDataElementModel[]|Collection $metaDataElements
+     *
+     * @return $this
+     */
+    private function mockProjectModelGetMetaDataElements(MockInterface $projectModel, Collection $metaDataElements): self
+    {
+        $projectModel
+            ->shouldReceive('getMetaDataElements')
+            ->andReturn($metaDataElements);
+
+        return $this;
+    }
+
+    /**
      * @param int   $times
      * @param array $attributes
      *
@@ -222,30 +239,6 @@ trait ProjectHelper
             ->shouldReceive('getProjectMembers')
             ->with($project)
             ->andReturn($members);
-
-        return $this;
-    }
-
-    /**
-     * @param MockInterface              $projectManager
-     * @param InvitationModel|\Exception $invitation
-     * @param ProjectModel               $project
-     * @param string                     $email
-     * @param array                      $metaData
-     *
-     * @return $this
-     */
-    private function mockProjectManagerInviteMember(
-        MockInterface $projectManager,
-        $invitation,
-        ProjectModel $project,
-        string $email,
-        array $metaData
-    ): self {
-        $projectManager
-            ->shouldReceive('inviteMember')
-            ->with($project, $email, $metaData)
-            ->andThrow($invitation);
 
         return $this;
     }
@@ -580,6 +573,51 @@ trait ProjectHelper
     }
 
     /**
+     * @param MetaDataElementModel|MockInterface $metaDataElementModel
+     * @param string                             $name
+     *
+     * @return $this
+     */
+    private function mockMetaDataElementModelGetName(MockInterface $metaDataElementModel, string $name): self
+    {
+        $metaDataElementModel
+            ->shouldReceive('getName')
+            ->andReturn($name);
+
+        return $this;
+    }
+
+    /**
+     * @param MetaDataElementModel|MockInterface $metaDataElementModel
+     * @param bool                               $required
+     *
+     * @return $this
+     */
+    private function mockMetaDataElementModelIsRequired(MockInterface $metaDataElementModel, bool $required): self
+    {
+        $metaDataElementModel
+            ->shouldReceive('isRequired')
+            ->andReturn($required);
+
+        return $this;
+    }
+
+    /**
+     * @param MetaDataElementModel|MockInterface $metaDataElementModel
+     * @param string                             $type
+     *
+     * @return $this
+     */
+    private function mockMetaDataElementModelGetType(MockInterface $metaDataElementModel, string $type): self
+    {
+        $metaDataElementModel
+            ->shouldReceive('getType')
+            ->andReturn($type);
+
+        return $this;
+    }
+
+    /**
      * @return MetaDataElementRepository|MockInterface
      */
     private function createMetaDataElementRepository(): MetaDataElementRepository
@@ -646,6 +684,23 @@ trait ProjectHelper
     private function createRoleRepository(): RoleRepository
     {
         return m::spy(RoleRepository::class);
+    }
+
+    /**
+     * @param RoleRepository|MockInterface $roleRepository
+     * @param RoleModel|null               $role
+     * @param string                       $uuid
+     *
+     * @return $this
+     */
+    private function mockRoleRepositoryFindOneByUuid(MockInterface $roleRepository, ?RoleModel $role, string $uuid): self
+    {
+        $roleRepository
+            ->shouldReceive('findOneByUuid')
+            ->with($uuid)
+            ->andReturn($role);
+
+        return $this;
     }
 
     /**
@@ -947,5 +1002,111 @@ trait ProjectHelper
     private function createInvitationEntities(int $times = 1, array $attributes = []): Collection
     {
         return $this->createModelEntities(InvitationDoctrineModel::class, $times, $attributes);
+    }
+
+    /**
+     * @return MetaDataManager|MockInterface
+     */
+    private function createMetaDataManager(): MetaDataManager
+    {
+        return m::spy(MetaDataManager::class);
+    }
+
+    /**
+     * @param MetaDataManager|MockInterface $metaDataManager
+     * @param array                         $validationErrors
+     * @param ProjectModel                  $project
+     * @param array                         $metaData
+     *
+     * @return $this
+     */
+    private function mockMetaDataManagerValidateMetaData(
+        MockInterface $metaDataManager,
+        array $validationErrors,
+        ProjectModel $project,
+        array $metaData
+    ): self {
+        $metaDataManager
+            ->shouldReceive('validateMetaData')
+            ->with($project, $metaData)
+            ->andReturn($validationErrors);
+
+        return $this;
+    }
+
+    /**
+     * @return MetaDataValidator|MockInterface
+     */
+    private function createMetaDataValidator(): MetaDataValidator
+    {
+        return m::spy(MetaDataValidator::class);
+    }
+
+    /**
+     * @param MetaDataValidator|MockInterface $metaDataValidator
+     * @param bool                            $valid
+     * @param mixed                           $value
+     *
+     * @return $this
+     */
+    private function mockMetaDataValidatorIsValidString(MockInterface $metaDataValidator, bool $valid, $value): self
+    {
+        $metaDataValidator
+            ->shouldReceive('isValidString')
+            ->with($value)
+            ->andReturn($valid);
+
+        return $this;
+    }
+
+    /**
+     * @param MetaDataValidator|MockInterface $metaDataValidator
+     * @param bool                            $valid
+     * @param mixed                           $value
+     *
+     * @return $this
+     */
+    private function mockMetaDataValidatorIsValidEmail(MockInterface $metaDataValidator, bool $valid, $value): self
+    {
+        $metaDataValidator
+            ->shouldReceive('isValidEmail')
+            ->with($value)
+            ->andReturn($valid);
+
+        return $this;
+    }
+
+    /**
+     * @param MetaDataValidator|MockInterface $metaDataValidator
+     * @param bool                            $valid
+     * @param mixed                           $value
+     *
+     * @return $this
+     */
+    private function mockMetaDataValidatorIsValidNumeric(MockInterface $metaDataValidator, bool $valid, $value): self
+    {
+        $metaDataValidator
+            ->shouldReceive('isValidNumeric')
+            ->with($value)
+            ->andReturn($valid);
+
+        return $this;
+    }
+
+    /**
+     * @param MetaDataValidator|MockInterface $metaDataValidator
+     * @param bool                            $valid
+     * @param mixed                           $value
+     *
+     * @return $this
+     */
+    private function mockMetaDataValidatorIsValidDateTime(MockInterface $metaDataValidator, bool $valid, $value): self
+    {
+        $metaDataValidator
+            ->shouldReceive('isValidDateTime')
+            ->with($value)
+            ->andReturn($valid);
+
+        return $this;
     }
 }

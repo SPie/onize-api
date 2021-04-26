@@ -56,6 +56,24 @@ trait HttpHelper
     }
 
     /**
+     * @param Route|MockInterface $route
+     * @param mixed               $parameter
+     * @param string              $name
+     * @param mixed               $default
+     *
+     * @return $this
+     */
+    private function mockRouteParameter(MockInterface $route, $parameter, string $name, $default): self
+    {
+        $route
+            ->shouldReceive('parameter')
+            ->with($name, $default)
+            ->andReturn($parameter);
+
+        return $this;
+    }
+
+    /**
      * @return Registrar|MockInterface
      */
     private function createRouter(): Registrar

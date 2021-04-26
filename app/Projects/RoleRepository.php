@@ -19,4 +19,11 @@ interface RoleRepository extends Repository
      * @return RoleModel|Model
      */
     public function save(Model $model, bool $flush = true): Model;
+
+    /**
+     * @param string $uuid
+     *
+     * @return RoleModel|null
+     */
+    public function findOneByUuid(string $uuid): ?RoleModel;
 }

@@ -101,7 +101,10 @@ final class ModelServiceProvider extends ServiceProvider
         $this->app->singleton(MetaDataElementModelFactory::class, MetaDataElementDoctrineModelFactory::class);
         $this->app->singleton(RoleModelFactory::class, RoleDoctrineModelFactory::class);
         $this->app->singleton(MetaDataModelFactory::class, MetaDataDoctrineModelFactory::class);
-        $this->app->singleton(InvitationModelFactory::class, InvitationDoctrineModelFactory::class);
+        $this->app->singleton(InvitationModelFactory::class, fn () => new InvitationDoctrineModelFactory(
+            $this->app->get(UuidGenerator::class),
+            $this->app['config']['projects.invitations.validUntilMinutes']
+        ));
 
         return $this;
     }

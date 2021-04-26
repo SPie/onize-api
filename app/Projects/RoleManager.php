@@ -2,6 +2,7 @@
 
 namespace App\Projects;
 
+use App\Models\Exceptions\ModelNotFoundException;
 use App\Users\UserModel;
 
 /**
@@ -90,7 +91,12 @@ class RoleManager
      */
     public function getRole(string $uuid): RoleModel
     {
-        // TODO
+        $role = $this->roleRepository->findOneByUuid($uuid);
+        if (!$role) {
+            throw new ModelNotFoundException();
+        }
+
+        return $role;
     }
 
     /**

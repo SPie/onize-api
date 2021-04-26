@@ -44,5 +44,7 @@ $router->group(['middleware' => 'auth'], function (Router $router) {
             ->uses('ProjectsController@members');
 
         $router->get('{project}')->name(ProjectsController::ROUTE_NAME_SHOW)->middleware('can:show,project')->uses('ProjectsController@show');
+
+        $router->post('{project}/invitations')->name(ProjectsController::ROUTE_NAME_INVITE)->uses('ProjectsController@invite');
     });
 });

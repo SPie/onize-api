@@ -3,6 +3,7 @@
 namespace Tests\Feature\ApiCalls;
 
 use App\Http\Controllers\ProjectsController;
+use App\Projects\Invites\InvitationRepository;
 use App\Projects\MetaDataModel;
 use App\Projects\MetaDataRepository;
 use App\Projects\ProjectModel;
@@ -1025,7 +1026,7 @@ final class ProjectsApiCallsTest extends FeatureTestCase
         $user = $this->createUserWithRole($role);
         $this->actingAs($user);
         $email = $this->getFaker()->safeEmail;
-        $metaData = [$this->getFaker()->word => $this->getFaker()->word];
+        $metaData = [];
         $now = new CarbonImmutable();
         $this->setCarbonMock($now);
         $validUntil = $now->addDays(3);
@@ -1046,7 +1047,7 @@ final class ProjectsApiCallsTest extends FeatureTestCase
 
         $response = $this->doApiCall(
             'POST',
-            $this->getUrl(ProjectsController::ROUTE_NAME_INVITE),
+            $this->getUrl(ProjectsController::ROUTE_NAME_INVITE, ['project' => $role->getProject()->getUuid()]),
             [
                 'email'    => $email,
                 'role'     => $role->getUuid(),
@@ -1055,10 +1056,10 @@ final class ProjectsApiCallsTest extends FeatureTestCase
         );
 
         $response->assertCreated();
-        // TODO check for created invitation and get uuid
+        $invitation = $this->getInvitationRepository()->findAll()->first();
         $response->assertJsonFragment([
             'invitation' => [
-                'uuid'       => '', // TODO
+                'uuid'       => $invitation->getUuid(),
                 'email'      => $email,
                 'role'       => $role->toArray(true),
                 'metaData'   => $metaData,
@@ -1093,5 +1094,13 @@ final class ProjectsApiCallsTest extends FeatureTestCase
     private function getMetaDataRepository(): MetaDataRepository
     {
         return $this->app->get(MetaDataRepository::class);
+    }
+
+    /**
+     * @return InvitationRepository
+     */
+    protected function getInvitationRepository(): InvitationRepository
+    {
+        return $this->app->get(InvitationRepository::class);
     }
 }

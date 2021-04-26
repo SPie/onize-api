@@ -2,6 +2,7 @@
 
 namespace Tests\Unit\Projects;
 
+use App\Models\Exceptions\ModelNotFoundException;
 use App\Projects\MetaDataModelFactory;
 use App\Projects\MetaDataRepository;
 use App\Projects\RoleManager;
@@ -151,6 +152,44 @@ final class RoleManagerTest extends TestCase
         [$roleManager, $project, $user, $permissionName] = $this->setUpHasPermissionForActionTest(false, true, true);
 
         $this->assertTrue($roleManager->hasPermissionForAction($project, $user, $permissionName));
+    }
+
+    /**
+     * @return array
+     */
+    private function setUpGetRoleTest(bool $withRole = true): array
+    {
+        $uuid = $this->getFaker()->uuid;
+        $role = $this->createRoleModel();
+        $roleRepository = $this->createRoleRepository();
+        $this->mockRoleRepositoryFindOneByUuid($roleRepository, $withRole ? $role : null, $uuid);
+        $roleManager = $this->getRoleManager($roleRepository);
+
+        return [$roleManager, $uuid, $role];
+    }
+
+    /**
+     * @return void
+     */
+    public function testGetRole(): void
+    {
+        /** @var RoleManager $roleManager */
+        [$roleManager, $uuid, $role] = $this->setUpGetRoleTest();
+
+        $this->assertEquals($role, $roleManager->getRole($uuid));
+    }
+
+    /**
+     * @return void
+     */
+    public function testGetRoleWithoutRole(): void
+    {
+        /** @var RoleManager $roleManager */
+        [$roleManager, $uuid] = $this->setUpGetRoleTest(false);
+
+        $this->expectException(ModelNotFoundException::class);
+
+        $roleManager->getRole($uuid);
     }
 
     //endregion

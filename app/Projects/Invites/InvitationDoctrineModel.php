@@ -174,8 +174,8 @@ final class InvitationDoctrineModel extends AbstractDoctrineModel implements Inv
             self::PROPERTY_ROLE        => $this->getRole()->toArray(true),
             self::PROPERTY_VALID_UNTIL => $this->getValidUntil()->format('Y-m-d H:i:s'),
             self::PROPERTY_META_DATA   => $this->getMetaData(),
-            self::PROPERTY_ACCEPTED_AT => $this->getAcceptedAt()->format('Y-m-d H:i:s'),
-            self::PROPERTY_DECLINED_AT => $this->getDeclinedAt()->format('Y-m-d H:i:s'),
+            self::PROPERTY_ACCEPTED_AT => $this->getAcceptedAt() ? $this->getAcceptedAt()->format('Y-m-d H:i:s') : null,
+            self::PROPERTY_DECLINED_AT => $this->getDeclinedAt() ? $this->getDeclinedAt()->format('Y-m-d H:i:s') : null,
         ];
     }
 }

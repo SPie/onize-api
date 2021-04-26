@@ -16,7 +16,8 @@ interface PermissionModel extends Model
     public const PROPERTY_DESCRIPTION = 'description';
     public const PROPERTY_ROLES       = 'roles';
 
-    public const PERMISSION_PROJECTS_MEMBERS_SHOW = 'projects.members.show';
+    public const PERMISSION_PROJECTS_MEMBERS_SHOW           = 'projects.members.show';
+    public const PERMISSION_PROJECTS_INVITATIONS_MANAGEMENT = 'projects.invitations.management';
 
     /**
      * @return string

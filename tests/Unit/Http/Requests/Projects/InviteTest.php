@@ -34,7 +34,8 @@ final class InviteTest extends TestCase
             [
                 'role'     => ['required', $roleExists],
                 'email'    => ['required', 'email'],
-                'metaData' => ['array', function () {}],
+                'metaData' => ['array', function () {
+                }],
             ],
             $this->getInvite()->rules()
         );
@@ -117,7 +118,8 @@ final class InviteTest extends TestCase
     {
         [$metaDataValidationRule, $argument, $value] = $this->setUpMetaDataValidationRuleTest();
 
-        $this->assertTrue($metaDataValidationRule($argument, $value, function () {}));
+        $this->assertTrue($metaDataValidationRule($argument, $value, function () {
+        }));
     }
 
     /**
@@ -148,7 +150,8 @@ final class InviteTest extends TestCase
             $validationMessage,
         ] = $this->setUpMetaDataValidationRuleTest(false);
 
-        $this->assertFalse($metaDataValidationRule($argument, $value, function () {}));
+        $this->assertFalse($metaDataValidationRule($argument, $value, function () {
+        }));
         $messageBag
             ->shouldHaveReceived('merge')
             ->with([$validationMessageMetaDataElement => [\sprintf('validation.%s', $validationMessage)]])

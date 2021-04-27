@@ -4,6 +4,7 @@ namespace Tests\Feature\ApiCalls;
 
 use App\Http\Controllers\ProjectsController;
 use App\Projects\Invites\InvitationRepository;
+use App\Projects\MetaDataElementModel;
 use App\Projects\MetaDataModel;
 use App\Projects\MetaDataRepository;
 use App\Projects\ProjectModel;
@@ -1020,18 +1021,84 @@ final class ProjectsApiCallsTest extends FeatureTestCase
     /**
      * @return array
      */
-    private function setUpInviteTest(): array
-    {
-        $role = $this->createRoleEntities()->first();
+    private function setUpInviteTest(
+        bool $withExistingMetaData = true,
+        bool $withRequiredMetaData = true,
+        bool $validMetaData = true,
+        string $type = 'string',
+        bool $withAuthenticatedUser = true,
+        bool $withAuthorizedUser = true,
+        bool $withOwner = false,
+        bool $withAuthorizedRole = true
+    ): array {
+        if ($withAuthorizedUser) {
+            $role = $this->createRoleWithPermission($this->getInvitationsManagementPermission());
+        } elseif ($withOwner) {
+            $role = $this->createOwnerRole();
+        } else {
+            $role = $this->createRoleEntities()->first();
+        }
+        $metaDataElement = $this->createMetaDataElementEntities(
+            1,
+            [
+                MetaDataElementModel::PROPERTY_PROJECT  => $role->getProject(),
+                MetaDataElementModel::PROPERTY_REQUIRED => !$withRequiredMetaData,
+                MetaDataElementModel::PROPERTY_TYPE     => $type,
+            ]
+        )->first();
+        $role->getProject()->addMetaDataElement($metaDataElement);
         $user = $this->createUserWithRole($role);
-        $this->actingAs($user);
+        if ($withAuthenticatedUser) {
+            $this->actingAs($user);
+        }
         $email = $this->getFaker()->safeEmail;
-        $metaData = [];
+        $metaDataName = $metaDataElement->getName() . ($withExistingMetaData ? '' : $this->getFaker()->word);
+        $metaData = $withRequiredMetaData
+            ? [$metaDataName => $validMetaData ? $this->getValidMetaData($type) : $this->getInvalidValidMetaData($type)]
+            : [];
         $now = new CarbonImmutable();
         $this->setCarbonMock($now);
         $validUntil = $now->addDays(3);
 
-        return [$email, $role, $metaData, $validUntil];
+        return [$email, $role, $metaData, $validUntil, $metaDataName];
+    }
+
+    /**
+     * @param string $type
+     *
+     * @return \DateTime|int|string
+     */
+    private function getValidMetaData(string $type)
+    {
+        switch ($type) {
+            case 'email':
+                return $this->getFaker()->safeEmail;
+            case 'numeric':
+                return $this->getFaker()->numberBetween();
+            case 'date':
+                return $this->getFaker()->dateTime;
+            default:
+            case 'string':
+                return $this->getFaker()->word;
+        }
+    }
+
+    /**
+     * @param string $type
+     *
+     * @return \DateTime|int|string
+     */
+    private function getInvalidValidMetaData(string $type)
+    {
+        switch ($type) {
+            case 'email':
+            case 'numeric':
+            case 'date':
+                return $this->getFaker()->word;
+            default:
+            case 'string':
+                return $this->getFaker()->numberBetween();
+        }
     }
 
     /**
@@ -1068,6 +1135,350 @@ final class ProjectsApiCallsTest extends FeatureTestCase
                 'declinedAt' => null,
             ]
         ]);
+    }
+
+    /**
+     * @return void
+     */
+    public function testInviteWithoutExistingProject(): void
+    {
+        /** @var RoleModel $role */
+        [$email, $role, $metaData] = $this->setUpInviteTest();
+
+        $response = $this->doApiCall(
+            'POST',
+            $this->getUrl(ProjectsController::ROUTE_NAME_INVITE, ['project' => $this->getFaker()->uuid]),
+            [
+                'email'    => $email,
+                'role'     => $role->getUuid(),
+                'metaData' => $metaData,
+            ]
+        );
+
+        $response->assertNotFound();
+    }
+
+    /**
+     * @return void
+     */
+    public function testInviteWithoutEmail(): void
+    {
+        /** @var RoleModel $role */
+        [$email, $role, $metaData] = $this->setUpInviteTest();
+
+        $response = $this->doApiCall(
+            'POST',
+            $this->getUrl(ProjectsController::ROUTE_NAME_INVITE, ['project' => $role->getProject()->getUuid()]),
+            [
+                'role'     => $role->getUuid(),
+                'metaData' => $metaData,
+            ]
+        );
+
+        $response->assertStatus(422);
+        $response->assertJsonFragment(['email' => ['validation.required']]);
+    }
+
+    /**
+     * @return void
+     */
+    public function testInviteWithoutRole(): void
+    {
+        /** @var RoleModel $role */
+        [$email, $role, $metaData] = $this->setUpInviteTest();
+
+        $response = $this->doApiCall(
+            'POST',
+            $this->getUrl(ProjectsController::ROUTE_NAME_INVITE, ['project' => $role->getProject()->getUuid()]),
+            [
+                'email'    => $email,
+                'metaData' => $metaData,
+            ]
+        );
+
+        $response->assertStatus(422);
+        $response->assertJsonFragment(['role' => ['validation.required']]);
+    }
+
+    /**
+     * @return void
+     */
+    public function testInviteWithoutExistingRole(): void
+    {
+        /** @var RoleModel $role */
+        [$email, $role, $metaData] = $this->setUpInviteTest();
+
+        $response = $this->doApiCall(
+            'POST',
+            $this->getUrl(ProjectsController::ROUTE_NAME_INVITE, ['project' => $role->getProject()->getUuid()]),
+            [
+                'email'    => $email,
+                'role'     => $this->getFaker()->uuid,
+                'metaData' => $metaData,
+            ]
+        );
+
+        $response->assertStatus(422);
+        $response->assertJsonFragment(['role' => ['validation.role-not-found']]);
+    }
+
+    /**
+     * @return void
+     */
+    public function testInviteWithInvalidMetaData(): void
+    {
+        /** @var RoleModel $role */
+        [$email, $role] = $this->setUpInviteTest();
+
+        $response = $this->doApiCall(
+            'POST',
+            $this->getUrl(ProjectsController::ROUTE_NAME_INVITE, ['project' => $role->getProject()->getUuid()]),
+            [
+                'email'    => $email,
+                'role'     => $role->getUuid(),
+                'metaData' => $this->getFaker()->word,
+            ]
+        );
+
+        $response->assertStatus(422);
+        $response->assertJsonFragment(['metaData' => ['validation.array']]);
+    }
+
+    /**
+     * @return void
+     */
+    public function testInviteWithoutExistingMetaData(): void
+    {
+        /** @var RoleModel $role */
+        [$email, $role, $metaData, $validUntil, $metaDataName] = $this->setUpInviteTest(false);
+
+        $response = $this->doApiCall(
+            'POST',
+            $this->getUrl(ProjectsController::ROUTE_NAME_INVITE, ['project' => $role->getProject()->getUuid()]),
+            [
+                'email'    => $email,
+                'role'     => $role->getUuid(),
+                'metaData' => $metaData,
+            ]
+        );
+
+        $response->assertStatus(422);
+        $response->assertJsonFragment(['metaData' => [$metaDataName => ['validation.not-existing']]]);
+    }
+
+    /**
+     * @return void
+     */
+    public function testInviteWithoutRequiredMetaData(): void
+    {
+        /** @var RoleModel $role */
+        [$email, $role, $metaData, $validUntil, $metaDataName] = $this->setUpInviteTest(true, false);
+
+        $response = $this->doApiCall(
+            'POST',
+            $this->getUrl(ProjectsController::ROUTE_NAME_INVITE, ['project' => $role->getProject()->getUuid()]),
+            [
+                'email'    => $email,
+                'role'     => $role->getUuid(),
+                'metaData' => $metaData,
+            ]
+        );
+
+        $response->assertStatus(422);
+        $response->assertJsonFragment(['metaData' => [$metaDataName => ['validation.required']]]);
+    }
+
+    /**
+     * @return void
+     */
+    public function testInviteWithInvalidStringMetaData(): void
+    {
+        /** @var RoleModel $role */
+        [$email, $role, $metaData, $validUntil, $metaDataName] = $this->setUpInviteTest(true, true, false);
+
+        $response = $this->doApiCall(
+            'POST',
+            $this->getUrl(ProjectsController::ROUTE_NAME_INVITE, ['project' => $role->getProject()->getUuid()]),
+            [
+                'email'    => $email,
+                'role'     => $role->getUuid(),
+                'metaData' => $metaData,
+            ]
+        );
+
+        $response->assertStatus(422);
+        $response->assertJsonFragment(['metaData' => [$metaDataName => ['validation.string']]]);
+    }
+
+    /**
+     * @return void
+     */
+    public function testInviteWithInvalidEmailMetaData(): void
+    {
+        /** @var RoleModel $role */
+        [$email, $role, $metaData, $validUntil, $metaDataName] = $this->setUpInviteTest(true, true, false, 'email');
+
+        $response = $this->doApiCall(
+            'POST',
+            $this->getUrl(ProjectsController::ROUTE_NAME_INVITE, ['project' => $role->getProject()->getUuid()]),
+            [
+                'email'    => $email,
+                'role'     => $role->getUuid(),
+                'metaData' => $metaData,
+            ]
+        );
+
+        $response->assertStatus(422);
+        $response->assertJsonFragment(['metaData' => [$metaDataName => ['validation.email']]]);
+    }
+
+    /**
+     * @return void
+     */
+    public function testInviteWithInvalidNumericMetaData(): void
+    {
+        /** @var RoleModel $role */
+        [$email, $role, $metaData, $validUntil, $metaDataName] = $this->setUpInviteTest(true, true, false, 'numeric');
+
+        $response = $this->doApiCall(
+            'POST',
+            $this->getUrl(ProjectsController::ROUTE_NAME_INVITE, ['project' => $role->getProject()->getUuid()]),
+            [
+                'email'    => $email,
+                'role'     => $role->getUuid(),
+                'metaData' => $metaData,
+            ]
+        );
+
+        $response->assertStatus(422);
+        $response->assertJsonFragment(['metaData' => [$metaDataName => ['validation.numeric']]]);
+    }
+
+    /**
+     * @return void
+     */
+    public function testInviteWithInvalidDateMetaData(): void
+    {
+        /** @var RoleModel $role */
+        [$email, $role, $metaData, $validUntil, $metaDataName] = $this->setUpInviteTest(true, true, false, 'date');
+
+        $response = $this->doApiCall(
+            'POST',
+            $this->getUrl(ProjectsController::ROUTE_NAME_INVITE, ['project' => $role->getProject()->getUuid()]),
+            [
+                'email'    => $email,
+                'role'     => $role->getUuid(),
+                'metaData' => $metaData,
+            ]
+        );
+
+        $response->assertStatus(422);
+        $response->assertJsonFragment(['metaData' => [$metaDataName => ['validation.date']]]);
+    }
+
+    /**
+     * @return void
+     */
+    public function testInviteWithoutAuthenticatedUser(): void
+    {
+        /** @var RoleModel $role */
+        [$email, $role, $metaData] = $this->setUpInviteTest(
+            true,
+            true,
+            true,
+            'string',
+            false
+        );
+
+        $response = $this->doApiCall(
+            'POST',
+            $this->getUrl(ProjectsController::ROUTE_NAME_INVITE, ['project' => $role->getProject()->getUuid()]),
+            [
+                'email'    => $email,
+                'role'     => $role->getUuid(),
+                'metaData' => $metaData,
+            ]
+        );
+
+        $response->assertStatus(401);
+    }
+
+    /**
+     * @return void
+     */
+    public function testInviteWithoutAuthorizedUser(): void
+    {
+        /** @var RoleModel $role */
+        [$email, $role, $metaData] = $this->setUpInviteTest(
+            true,
+            true,
+            true,
+            'string',
+            true,
+            false
+        );
+
+        $response = $this->doApiCall(
+            'POST',
+            $this->getUrl(ProjectsController::ROUTE_NAME_INVITE, ['project' => $role->getProject()->getUuid()]),
+            [
+                'email'    => $email,
+                'role'     => $role->getUuid(),
+                'metaData' => $metaData,
+            ]
+        );
+
+        $response->assertStatus(403);
+    }
+
+    /**
+     * @return void
+     */
+    public function testInviteWithOwnerRole(): void
+    {
+        /** @var RoleModel $role */
+        [$email, $role, $metaData] = $this->setUpInviteTest(
+            true,
+            true,
+            true,
+            'string',
+            true,
+            false,
+            true
+        );
+
+        $response = $this->doApiCall(
+            'POST',
+            $this->getUrl(ProjectsController::ROUTE_NAME_INVITE, ['project' => $role->getProject()->getUuid()]),
+            [
+                'email'    => $email,
+                'role'     => $role->getUuid(),
+                'metaData' => $metaData,
+            ]
+        );
+
+        $response->assertCreated();
+    }
+
+    /**
+     * @return void
+     */
+    public function testInviteWithoutAuthorizedRole(): void
+    {
+        /** @var RoleModel $role */
+        [$email, $role, $metaData] = $this->setUpInviteTest();
+
+        $response = $this->doApiCall(
+            'POST',
+            $this->getUrl(ProjectsController::ROUTE_NAME_INVITE, ['project' => $role->getProject()->getUuid()]),
+            [
+                'email'    => $email,
+                'role'     => $this->createRoleEntities()->first()->getUuid(),
+                'metaData' => $metaData,
+            ]
+        );
+
+        $response->assertStatus(403);
     }
 
     //endregion

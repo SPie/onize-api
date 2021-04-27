@@ -2,7 +2,6 @@
 
 namespace App\Http\Requests\Projects;
 
-use App\Http\Rules\RoleExists;
 use App\Projects\MetaData\MetaDataManager;
 use App\Projects\RoleModel;
 use Illuminate\Foundation\Http\FormRequest;
@@ -19,11 +18,6 @@ class Invite extends FormRequest
     private const PARAMETER_META_DATA = 'metaData';
 
     /**
-     * @var RoleExists
-     */
-    private RoleExists $roleExists;
-
-    /**
      * @var MetaDataManager
      */
     private MetaDataManager $metaDataManager;
@@ -31,7 +25,6 @@ class Invite extends FormRequest
     /**
      * Invite constructor.
      *
-     * @param RoleExists      $roleExists
      * @param MetaDataManager $metaDataManager
      * @param array           $query
      * @param array           $request
@@ -42,7 +35,6 @@ class Invite extends FormRequest
      * @param null            $content
      */
     public function __construct(
-        RoleExists $roleExists,
         MetaDataManager $metaDataManager,
         array $query = [],
         array $request = [],
@@ -54,7 +46,6 @@ class Invite extends FormRequest
     ) {
         parent::__construct($query, $request, $attributes, $cookies, $files, $server, $content);
 
-        $this->roleExists      = $roleExists;
         $this->metaDataManager = $metaDataManager;
     }
 
@@ -64,18 +55,9 @@ class Invite extends FormRequest
     public function rules(): array
     {
         return [
-            self::PARAMETER_ROLE      => ['required', $this->roleExists],
             self::PARAMETER_EMAIL     => ['required', 'email'],
             self::PARAMETER_META_DATA => ['array', $this->getMetaDataValidationRule()],
         ];
-    }
-
-    /**
-     * @return RoleModel
-     */
-    public function getRole(): RoleModel
-    {
-        return $this->roleExists->getRole();
     }
 
     /**
@@ -109,9 +91,9 @@ class Invite extends FormRequest
             $project = $this->route('project');
             $validationErrors = $this->metaDataManager->validateMetaData($project, $metaData);
             if (!empty($validationErrors)) {
-                $this->getValidatorInstance()->getMessageBag()->merge(
-                    $this->transformValidationErrors($validationErrors)
-                );
+                $this->getValidatorInstance()->getMessageBag()->merge([
+                    self::PARAMETER_META_DATA => $this->transformValidationErrors($validationErrors)
+                ]);
 
                 return false;
             }

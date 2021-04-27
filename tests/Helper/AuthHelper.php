@@ -4,8 +4,10 @@ namespace Tests\Helper;
 
 use App\Auth\AuthManager;
 use App\Users\UserModel;
+use Illuminate\Contracts\Auth\Access\Gate;
 use Illuminate\Contracts\Auth\Authenticatable;
 use Illuminate\Contracts\Auth\StatefulGuard;
+use Illuminate\Http\JsonResponse;
 use Mockery as m;
 use Mockery\MockInterface;
 
@@ -125,6 +127,32 @@ trait AuthHelper
             ->shouldReceive('authenticate')
             ->with($email, $password)
             ->andThrow($user);
+
+        return $this;
+    }
+
+    /**
+     * @return Gate|MockInterface
+     */
+    private function createGate(): Gate
+    {
+        return m::spy(Gate::class);
+    }
+
+    /**
+     * @param Gate|MockInterface      $gate
+     * @param JsonResponse|\Exception $response
+     * @param string                  $ability
+     * @param array                   $arguments
+     *
+     * @return $this
+     */
+    private function mockGateAuthorize(Gate $gate, $response, string $ability, array $arguments): self
+    {
+        $gate
+            ->shouldReceive('authorize')
+            ->with($ability, $arguments)
+            ->andThrow($response);
 
         return $this;
     }

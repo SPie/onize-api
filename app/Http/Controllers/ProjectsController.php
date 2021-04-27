@@ -5,12 +5,15 @@ namespace App\Http\Controllers;
 use App\Auth\AuthManager;
 use App\Http\Requests\Projects\Create;
 use App\Http\Requests\Projects\Invite;
+use App\Policies\ProjectPolicy;
 use App\Projects\Invites\InvitationManager;
 use App\Projects\ProjectManager;
 use App\Projects\ProjectModel;
 use App\Projects\RoleManager;
 use App\Projects\RoleModel;
 use App\Users\UserModel;
+use Illuminate\Auth\Access\AuthorizationException;
+use Illuminate\Contracts\Auth\Access\Gate;
 use Illuminate\Contracts\Routing\ResponseFactory;
 use Illuminate\Http\JsonResponse;
 
@@ -124,17 +127,18 @@ final class ProjectsController extends Controller
     }
 
     /**
+     * @param RoleModel         $role
      * @param Invite            $invite
      * @param InvitationManager $invitationManager
      *
      * @return JsonResponse
      */
-    public function invite(Invite $invite, InvitationManager $invitationManager): JsonResponse
+    public function invite(RoleModel $role, Invite $invite, InvitationManager $invitationManager): JsonResponse
     {
         return $this->getResponseFactory()->json(
             [
                 self::RESPONSE_PARAMETER_INVITATION => $invitationManager->inviteMember(
-                    $invite->getRole(),
+                    $role,
                     $invite->getEmail(),
                     $invite->getMetaData()
                 )->toArray()

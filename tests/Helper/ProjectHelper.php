@@ -8,6 +8,7 @@ use App\Projects\Invites\InvitationModel;
 use App\Projects\Invites\InvitationModelFactory;
 use App\Projects\Invites\InvitationRepository;
 use App\Projects\MetaDataDoctrineModel;
+use App\Projects\MetaDataElementDoctrineModel;
 use App\Projects\MetaDataElementModel;
 use App\Projects\MetaDataElementModelFactory;
 use App\Projects\MetaDataElementRepository;
@@ -899,6 +900,14 @@ trait ProjectHelper
     }
 
     /**
+     * @return PermissionModel
+     */
+    private function getInvitationsManagementPermission(): PermissionModel
+    {
+        return $this->getConcretePermission(PermissionModel::PERMISSION_PROJECTS_INVITATIONS_MANAGEMENT);
+    }
+
+    /**
      * @return InvitationModel|MockInterface
      */
     private function createInvitationModel(): InvitationModel
@@ -1108,5 +1117,16 @@ trait ProjectHelper
             ->andReturn($valid);
 
         return $this;
+    }
+
+    /**
+     * @param int   $times
+     * @param array $attributes
+     *
+     * @return MetaDataElementModel[]|Collection
+     */
+    private function createMetaDataElementEntities(int $times = 1, array $attributes = []): Collection
+    {
+        return $this->createModelEntities(MetaDataElementDoctrineModel::class, $times, $attributes);
     }
 }

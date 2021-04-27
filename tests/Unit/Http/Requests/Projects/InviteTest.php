@@ -28,29 +28,14 @@ final class InviteTest extends TestCase
      */
     public function testRules(): void
     {
-        $roleExists = $this->createRoleExistsRule();
-
         $this->assertEquals(
             [
-                'role'     => ['required', $roleExists],
                 'email'    => ['required', 'email'],
                 'metaData' => ['array', function () {
                 }],
             ],
             $this->getInvite()->rules()
         );
-    }
-
-    /**
-     * @return void
-     */
-    public function testGetRole(): void
-    {
-        $role = $this->createRoleModel();
-        $roleExists = $this->createRoleExistsRule();
-        $this->mockRoleExistsRuleGetRole($roleExists, $role);
-
-        $this->assertEquals($role, $this->getInvite($roleExists)->getRole());
     }
 
     /**
@@ -100,7 +85,7 @@ final class InviteTest extends TestCase
         $this->mockMetaDataManagerValidateMetaData($metaDataManager, $withValidMetaData ? [] : $validationMessages, $project, $metaData);
         $route = $this->createRoute();
         $this->mockRouteParameter($route, $project, 'project', null);
-        $request = $this->getInvite(null, $metaDataManager);
+        $request = $this->getInvite($metaDataManager);
         $messageBag = $this->createMessageBag();
         $validator = $this->createValidator();
         $this->mockValidatorGetMessageBag($validator, $messageBag);
@@ -154,23 +139,19 @@ final class InviteTest extends TestCase
         }));
         $messageBag
             ->shouldHaveReceived('merge')
-            ->with([$validationMessageMetaDataElement => [\sprintf('validation.%s', $validationMessage)]])
+            ->with(['metaData' => [$validationMessageMetaDataElement => [\sprintf('validation.%s', $validationMessage)]]])
             ->once();
     }
 
     //endregion
 
     /**
-     * @param RoleExists|null      $roleExists
      * @param MetaDataManager|null $metaDataManager
      *
      * @return Invite
      */
-    private function getInvite(RoleExists $roleExists = null, MetaDataManager $metaDataManager = null): Invite
+    private function getInvite(MetaDataManager $metaDataManager = null): Invite
     {
-        return new Invite(
-            $roleExists ?: $this->createRoleExistsRule(),
-            $metaDataManager ?: $this->createMetaDataManager()
-        );
+        return new Invite($metaDataManager ?: $this->createMetaDataManager());
     }
 }

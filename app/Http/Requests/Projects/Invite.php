@@ -88,8 +88,8 @@ class Invite extends FormRequest
                 return false;
             }
 
-            $project = $this->route('project');
-            $validationErrors = $this->metaDataManager->validateMetaData($project, $metaData);
+            $role = $this->route('role');
+            $validationErrors = $this->metaDataManager->validateMetaData($role->getProject(), $metaData);
             if (!empty($validationErrors)) {
                 $this->getValidatorInstance()->getMessageBag()->merge([
                     self::PARAMETER_META_DATA => $this->transformValidationErrors($validationErrors)

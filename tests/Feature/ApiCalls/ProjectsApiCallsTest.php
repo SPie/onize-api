@@ -1028,8 +1028,7 @@ final class ProjectsApiCallsTest extends FeatureTestCase
         string $type = 'string',
         bool $withAuthenticatedUser = true,
         bool $withAuthorizedUser = true,
-        bool $withOwner = false,
-        bool $withAuthorizedRole = true
+        bool $withOwner = false
     ): array {
         if ($withAuthorizedUser) {
             $role = $this->createRoleWithPermission($this->getInvitationsManagementPermission());
@@ -1114,7 +1113,7 @@ final class ProjectsApiCallsTest extends FeatureTestCase
 
         $response = $this->doApiCall(
             'POST',
-            $this->getUrl(ProjectsController::ROUTE_NAME_INVITE, ['project' => $role->getProject()->getUuid()]),
+            $this->getUrl(ProjectsController::ROUTE_NAME_INVITE, ['role' => $role->getUuid()]),
             [
                 'email'    => $email,
                 'role'     => $role->getUuid(),
@@ -1140,27 +1139,6 @@ final class ProjectsApiCallsTest extends FeatureTestCase
     /**
      * @return void
      */
-    public function testInviteWithoutExistingProject(): void
-    {
-        /** @var RoleModel $role */
-        [$email, $role, $metaData] = $this->setUpInviteTest();
-
-        $response = $this->doApiCall(
-            'POST',
-            $this->getUrl(ProjectsController::ROUTE_NAME_INVITE, ['project' => $this->getFaker()->uuid]),
-            [
-                'email'    => $email,
-                'role'     => $role->getUuid(),
-                'metaData' => $metaData,
-            ]
-        );
-
-        $response->assertNotFound();
-    }
-
-    /**
-     * @return void
-     */
     public function testInviteWithoutEmail(): void
     {
         /** @var RoleModel $role */
@@ -1168,36 +1146,14 @@ final class ProjectsApiCallsTest extends FeatureTestCase
 
         $response = $this->doApiCall(
             'POST',
-            $this->getUrl(ProjectsController::ROUTE_NAME_INVITE, ['project' => $role->getProject()->getUuid()]),
+            $this->getUrl(ProjectsController::ROUTE_NAME_INVITE, ['role' => $role->getUuid()]),
             [
-                'role'     => $role->getUuid(),
                 'metaData' => $metaData,
             ]
         );
 
         $response->assertStatus(422);
         $response->assertJsonFragment(['email' => ['validation.required']]);
-    }
-
-    /**
-     * @return void
-     */
-    public function testInviteWithoutRole(): void
-    {
-        /** @var RoleModel $role */
-        [$email, $role, $metaData] = $this->setUpInviteTest();
-
-        $response = $this->doApiCall(
-            'POST',
-            $this->getUrl(ProjectsController::ROUTE_NAME_INVITE, ['project' => $role->getProject()->getUuid()]),
-            [
-                'email'    => $email,
-                'metaData' => $metaData,
-            ]
-        );
-
-        $response->assertStatus(422);
-        $response->assertJsonFragment(['role' => ['validation.required']]);
     }
 
     /**
@@ -1210,16 +1166,14 @@ final class ProjectsApiCallsTest extends FeatureTestCase
 
         $response = $this->doApiCall(
             'POST',
-            $this->getUrl(ProjectsController::ROUTE_NAME_INVITE, ['project' => $role->getProject()->getUuid()]),
+            $this->getUrl(ProjectsController::ROUTE_NAME_INVITE, ['role' => $this->getFaker()->uuid]),
             [
                 'email'    => $email,
-                'role'     => $this->getFaker()->uuid,
                 'metaData' => $metaData,
             ]
         );
 
-        $response->assertStatus(422);
-        $response->assertJsonFragment(['role' => ['validation.role-not-found']]);
+        $response->assertNotFound();
     }
 
     /**
@@ -1232,10 +1186,9 @@ final class ProjectsApiCallsTest extends FeatureTestCase
 
         $response = $this->doApiCall(
             'POST',
-            $this->getUrl(ProjectsController::ROUTE_NAME_INVITE, ['project' => $role->getProject()->getUuid()]),
+            $this->getUrl(ProjectsController::ROUTE_NAME_INVITE, ['role' => $role->getUuid()]),
             [
                 'email'    => $email,
-                'role'     => $role->getUuid(),
                 'metaData' => $this->getFaker()->word,
             ]
         );
@@ -1254,10 +1207,9 @@ final class ProjectsApiCallsTest extends FeatureTestCase
 
         $response = $this->doApiCall(
             'POST',
-            $this->getUrl(ProjectsController::ROUTE_NAME_INVITE, ['project' => $role->getProject()->getUuid()]),
+            $this->getUrl(ProjectsController::ROUTE_NAME_INVITE, ['role' => $role->getUuid()]),
             [
                 'email'    => $email,
-                'role'     => $role->getUuid(),
                 'metaData' => $metaData,
             ]
         );
@@ -1276,10 +1228,9 @@ final class ProjectsApiCallsTest extends FeatureTestCase
 
         $response = $this->doApiCall(
             'POST',
-            $this->getUrl(ProjectsController::ROUTE_NAME_INVITE, ['project' => $role->getProject()->getUuid()]),
+            $this->getUrl(ProjectsController::ROUTE_NAME_INVITE, ['role' => $role->getUuid()]),
             [
                 'email'    => $email,
-                'role'     => $role->getUuid(),
                 'metaData' => $metaData,
             ]
         );
@@ -1298,10 +1249,9 @@ final class ProjectsApiCallsTest extends FeatureTestCase
 
         $response = $this->doApiCall(
             'POST',
-            $this->getUrl(ProjectsController::ROUTE_NAME_INVITE, ['project' => $role->getProject()->getUuid()]),
+            $this->getUrl(ProjectsController::ROUTE_NAME_INVITE, ['role' => $role->getUuid()]),
             [
                 'email'    => $email,
-                'role'     => $role->getUuid(),
                 'metaData' => $metaData,
             ]
         );
@@ -1320,10 +1270,9 @@ final class ProjectsApiCallsTest extends FeatureTestCase
 
         $response = $this->doApiCall(
             'POST',
-            $this->getUrl(ProjectsController::ROUTE_NAME_INVITE, ['project' => $role->getProject()->getUuid()]),
+            $this->getUrl(ProjectsController::ROUTE_NAME_INVITE, ['role' => $role->getUuid()]),
             [
                 'email'    => $email,
-                'role'     => $role->getUuid(),
                 'metaData' => $metaData,
             ]
         );
@@ -1342,10 +1291,9 @@ final class ProjectsApiCallsTest extends FeatureTestCase
 
         $response = $this->doApiCall(
             'POST',
-            $this->getUrl(ProjectsController::ROUTE_NAME_INVITE, ['project' => $role->getProject()->getUuid()]),
+            $this->getUrl(ProjectsController::ROUTE_NAME_INVITE, ['role' => $role->getUuid()]),
             [
                 'email'    => $email,
-                'role'     => $role->getUuid(),
                 'metaData' => $metaData,
             ]
         );
@@ -1364,10 +1312,9 @@ final class ProjectsApiCallsTest extends FeatureTestCase
 
         $response = $this->doApiCall(
             'POST',
-            $this->getUrl(ProjectsController::ROUTE_NAME_INVITE, ['project' => $role->getProject()->getUuid()]),
+            $this->getUrl(ProjectsController::ROUTE_NAME_INVITE, ['role' => $role->getUuid()]),
             [
                 'email'    => $email,
-                'role'     => $role->getUuid(),
                 'metaData' => $metaData,
             ]
         );
@@ -1392,10 +1339,9 @@ final class ProjectsApiCallsTest extends FeatureTestCase
 
         $response = $this->doApiCall(
             'POST',
-            $this->getUrl(ProjectsController::ROUTE_NAME_INVITE, ['project' => $role->getProject()->getUuid()]),
+            $this->getUrl(ProjectsController::ROUTE_NAME_INVITE, ['role' => $role->getUuid()]),
             [
                 'email'    => $email,
-                'role'     => $role->getUuid(),
                 'metaData' => $metaData,
             ]
         );
@@ -1420,10 +1366,9 @@ final class ProjectsApiCallsTest extends FeatureTestCase
 
         $response = $this->doApiCall(
             'POST',
-            $this->getUrl(ProjectsController::ROUTE_NAME_INVITE, ['project' => $role->getProject()->getUuid()]),
+            $this->getUrl(ProjectsController::ROUTE_NAME_INVITE, ['role' => $role->getUuid()]),
             [
                 'email'    => $email,
-                'role'     => $role->getUuid(),
                 'metaData' => $metaData,
             ]
         );
@@ -1449,36 +1394,14 @@ final class ProjectsApiCallsTest extends FeatureTestCase
 
         $response = $this->doApiCall(
             'POST',
-            $this->getUrl(ProjectsController::ROUTE_NAME_INVITE, ['project' => $role->getProject()->getUuid()]),
+            $this->getUrl(ProjectsController::ROUTE_NAME_INVITE, ['role' => $role->getUuid()]),
             [
                 'email'    => $email,
-                'role'     => $role->getUuid(),
                 'metaData' => $metaData,
             ]
         );
 
         $response->assertCreated();
-    }
-
-    /**
-     * @return void
-     */
-    public function testInviteWithoutAuthorizedRole(): void
-    {
-        /** @var RoleModel $role */
-        [$email, $role, $metaData] = $this->setUpInviteTest();
-
-        $response = $this->doApiCall(
-            'POST',
-            $this->getUrl(ProjectsController::ROUTE_NAME_INVITE, ['project' => $role->getProject()->getUuid()]),
-            [
-                'email'    => $email,
-                'role'     => $this->createRoleEntities()->first()->getUuid(),
-                'metaData' => $metaData,
-            ]
-        );
-
-        $response->assertStatus(403);
     }
 
     //endregion

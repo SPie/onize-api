@@ -5,7 +5,6 @@ namespace App\Policies;
 use App\Projects\PermissionModel;
 use App\Projects\ProjectModel;
 use App\Projects\RoleManager;
-use App\Projects\RoleModel;
 use App\Users\UserModel;
 
 /**
@@ -15,8 +14,6 @@ use App\Users\UserModel;
  */
 final class ProjectPolicy
 {
-    public const ABILITY_INVITE_TO_ROLE = 'inviteToRole';
-
     /**
      * @var RoleManager
      */
@@ -63,32 +60,5 @@ final class ProjectPolicy
             $user,
             PermissionModel::PERMISSION_PROJECTS_MEMBERS_SHOW
         );
-    }
-
-    /**
-     * @param UserModel    $user
-     * @param ProjectModel $project
-     *
-     * @return bool
-     */
-    public function invite(UserModel $user, ProjectModel $project): bool
-    {
-        return $this->getRoleManager()->hasPermissionForAction(
-            $project,
-            $user,
-            PermissionModel::PERMISSION_PROJECTS_INVITATIONS_MANAGEMENT
-        );
-    }
-
-    /**
-     * @param UserModel    $user
-     * @param ProjectModel $project
-     * @param RoleModel    $role
-     *
-     * @return bool
-     */
-    public function inviteToRole(UserModel $user, ProjectModel $project, RoleModel $role): bool
-    {
-        return true;
     }
 }

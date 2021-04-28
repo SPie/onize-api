@@ -78,13 +78,15 @@ final class InviteTest extends TestCase
         $argument = $this->getFaker()->word;
         $metaData = [$this->getFaker()->word => $this->getFaker()->word];
         $project = $this->createProjectModel();
+        $role = $this->createRoleModel();
+        $this->mockRoleModelGetProject($role, $project);
         $validationMessageMetaDataElement = $this->getFaker()->word;
         $validationMessage = $this->getFaker()->word;
         $validationMessages = [$validationMessageMetaDataElement => [$validationMessage]];
         $metaDataManager = $this->createMetaDataManager();
         $this->mockMetaDataManagerValidateMetaData($metaDataManager, $withValidMetaData ? [] : $validationMessages, $project, $metaData);
         $route = $this->createRoute();
-        $this->mockRouteParameter($route, $project, 'project', null);
+        $this->mockRouteParameter($route, $role, 'role', null);
         $request = $this->getInvite($metaDataManager);
         $messageBag = $this->createMessageBag();
         $validator = $this->createValidator();

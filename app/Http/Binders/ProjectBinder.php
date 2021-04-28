@@ -10,7 +10,7 @@ use App\Projects\ProjectModel;
  *
  * @package App\Http\Binders
  */
-final class ProjectBinder implements Binder
+final class ProjectBinder
 {
     /**
      * @var ProjectManager

@@ -4,9 +4,9 @@ namespace App\Providers;
 
 use App\Auth\UserProvider;
 use App\Policies\ProjectPolicy;
+use App\Policies\RolePolicy;
 use App\Projects\ProjectModel;
-use App\Users\UserManager;
-use Illuminate\Auth\SessionGuard;
+use App\Projects\RoleModel;
 use Illuminate\Contracts\Auth\StatefulGuard;
 use Illuminate\Foundation\Support\Providers\AuthServiceProvider as ServiceProvider;
 
@@ -23,7 +23,8 @@ class AuthServiceProvider extends ServiceProvider
      * @var array
      */
     protected $policies = [
-        ProjectModel::class => ProjectPolicy::class
+        ProjectModel::class => ProjectPolicy::class,
+        RoleModel::class    => RolePolicy::class,
     ];
 
     /**

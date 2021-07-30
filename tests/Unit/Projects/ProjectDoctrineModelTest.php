@@ -76,9 +76,9 @@ final class ProjectDoctrineModelTest extends TestCase
      */
     private function setUpGetMembersTest(bool $withRoles = true, bool $withUsers = true): array
     {
-        $member = $this->createUserModel();
+        $member = $this->createMemberModel();
         $role = $this->createRoleModel();
-        $this->mockRoleModelGetUsers($role, new ArrayCollection($withUsers ? [$member] : []));
+        $this->mockRoleModelGetMembers($role, new ArrayCollection($withUsers ? [$member] : []));
         $project = $this->getProjectDoctrineModel()->setRoles($withRoles ? [$role] : []);
 
         return [$project, $member];
@@ -127,8 +127,10 @@ final class ProjectDoctrineModelTest extends TestCase
         $email = $this->getFaker()->safeEmail;
         $user = $this->createUserModel();
         $this->mockUserModelGetEmail($user, ($withMember ? '' : $this->getFaker()->word) . $email);
+        $member = $this->createMemberModel();
+        $this->mockMemberModelGetUser($member, $user);
         $role = $this->createRoleModel();
-        $this->mockRoleModelGetUsers($role, new ArrayCollection([$user]));
+        $this->mockRoleModelGetMembers($role, new ArrayCollection($withMember ? [$member] : []));
         $projectModel = $this->getProjectDoctrineModel();
         $projectModel->addRole($role);
 

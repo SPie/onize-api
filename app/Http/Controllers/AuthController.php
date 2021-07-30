@@ -21,29 +21,14 @@ final class AuthController extends Controller
     public const RESPONSE_PARAMETER_USER = 'user';
 
     /**
-     * @var AuthManager
-     */
-    private AuthManager $authManager;
-
-    /**
      * AuthController constructor.
      *
      * @param AuthManager     $authManager
      * @param ResponseFactory $responseFactory
      */
-    public function __construct(AuthManager $authManager, ResponseFactory $responseFactory)
+    public function __construct(private AuthManager $authManager, ResponseFactory $responseFactory)
     {
         parent::__construct($responseFactory);
-
-        $this->authManager = $authManager;
-    }
-
-    /**
-     * @return AuthManager
-     */
-    private function getAuthManager(): AuthManager
-    {
-        return $this->authManager;
     }
 
     //region Controller actions
@@ -55,7 +40,7 @@ final class AuthController extends Controller
      */
     public function authenticate(Authenticate $request): JsonResponse
     {
-        $this->getAuthManager()->authenticate($request->getEmail(), $request->getPassword());
+        $this->authManager->authenticate($request->getEmail(), $request->getPassword());
 
         return $this->getResponseFactory()->json([], JsonResponse::HTTP_NO_CONTENT);
     }
@@ -66,7 +51,7 @@ final class AuthController extends Controller
     public function authenticated(): JsonResponse
     {
         return $this->getResponseFactory()->json([
-            self::RESPONSE_PARAMETER_USER => $this->getAuthManager()->authenticatedUser()->toArray()
+            self::RESPONSE_PARAMETER_USER => $this->authManager->authenticatedUser()->toArray()
         ]);
     }
 
@@ -75,7 +60,7 @@ final class AuthController extends Controller
      */
     public function logout(): JsonResponse
     {
-        $this->getAuthManager()->logout();
+        $this->authManager->logout();
 
         return $this->getResponseFactory()->json([], JsonResponse::HTTP_NO_CONTENT);
     }

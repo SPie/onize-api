@@ -7,7 +7,6 @@ use App\Models\SoftDeletable;
 use App\Models\Timestampable;
 use App\Models\UuidModel;
 use App\Projects\Invites\InvitationModel;
-use App\Users\UserModel;
 use Doctrine\Common\Collections\Collection;
 
 /**
@@ -20,9 +19,11 @@ interface RoleModel extends Model, SoftDeletable, Timestampable, UuidModel
     public const PROPERTY_LABEL       = 'label';
     public const PROPERTY_OWNER       = 'owner';
     public const PROPERTY_PROJECT     = 'project';
-    public const PROPERTY_USERS       = 'users';
+    public const PROPERTY_MEMBERS     = 'members';
     public const PROPERTY_PERMISSIONS = 'permissions';
     public const PROPERTY_INVITATIONS = 'invitations';
+
+    public const LABEL_OWNER = 'Owner';
 
     /**
      * @param string $label
@@ -54,25 +55,6 @@ interface RoleModel extends Model, SoftDeletable, Timestampable, UuidModel
     public function getProject(): ProjectModel;
 
     /**
-     * @param UserModel[] $users
-     *
-     * @return $this
-     */
-    public function setUsers(array $users): self;
-
-    /**
-     * @param UserModel $user
-     *
-     * @return $this
-     */
-    public function addUser(UserModel $user): self;
-
-    /**
-     * @return UserModel[]|Collection
-     */
-    public function getUsers(): Collection;
-
-    /**
      * @param PermissionModel[] $permissions
      *
      * @return $this
@@ -97,6 +79,25 @@ interface RoleModel extends Model, SoftDeletable, Timestampable, UuidModel
      * @return bool
      */
     public function hasPermission(string $permissionName): bool;
+
+    /**
+     * @param MemberModel[] $members
+     *
+     * @return $this
+     */
+    public function setMembers(array $members): self;
+
+    /**
+     * @param MemberModel $member
+     *
+     * @return $this
+     */
+    public function addMember(MemberModel $member): self;
+
+    /**
+     * @return MemberModel[]|Collection
+     */
+    public function getMembers(): Collection;
 
     /**
      * @param InvitationModel[] $invitations

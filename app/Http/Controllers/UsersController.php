@@ -24,29 +24,14 @@ final class UsersController extends Controller
     public const RESPONSE_PARAMETER_USER = 'user';
 
     /**
-     * @var UserManager
-     */
-    private UserManager $userManager;
-
-    /**
      * UsersController constructor.
      *
      * @param UserManager     $userManager
      * @param ResponseFactory $responseFactory
      */
-    public function __construct(UserManager $userManager, ResponseFactory $responseFactory)
+    public function __construct(private UserManager $userManager, ResponseFactory $responseFactory)
     {
         parent::__construct($responseFactory);
-
-        $this->userManager = $userManager;
-    }
-
-    /**
-     * @return UserManager
-     */
-    private function getUserManager(): UserManager
-    {
-        return $this->userManager;
     }
 
     //region Controller actions
@@ -59,7 +44,7 @@ final class UsersController extends Controller
      */
     public function register(Register $request, AuthManager $authManager): JsonResponse
     {
-        $user = $this->getUserManager()->createUser($request->getEmail(), $request->getPassword());
+        $user = $this->userManager->createUser($request->getEmail(), $request->getPassword());
 
         $authManager->login($user);
 
@@ -77,7 +62,7 @@ final class UsersController extends Controller
      */
     public function update(Update $request, AuthManager $authManager): JsonResponse
     {
-        $user = $this->getUserManager()->updateUserData($authManager->authenticatedUser(), $request->getEmail());
+        $user = $this->userManager->updateUserData($authManager->authenticatedUser(), $request->getEmail());
 
         return $this->getResponseFactory()->json([
             self::RESPONSE_PARAMETER_USER => $user->toArray(),
@@ -92,7 +77,7 @@ final class UsersController extends Controller
      */
     public function updatePassword(UpdatePassword $request, AuthManager $authManager): JsonResponse
     {
-        $user = $this->getUserManager()->updatePassword($authManager->authenticatedUser(), $request->getUserPassword());
+        $user = $this->userManager->updatePassword($authManager->authenticatedUser(), $request->getUserPassword());
 
         return $this->getResponseFactory()->json([
             self::RESPONSE_PARAMETER_USER => $user->toArray()

@@ -4,9 +4,9 @@ namespace Tests\Feature\ApiCalls;
 
 use App\Http\Controllers\ProjectsController;
 use App\Projects\Invites\InvitationRepository;
+use App\Projects\MemberModel;
 use App\Projects\MetaDataElementModel;
 use App\Projects\MetaDataModel;
-use App\Projects\MetaDataRepository;
 use App\Projects\ProjectModel;
 use App\Projects\ProjectRepository;
 use App\Projects\RoleModel;
@@ -133,7 +133,7 @@ final class ProjectsApiCallsTest extends FeatureTestCase
     /**
      * @return void
      */
-    public function testCreateProjectWithRoleAndMetaData(): void
+    public function testCreateProjectWithRole(): void
     {
         /** @var UserModel $user */
         [
@@ -144,7 +144,6 @@ final class ProjectsApiCallsTest extends FeatureTestCase
             $metaDataElementLabel,
             $metaDataElementRequired,
             $metaDataElementInList,
-            $user
         ] = $this->setUpCreateTest();
 
         $response = $this->doApiCall(
@@ -171,11 +170,6 @@ final class ProjectsApiCallsTest extends FeatureTestCase
         $this->assertEquals('Owner', $role->getLabel());
         $this->assertTrue($role->isOwner());
         $this->assertEquals($project, $role->getProject());
-        $metaData = $this->getMetaDataRepository()->findAll()->first();
-        $this->assertEquals($metaDataName, $metaData->getName());
-        $this->assertEquals($metaDataValue, $metaData->getValue());
-        $this->assertEquals($project, $metaData->getProject());
-        $this->assertEquals($user, $metaData->getUser());
     }
 
     /**
@@ -623,10 +617,9 @@ final class ProjectsApiCallsTest extends FeatureTestCase
         $project = $this->createProjectEntities()->first();
         $role = $this->createRoleEntities(1, [RoleModel::PROPERTY_PROJECT => $project])->first();
         $project->addRole($role);
-        $user = $this->createUserEntities()->first();
-        if ($withProjects) {
-            $user->addRole($role);
-        }
+        $user = $withProjects
+            ? $this->createUserWithRole($role)
+            : $this->createUserEntities()->first();
         if ($withAuthenticatedUser) {
             $this->actingAs($user);
         }
@@ -779,7 +772,6 @@ final class ProjectsApiCallsTest extends FeatureTestCase
      * @param bool $withMembers
      * @param bool $withRoles
      * @param bool $withMetaData
-     * @param bool $withMetaDataOfUser
      * @param bool $withAuthenticatedUser
      * @param bool $withAuthorizedUser
      * @param bool $withOwner
@@ -790,7 +782,6 @@ final class ProjectsApiCallsTest extends FeatureTestCase
         bool $withMembers = true,
         bool $withRoles = true,
         bool $withMetaData = true,
-        bool $withMetaDataOfUser = true,
         bool $withAuthenticatedUser = true,
         bool $withAuthorizedUser = true,
         bool $withOwner = false
@@ -802,26 +793,28 @@ final class ProjectsApiCallsTest extends FeatureTestCase
         } else {
             $role = $this->createRoleEntities()->first();
         }
-        $user = $this->createUserWithRole($role);
+        $authenticatedUser = $this->createUserWithRole($role);
         if ($withAuthenticatedUser) {
-            $this->actingAs($user);
+            $this->actingAs($authenticatedUser);
         }
+        $metaData = [$this->getFaker()->word => $this->getFaker()->word];
+        $user = $this->createUserEntities()->first();
         $project = $role->getProject();
-        $metaData = $this->createMetaDataEntities(
-            1,
-            [
-                MetaDataModel::PROPERTY_USER    => $withMetaDataOfUser ? $user : $this->createUserEntities()->first(),
-                MetaDataModel::PROPERTY_PROJECT => $project,
-            ]
-        )->first();
         if ($withMembers) {
-            $role->addUser($user);
+            $member = $this->createMemberEntities(
+                1,
+                [
+                    MemberModel::PROPERTY_USER => $user,
+                    MemberModel::PROPERTY_ROLE => $role,
+                    MemberModel::PROPERTY_META_DATA => \json_encode($withMetaData ? $metaData : []),
+                ]
+            )->first();
+            $role->addMember($member);
+            $user->addMember($member);
         }
         if ($withRoles) {
             $project->addRole($role);
         }
-        $project->setMetaData($withMetaData ? [$metaData] : []);
-        $user->setMetaData($withMetaData ? [$metaData] : []);
 
         return [$project, $user, $metaData];
     }
@@ -834,7 +827,6 @@ final class ProjectsApiCallsTest extends FeatureTestCase
         /**
          * @var ProjectModel  $project
          * @var UserModel     $user
-         * @var MetaDataModel $metaData
          */
         [$project, $user, $metaData] = $this->setUpMembersTest();
 
@@ -847,11 +839,9 @@ final class ProjectsApiCallsTest extends FeatureTestCase
         $response->assertJsonFragment([
             'members' => [
                 [
-                    UserModel::PROPERTY_UUID      => $user->getUuid(),
-                    UserModel::PROPERTY_EMAIL     => $user->getEmail(),
-                    UserModel::PROPERTY_META_DATA => [
-                        $metaData->getName() => $metaData->getValue(),
-                    ]
+                    UserModel::PROPERTY_UUID        => $user->getUuid(),
+                    UserModel::PROPERTY_EMAIL       => $user->getEmail(),
+                    MemberModel::PROPERTY_META_DATA => $metaData,
                 ],
             ]
         ]);
@@ -911,37 +901,9 @@ final class ProjectsApiCallsTest extends FeatureTestCase
         $response->assertJsonFragment([
            'members' => [
                [
-                   UserModel::PROPERTY_UUID      => $user->getUuid(),
-                   UserModel::PROPERTY_EMAIL     => $user->getEmail(),
-                   UserModel::PROPERTY_META_DATA => []
-               ],
-           ]
-       ]);
-    }
-
-    /**
-     * @return void
-     */
-    public function testMembersWithoutMetaDataOfUser(): void
-    {
-        /**
-         * @var ProjectModel  $project
-         * @var UserModel     $user
-         */
-        [$project, $user] = $this->setUpMembersTest(true, true, true, false);
-
-        $response = $this->doApiCall(
-            'GET',
-            $this->getUrl(ProjectsController::ROUTE_NAME_MEMBERS, ['project' => $project->getUuid()])
-        );
-
-        $response->assertOk();
-        $response->assertJsonFragment([
-           'members' => [
-               [
-                   UserModel::PROPERTY_UUID      => $user->getUuid(),
-                   UserModel::PROPERTY_EMAIL     => $user->getEmail(),
-                   UserModel::PROPERTY_META_DATA => []
+                   UserModel::PROPERTY_UUID        => $user->getUuid(),
+                   UserModel::PROPERTY_EMAIL       => $user->getEmail(),
+                   MemberModel::PROPERTY_META_DATA => [],
                ],
            ]
        ]);
@@ -952,7 +914,7 @@ final class ProjectsApiCallsTest extends FeatureTestCase
      */
     public function testMembersWithoutProject(): void
     {
-        $this->setUpMembersTest(true, true, true, true);
+        $this->setUpMembersTest();
 
         $response = $this->doApiCall(
             'GET',
@@ -968,7 +930,7 @@ final class ProjectsApiCallsTest extends FeatureTestCase
     public function testMembersWithoutAuthenticatedUser(): void
     {
         /** @var ProjectModel $project */
-        [$project] = $this->setUpMembersTest(true, true, true, true, false);
+        [$project] = $this->setUpMembersTest(true, true, true, false);
 
         $response = $this->doApiCall(
             'GET',
@@ -984,7 +946,7 @@ final class ProjectsApiCallsTest extends FeatureTestCase
     public function testMembersWithoutAuthorizedUser(): void
     {
         /** @var ProjectModel $project */
-        [$project] = $this->setUpMembersTest(true, true, true, true, true, false);
+        [$project] = $this->setUpMembersTest(true, true, true, true, false);
 
         $response = $this->doApiCall(
             'GET',
@@ -1001,7 +963,6 @@ final class ProjectsApiCallsTest extends FeatureTestCase
     {
         /** @var ProjectModel $project */
         [$project] = $this->setUpMembersTest(
-            true,
             true,
             true,
             true,
@@ -1420,14 +1381,6 @@ final class ProjectsApiCallsTest extends FeatureTestCase
     private function getConcreteRoleRepository(): RoleRepository
     {
         return $this->app->get(RoleRepository::class);
-    }
-
-    /**
-     * @return MetaDataRepository
-     */
-    private function getMetaDataRepository(): MetaDataRepository
-    {
-        return $this->app->get(MetaDataRepository::class);
     }
 
     /**

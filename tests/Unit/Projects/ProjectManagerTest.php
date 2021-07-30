@@ -69,7 +69,6 @@ final class ProjectManagerTest extends TestCase
         $projectManager = $this->getProjectManager(
             $projectRepository,
             $projectModelFactory,
-            null,
             $metaDataElementModelFactory
         );
 
@@ -144,66 +143,11 @@ final class ProjectManagerTest extends TestCase
         $projectManager->getProject($uuid);
     }
 
-    /**
-     * @return array
-     */
-    private function setUpGetMembersTest(bool $withMembers = true, bool $withMetaData = true): array
-    {
-        $member = $this->createUserModel();
-        $this->mockModelGetId($member, $this->getFaker()->numberBetween());
-        $metaData = $this->createMetaDataModel();
-        $this->mockMetaDataModelGetUser($metaData, $member);
-        $project = $this->createProjectModel();
-        $this
-            ->mockProjectModelGetMembers($project, new ArrayCollection($withMembers ? [$member] : []))
-            ->mockProjectModelGetMetaData($project, new ArrayCollection($withMetaData ? [$metaData] : []));
-        if ($withMembers) {
-            $this->mockUserModelSetMetaData($member, $withMetaData ? [$metaData] : []);
-        }
-        $projectManager = $this->getProjectManager();
-
-        return [$projectManager, $project, $member];
-    }
-
-    /**
-     * @return void
-     */
-    public function testGetMembers(): void
-    {
-        /** @var ProjectManager $projectManager */
-        [$projectManager, $project, $member] = $this->setUpGetMembersTest();
-
-        $this->assertEquals(new ArrayCollection([$member]), $projectManager->getProjectMembers($project));
-    }
-
-    /**
-     * @return void
-     */
-    public function testGetMembersWithoutMembers(): void
-    {
-        /** @var ProjectManager $projectManager */
-        [$projectManager, $project] = $this->setUpGetMembersTest(false);
-
-        $this->assertEquals(new ArrayCollection(), $projectManager->getProjectMembers($project));
-    }
-
-    /**
-     * @return void
-     */
-    public function testGetMembersWithoutMetaData(): void
-    {
-        /** @var ProjectManager $projectManager */
-        [$projectManager, $project, $member] = $this->setUpGetMembersTest(true, false);
-
-        $this->assertEquals(new ArrayCollection([$member]), $projectManager->getProjectMembers($project));
-    }
-
     //endregion
 
     /**
      * @param ProjectRepository|null           $projectRepository
      * @param ProjectModelFactory|null         $projectModelFactory
-     * @param MetaDataElementRepository|null   $metaDataElementRepository
      * @param MetaDataElementModelFactory|null $metaDataElementModelFactory
      *
      * @return ProjectManager
@@ -211,13 +155,11 @@ final class ProjectManagerTest extends TestCase
     private function getProjectManager(
         ProjectRepository $projectRepository = null,
         ProjectModelFactory $projectModelFactory = null,
-        MetaDataElementRepository $metaDataElementRepository = null,
         MetaDataElementModelFactory $metaDataElementModelFactory = null
     ): ProjectManager {
         return new ProjectManager(
             $projectRepository ?: $this->createProjectRepository(),
             $projectModelFactory ?: $this->createProjectModelFactory(),
-            $metaDataElementRepository ?: $this->createMetaDataElementRepository(),
             $metaDataElementModelFactory ?: $this->createMetaDataElementModelFactory()
         );
     }

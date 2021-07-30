@@ -6,7 +6,7 @@ use App\Models\AbstractDoctrineModel;
 use App\Models\SoftDelete;
 use App\Models\Timestamps;
 use App\Models\Uuid;
-use App\Projects\MetaDataModel;
+use App\Projects\MemberModel;
 use App\Projects\ProjectModel;
 use App\Projects\RoleModel;
 use Doctrine\Common\Collections\ArrayCollection;
@@ -44,22 +44,11 @@ class UserDoctrineModel extends AbstractDoctrineModel implements UserModel
     private string $password;
 
     /**
-     * @ORM\ManyToMany(targetEntity="App\Projects\RoleDoctrineModel", inversedBy="users")
-     * @ORM\JoinTable(name="roles_users",
-     *     joinColumns={@ORM\JoinColumn(name="user_id", referencedColumnName="id")},
-     *     inverseJoinColumns={@ORM\JoinColumn(name="role_id", referencedColumnName="id")}
-     *     )
+     * @ORM\OneToMany(targetEntity="App\Projects\MemberDoctrineModel", mappedBy="user", cascade={"persist"})
      *
-     * @var RoleModel[]|Collection
+     * @var MemberModel[]|Collection
      */
-    private Collection $roles;
-
-    /**
-     * @ORM\OneToMany(targetEntity="App\Projects\MetaDataDoctrineModel", mappedBy="user", cascade={"persist"})
-     *
-     * @var MetaDataModel[]|Collection
-     */
-    private Collection $metaData;
+    private Collection $members;
 
     /**
      * UserDoctrineModel constructor.
@@ -73,8 +62,7 @@ class UserDoctrineModel extends AbstractDoctrineModel implements UserModel
         $this->uuid = $uuid;
         $this->email = $email;
         $this->password = $password;
-        $this->roles = new ArrayCollection();
-        $this->metaData = new ArrayCollection();
+        $this->members = new ArrayCollection();
     }
 
     /**
@@ -118,37 +106,37 @@ class UserDoctrineModel extends AbstractDoctrineModel implements UserModel
     }
 
     /**
-     * @param RoleModel[] $roles
+     * @param MemberModel[] $members
      *
-     * @return $this|UserModel
+     * @return UserModel
      */
-    public function setRoles(array $roles): UserModel
+    public function setMembers(array $members): UserModel
     {
-        $this->roles = new ArrayCollection($roles);
+        $this->members = new ArrayCollection($members);
 
         return $this;
     }
 
     /**
-     * @param RoleModel $role
+     * @param MemberModel $member
      *
-     * @return $this|UserModel
+     * @return UserModel
      */
-    public function addRole(RoleModel $role): UserModel
+    public function addMember(MemberModel $member): UserModel
     {
-        if (!$this->getRoles()->contains($role)) {
-            $this->getRoles()->add($role);
+        if (!$this->members->contains($member)) {
+            $this->members->add($member);
         }
 
         return $this;
     }
 
     /**
-     * @return RoleModel[]|Collection
+     * @return MemberModel[]|Collection
      */
-    public function getRoles(): Collection
+    public function getMembers(): Collection
     {
-        return $this->roles;
+        return $this->members;
     }
 
     /**
@@ -158,47 +146,13 @@ class UserDoctrineModel extends AbstractDoctrineModel implements UserModel
      */
     public function getRoleForProject(ProjectModel $project): ?RoleModel
     {
-        foreach ($this->getRoles() as $role) {
-            if ($role->getProject()->getId() === $project->getId()) {
-                return $role;
+        foreach ($this->getMembers() as $member) {
+            if ($member->getRole()->getProject()->getId() === $project->getId()) {
+                return $member->getRole();
             }
         }
 
         return null;
-    }
-
-    /**
-     * @param MetaDataModel[] $metaData
-     *
-     * @return UserModel
-     */
-    public function setMetaData(array $metaData): UserModel
-    {
-        $this->metaData = new ArrayCollection($metaData);
-
-        return $this;
-    }
-
-    /**
-     * @param MetaDataModel $metaData
-     *
-     * @return UserModel
-     */
-    public function addMetaData(MetaDataModel $metaData): UserModel
-    {
-        if (!$this->getMetaData()->contains($metaData)) {
-            $this->getMetaData()->add($metaData);
-        }
-
-        return $this;
-    }
-
-    /**
-     * @return MetaDataModel[]|Collection
-     */
-    public function getMetaData(): Collection
-    {
-        return $this->metaData;
     }
 
     /**
@@ -266,24 +220,8 @@ class UserDoctrineModel extends AbstractDoctrineModel implements UserModel
      */
     public function isMemberOfProject(ProjectModel $project): bool
     {
-        return $this->getRoles()->exists(
-            fn (int $i, RoleModel $role) => $role->getProject()->getId() === $project->getId()
-        );
-    }
-
-    /**
-     * @return array
-     */
-    public function memberData(): array
-    {
-        $metaDataArray = [];
-        foreach ($this->getMetaData() as $metaData) {
-            $metaDataArray[$metaData->getName()] = $metaData->getValue();
-        }
-
-        return \array_merge(
-            $this->toArray(),
-            [self::PROPERTY_META_DATA => $metaDataArray]
+        return $this->getMembers()->exists(
+            fn (int $i, MemberModel $member) => $member->getRole()->getProject()->getId() === $project->getId()
         );
     }
 }

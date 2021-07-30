@@ -88,8 +88,10 @@ final class ProjectsControllerTest extends TestCase
         $roleData = [$this->getFaker()->word => $this->getFaker()->word];
         $role = $this->createRoleModel();
         $this->mockRoleModelToArray($role, $roleData, true);
+        $member = $this->createMemberModel();
+        $this->mockMemberModelGetRole($member, $role);
         $user = $this->createUserModel();
-        $this->mockUserModelGetRoles($user, new ArrayCollection($withProjects ? [$role] : []));
+        $this->mockUserModelGetMembers($user, new ArrayCollection($withProjects ? [$member] : []));
         $authManager = $this->createAuthManager();
         $this->mockAuthManagerAuthenticatedUser($authManager, $user);
         $response = $this->createJsonResponse();
@@ -158,16 +160,24 @@ final class ProjectsControllerTest extends TestCase
      */
     private function setUpMembersTest(bool $withMembers = true): array
     {
+        $userData = [$this->getFaker()->word => $this->getFaker()->word];
+        $user = $this->createUserModel();
+        $this->mockUserModelToArray($user, $userData);
+        $metaData = [$this->getFaker()->word => $this->getFaker()->word];
+        $member = $this->createMemberModel();
+        $this
+            ->mockMemberModelGetUser($member, $user)
+            ->mockMemberModelGetMetaData($member, $metaData);
         $project = $this->createProjectModel();
-        $memberData = [$this->getFaker()->word => $this->getFaker()->word];
-        $member = $this->createUserModel();
-        $this->mockUserModelMemberData($member, $memberData);
-        $projectManager = $this->createProjectManager();
-        $this->mockProjectManagerGetProjectMembers($projectManager, new ArrayCollection($withMembers ? [$member] : []), $project);
+        $this->mockProjectModelGetMembers($project, new ArrayCollection($withMembers ? [$member] : []));
         $response = $this->createJsonResponse();
         $responseFactory = $this->createResponseFactory();
-        $this->mockResponseFactoryJson($responseFactory, $response, ['members' => $withMembers ? [$memberData] : []]);
-        $projectsController = $this->getProjectsController($projectManager, $responseFactory);
+        $this->mockResponseFactoryJson(
+            $responseFactory,
+            $response,
+            ['members' => $withMembers ? [\array_merge($userData, ['metaData' => $metaData])] : []]
+        );
+        $projectsController = $this->getProjectsController(null, $responseFactory);
 
         return [$projectsController, $project, $response];
     }

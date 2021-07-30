@@ -56,13 +56,6 @@ final class ProjectDoctrineModel extends AbstractDoctrineModel implements Projec
     private Collection $metaDataElements;
 
     /**
-     * @ORM\OneToMany(targetEntity="App\Projects\MetaDataDoctrineModel", mappedBy="project", cascade={"persist"})
-     *
-     * @var ArrayCollection|Collection
-     */
-    private Collection $metaData;
-
-    /**
      * ProjectDoctrineModel constructor.
      *
      * @param string $uuid
@@ -76,7 +69,6 @@ final class ProjectDoctrineModel extends AbstractDoctrineModel implements Projec
         $this->description = $description;
         $this->roles = new ArrayCollection();
         $this->metaDataElements = new ArrayCollection();
-        $this->metaData = new ArrayCollection();
     }
 
     /**
@@ -180,40 +172,6 @@ final class ProjectDoctrineModel extends AbstractDoctrineModel implements Projec
     }
 
     /**
-     * @param MetaDataModel[] $metaData
-     *
-     * @return $this|ProjectModel
-     */
-    public function setMetaData(array $metaData): ProjectModel
-    {
-        $this->metaData = new ArrayCollection($metaData);
-
-        return $this;
-    }
-
-    /**
-     * @param MetaDataModel $metaData
-     *
-     * @return $this|ProjectModel
-     */
-    public function addMetaData(MetaDataModel $metaData): ProjectModel
-    {
-        if (!$this->getMetaData()->contains($metaData)) {
-            $this->getMetaData()->add($metaData);
-        }
-
-        return $this;
-    }
-
-    /**
-     * @return MetaDataModel[]|Collection
-     */
-    public function getMetaData(): Collection
-    {
-        return $this->metaData;
-    }
-
-    /**
      * @return MetaDataElementModel[]|Collection
      */
     public function getMetaDataElements(): Collection
@@ -240,13 +198,13 @@ final class ProjectDoctrineModel extends AbstractDoctrineModel implements Projec
     }
 
     /**
-     * @return UserModel[]|Collection
+     * @return MemberModel[]|Collection
      */
     public function getMembers(): Collection
     {
         $members = new ArrayCollection([]);
         foreach ($this->getRoles() as $role) {
-            foreach ($role->getUsers() as $member) {
+            foreach ($role->getMembers() as $member) {
                 $members->add($member);
             }
         }
@@ -262,8 +220,8 @@ final class ProjectDoctrineModel extends AbstractDoctrineModel implements Projec
     public function hasMemberWithEmail(string $email): bool
     {
         return $this->getRoles()->exists(
-            fn (int $i, RoleModel $role) => $role->getUsers()->exists(
-                fn (int $i, UserModel $user) => $user->getEmail() === $email
+            fn (int $i, RoleModel $role) => $role->getMembers()->exists(
+                fn (int $i, MemberModel $member) => $member->getUser()->getEmail() === $email
             )
         );
     }

@@ -24,8 +24,7 @@ final class Version20200515211800 extends AbstractMigration
             ->createProjectsTable($schema)
             ->createMetaDataElementsTable($schema)
             ->createRolesTable($schema)
-            ->createRolesUsersTable($schema)
-            ->createMetaDataTable($schema)
+            ->createMembersTable($schema)
             ->createPermissionsTable($schema)
             ->createRolesPermissionsTable($schema)
             ->createInvitationsTable($schema);
@@ -127,35 +126,18 @@ final class Version20200515211800 extends AbstractMigration
      *
      * @return $this
      */
-    private function createRolesUsersTable(Schema $schema): self
+    private function createMembersTable(Schema $schema): self
     {
-        (new Builder($schema))->create('roles_users', function (Table $table) {
+        (new Builder($schema))->create('members', function (Table $table) {
             $table->increments('id');
+            $table->integer('user_id', false, true);
+            $table->foreign('users', 'user_id');
             $table->integer('role_id', false, true);
-            $table->foreign('roles', 'role_id', 'id');
-            $table->integer('user_id', false, true);
-            $table->foreign('users', 'user_id', 'id');
-            $table->unique(['role_id', 'user_id']);
-        });
-
-        return $this;
-    }
-
-    /**
-     * @param Schema $schema
-     *
-     * @return $this
-     */
-    private function createMetaDataTable(Schema $schema): self
-    {
-        (new Builder($schema))->create('meta_data', function (Table $table) {
-            $table->increments('id');
-            $table->integer('user_id', false, true);
-            $table->foreign('users', 'user_id', 'id');
-            $table->integer('project_id', false, true);
-            $table->foreign('projects', 'project_id', 'id');
-            $table->string('name');
-            $table->string('value');
+            $table->foreign('roles', 'role_id');
+            $table->json('meta_data');
+            $table->timestamps();
+            $table->softDeletes();
+            $table->unique(['user_id', 'role_id']);
         });
 
         return $this;

@@ -8,18 +8,12 @@ use Illuminate\Routing\Controller as BaseController;
 class Controller extends BaseController
 {
     /**
-     * @var ResponseFactory
-     */
-    private ResponseFactory $responseFactory;
-
-    /**
      * Controller constructor.
      *
      * @param ResponseFactory $responseFactory
      */
-    public function __construct(ResponseFactory $responseFactory)
+    public function __construct(private ResponseFactory $responseFactory)
     {
-        $this->responseFactory = $responseFactory;
     }
 
     /**

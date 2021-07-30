@@ -13,75 +13,19 @@ use App\Users\UserModel;
 class RoleManager
 {
     /**
-     * @var RoleRepository
-     */
-    private RoleRepository $roleRepository;
-
-    /**
-     * @var RoleModelFactory
-     */
-    private RoleModelFactory $roleModelFactory;
-
-    /**
-     * @var MetaDataRepository
-     */
-    private MetaDataRepository $metaDataRepository;
-
-    /**
-     * @var MetaDataModelFactory
-     */
-    private MetaDataModelFactory $metaDataModelFactory;
-
-    /**
      * RoleManager constructor.
      *
-     * @param RoleRepository       $roleRepository
-     * @param RoleModelFactory     $roleModelFactory
-     * @param MetaDataRepository   $metaDataRepository
-     * @param MetaDataModelFactory $metaDataModelFactory
+     * @param RoleRepository     $roleRepository
+     * @param RoleModelFactory   $roleModelFactory
+     * @param MemberRepository   $memberRepository
+     * @param MemberModelFactory $memberModelFactory
      */
     public function __construct(
-        RoleRepository $roleRepository,
-        RoleModelFactory $roleModelFactory,
-        MetaDataRepository $metaDataRepository,
-        MetaDataModelFactory $metaDataModelFactory
+        private RoleRepository $roleRepository,
+        private RoleModelFactory $roleModelFactory,
+        private MemberRepository $memberRepository,
+        private MemberModelFactory $memberModelFactory
     ) {
-        $this->roleRepository = $roleRepository;
-        $this->roleModelFactory = $roleModelFactory;
-        $this->metaDataRepository = $metaDataRepository;
-        $this->metaDataModelFactory = $metaDataModelFactory;
-    }
-
-    /**
-     * @return RoleRepository
-     */
-    private function getRoleRepository(): RoleRepository
-    {
-        return $this->roleRepository;
-    }
-
-    /**
-     * @return RoleModelFactory
-     */
-    private function getRoleModelFactory(): RoleModelFactory
-    {
-        return $this->roleModelFactory;
-    }
-
-    /**
-     * @return MetaDataRepository
-     */
-    private function getMetaDataRepository(): MetaDataRepository
-    {
-        return $this->metaDataRepository;
-    }
-
-    /**
-     * @return MetaDataModelFactory
-     */
-    private function getMetaDataModelFactory(): MetaDataModelFactory
-    {
-        return $this->metaDataModelFactory;
     }
 
     /**
@@ -108,27 +52,12 @@ class RoleManager
      */
     public function createOwnerRole(ProjectModel $project, UserModel $user, array $metaData): RoleModel
     {
-        $role = $this->getRoleRepository()->save(
-            $this->getRoleModelFactory()
-                ->create($project, 'Owner', true)
-                ->addUser($user)
+        $role = $this->roleRepository->save(
+            $this->roleModelFactory->create($project, RoleModel::LABEL_OWNER, true)
         );
+        $member = $this->memberRepository->save($this->memberModelFactory->create($user, $role, $metaData));
 
-        foreach ($metaData as $name => $value) {
-            $this->getMetaDataRepository()->save(
-                $this->getMetaDataModelFactory()->create(
-                    $project,
-                    $user,
-                    $name,
-                    $value
-                ),
-                false
-            );
-        }
-
-        $this->getMetaDataRepository()->flush();
-
-        return $role;
+        return $role->addMember($member);
     }
 
     /**

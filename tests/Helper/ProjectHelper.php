@@ -7,15 +7,16 @@ use App\Projects\Invites\InvitationManager;
 use App\Projects\Invites\InvitationModel;
 use App\Projects\Invites\InvitationModelFactory;
 use App\Projects\Invites\InvitationRepository;
-use App\Projects\MetaDataDoctrineModel;
+use App\Projects\MemberDoctrineModel;
+use App\Projects\MemberModel;
+use App\Projects\MemberModelFactory;
+use App\Projects\MemberRepository;
 use App\Projects\MetaDataElementDoctrineModel;
 use App\Projects\MetaDataElementModel;
 use App\Projects\MetaDataElementModelFactory;
 use App\Projects\MetaDataElementRepository;
 use App\Projects\MetaData\MetaDataManager;
 use App\Projects\MetaDataModel;
-use App\Projects\MetaDataModelFactory;
-use App\Projects\MetaDataRepository;
 use App\Projects\MetaData\MetaDataValidator;
 use App\Projects\PermissionDoctrineModel;
 use App\Projects\PermissionModel;
@@ -104,7 +105,7 @@ trait ProjectHelper
 
     /**
      * @param ProjectModel|MockInterface $projectModel
-     * @param UserModel[]|Collection     $members
+     * @param MemberModel[]|Collection     $members
      *
      * @return $this
      */
@@ -381,21 +382,6 @@ trait ProjectHelper
 
     /**
      * @param RoleModel|MockInterface $roleModel
-     * @param UserModel[]|Collection  $users
-     *
-     * @return $this
-     */
-    private function mockRoleModelGetUsers(MockInterface $roleModel, Collection $users): self
-    {
-        $roleModel
-            ->shouldReceive('getUsers')
-            ->andReturn($users);
-
-        return $this;
-    }
-
-    /**
-     * @param RoleModel|MockInterface $roleModel
      * @param bool                    $hasPermission
      * @param string                  $permissionName
      *
@@ -422,6 +408,53 @@ trait ProjectHelper
         $roleModel
             ->shouldReceive('isOwner')
             ->andReturn($owner);
+
+        return $this;
+    }
+
+    /**
+     * @param RoleModel|MockInterface  $roleModel
+     * @param MemberModel[]|Collection $members
+     *
+     * @return $this
+     */
+    private function mockRoleModelGetMembers(MockInterface $roleModel, Collection $members): self
+    {
+        $roleModel
+            ->shouldReceive('getMembers')
+            ->andReturn($members);
+
+        return $this;
+    }
+
+    /**
+     * @param RoleModel|MockInterface $roleModel
+     * @param MemberModel             $member
+     *
+     * @return $this
+     */
+    private function mockRoleModelAddMember(MockInterface $roleModel, MemberModel $member): self
+    {
+        $roleModel
+            ->shouldReceive('addMember')
+            ->with($member)
+            ->andReturn($roleModel);
+
+        return $this;
+    }
+
+    /**
+     * @param RoleModel|MockInterface $roleModel
+     * @param MemberModel             $member
+     *
+     * @return $this
+     */
+    private function assertRoleModelAddMember(MockInterface $roleModel, MemberModel $member): self
+    {
+        $roleModel
+            ->shouldHaveReceived('addMember')
+            ->with($member)
+            ->once();
 
         return $this;
     }
@@ -795,59 +828,6 @@ trait ProjectHelper
     }
 
     /**
-     * @param int   $times
-     * @param array $attributes
-     *
-     * @return MetaDataDoctrineModel[]|Collection
-     */
-    private function createMetaDataEntities(int $times = 1, array $attributes = []): Collection
-    {
-        return $this->createModelEntities(MetaDataDoctrineModel::class, $times, $attributes);
-    }
-
-    /**
-     * @return MetaDataRepository|MockInterface
-     */
-    private function createMetaDataRepository(): MetaDataRepository
-    {
-        return m::spy(MetaDataRepository::class);
-    }
-
-    /**
-     * @return MetaDataModelFactory|MockInterface
-     */
-    private function createMetaDataModelFactory(): MetaDataModelFactory
-    {
-        return m::spy(MetaDataModelFactory::class);
-    }
-
-    /**
-     * @param MetaDataModelFactory|MockInterface $metaDataModelFactory
-     * @param MetaDataModel                      $metaDataModel
-     * @param ProjectModel                       $projectModel
-     * @param UserModel                          $userModel
-     * @param string                             $name
-     * @param string                             $value
-     *
-     * @return $this
-     */
-    private function mockMetaDataModelFactoryCreate(
-        MockInterface $metaDataModelFactory,
-        MetaDataModel $metaDataModel,
-        ProjectModel $projectModel,
-        UserModel $userModel,
-        string $name,
-        string $value
-    ): self {
-        $metaDataModelFactory
-            ->shouldReceive('create')
-            ->with($projectModel, $userModel, $name, $value)
-            ->andReturn($metaDataModel);
-
-        return $this;
-    }
-
-    /**
      * @return PermissionModel|MockInterface
      */
     private function createPermissionModel(): PermissionModel
@@ -1128,5 +1108,109 @@ trait ProjectHelper
     private function createMetaDataElementEntities(int $times = 1, array $attributes = []): Collection
     {
         return $this->createModelEntities(MetaDataElementDoctrineModel::class, $times, $attributes);
+    }
+
+    /**
+     * @return MemberModel|MockInterface
+     */
+    private function createMemberModel(): MemberModel
+    {
+        return m::spy(MemberModel::class);
+    }
+
+    /**
+     * @param UserModel|MockInterface $memberModel
+     * @param RoleModel               $role
+     *
+     * @return $this
+     */
+    private function mockMemberModelGetRole(MockInterface $memberModel, RoleModel $role): self
+    {
+        $memberModel
+            ->shouldReceive('getRole')
+            ->andReturn($role);
+
+        return $this;
+    }
+
+    /**
+     * @param MemberModel|MockInterface $memberModel
+     * @param array                     $metaData
+     *
+     * @return $this
+     */
+    private function mockMemberModelGetMetaData(MockInterface $memberModel, array $metaData): self
+    {
+        $memberModel
+            ->shouldReceive('getMetaData')
+            ->andReturn($metaData);
+
+        return $this;
+    }
+
+    /**
+     * @param MemberModel|MockInterface $memberModel
+     * @param UserModel                 $user
+     *
+     * @return $this
+     */
+    private function mockMemberModelGetUser(MockInterface $memberModel, UserModel $user): self
+    {
+        $memberModel
+            ->shouldReceive('getUser')
+            ->andReturn($user);
+
+        return $this;
+    }
+
+    /**
+     * @param int   $times
+     * @param array $attributes
+     *
+     * @return MemberModel[]|Collection
+     */
+    private function createMemberEntities(int $times = 1, array $attributes = []): Collection
+    {
+        return $this->createModelEntities(MemberDoctrineModel::class, $times, $attributes);
+    }
+
+    /**
+     * @return MemberModelFactory|MockInterface
+     */
+    private function createMemberModelFactory(): MemberModelFactory
+    {
+        return m::spy(MemberModelFactory::class);
+    }
+
+    /**
+     * @param MemberModelFactory|MockInterface $memberModelFactory
+     * @param MemberModel                      $member
+     * @param UserModel                        $user
+     * @param RoleModel                        $role
+     * @param array                            $metaData
+     *
+     * @return $this
+     */
+    private function mockMemberModelFactoryCreate(
+        MockInterface $memberModelFactory,
+        MemberModel $member,
+        UserModel $user,
+        RoleModel $role,
+        array $metaData
+    ): self {
+        $memberModelFactory
+            ->shouldReceive('create')
+            ->with($user, $role, $metaData)
+            ->andReturn($member);
+
+        return $this;
+    }
+
+    /**
+     * @return MemberRepository|MockInterface
+     */
+    private function createMemberRepository(): MemberRepository
+    {
+        return m::spy(MemberRepository::class);
     }
 }

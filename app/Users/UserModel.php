@@ -6,7 +6,7 @@ use App\Models\Model;
 use App\Models\SoftDeletable;
 use App\Models\Timestampable;
 use App\Models\UuidModel;
-use App\Projects\MetaDataModel;
+use App\Projects\MemberModel;
 use App\Projects\ProjectModel;
 use App\Projects\RoleModel;
 use Doctrine\Common\Collections\Collection;
@@ -21,9 +21,7 @@ interface UserModel extends Model, Authenticatable, SoftDeletable, Timestampable
 {
     public const PROPERTY_EMAIL          = 'email';
     public const PROPERTY_PASSWORD       = 'password';
-    public const PROPERTY_REFRESH_TOKENS = 'refreshTokens';
-    public const PROPERTY_ROLES          = 'roles';
-    public const PROPERTY_META_DATA      = 'metaData';
+    public const PROPERTY_MEMBERS        = 'members';
 
     /**
      * @param string $email
@@ -50,23 +48,23 @@ interface UserModel extends Model, Authenticatable, SoftDeletable, Timestampable
     public function getPassword(): string;
 
     /**
-     * @param RoleModel[] $roles
+     * @param MemberModel[] $members
      *
      * @return $this
      */
-    public function setRoles(array $roles): self;
+    public function setMembers(array $members): self;
 
     /**
-     * @param RoleModel $role
+     * @param MemberModel $member
      *
      * @return $this
      */
-    public function addRole(RoleModel $role): self;
+    public function addMember(MemberModel $member): self;
 
     /**
-     * @return RoleModel[]|Collection
+     * @return MemberModel[]|Collection
      */
-    public function getRoles(): Collection;
+    public function getMembers(): Collection;
 
     /**
      * @param ProjectModel $project
@@ -74,25 +72,6 @@ interface UserModel extends Model, Authenticatable, SoftDeletable, Timestampable
      * @return RoleModel|null
      */
     public function getRoleForProject(ProjectModel $project): ?RoleModel;
-
-    /**
-     * @param MetaDataModel[] $metaData
-     *
-     * @return $this
-     */
-    public function setMetaData(array $metaData): self;
-
-    /**
-     * @param MetaDataModel $metaData
-     *
-     * @return $this
-     */
-    public function addMetaData(MetaDataModel $metaData): self;
-
-    /**
-     * @return MetaDataModel[]|Collection
-     */
-    public function getMetaData(): Collection;
 
     /**
      * @return array
@@ -105,9 +84,4 @@ interface UserModel extends Model, Authenticatable, SoftDeletable, Timestampable
      * @return bool
      */
     public function isMemberOfProject(ProjectModel $project): bool;
-
-    /**
-     * @return array
-     */
-    public function memberData(): array;
 }

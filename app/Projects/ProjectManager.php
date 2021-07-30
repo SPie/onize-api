@@ -4,8 +4,6 @@ namespace App\Projects;
 
 use App\Models\Exceptions\ModelNotFoundException;
 use App\Models\Model;
-use App\Users\UserModel;
-use Doctrine\Common\Collections\Collection;
 
 /**
  * Class ProjectManager
@@ -15,75 +13,17 @@ use Doctrine\Common\Collections\Collection;
 class ProjectManager
 {
     /**
-     * @var ProjectRepository
-     */
-    private ProjectRepository $projectRepository;
-
-    /**
-     * @var ProjectModelFactory
-     */
-    private ProjectModelFactory $projectModelFactory;
-
-    /**
-     * @var MetaDataElementRepository
-     */
-    private MetaDataElementRepository $metaDataElementRepository;
-
-    /**
-     * @var MetaDataElementModelFactory
-     */
-    private MetaDataElementModelFactory $metaDataElementModelFactory;
-
-    /**
      * ProjectManager constructor.
      *
      * @param ProjectRepository           $projectRepository
      * @param ProjectModelFactory         $projectModelFactory
-     * @param MetaDataElementRepository   $metaDataElementRepository
      * @param MetaDataElementModelFactory $metaDataElementModelFactory
      */
     public function __construct(
-        ProjectRepository $projectRepository,
-        ProjectModelFactory $projectModelFactory,
-        MetaDataElementRepository $metaDataElementRepository,
-        MetaDataElementModelFactory $metaDataElementModelFactory
+        private ProjectRepository $projectRepository,
+        private ProjectModelFactory $projectModelFactory,
+        private MetaDataElementModelFactory $metaDataElementModelFactory
     ) {
-        $this->projectRepository = $projectRepository;
-        $this->projectModelFactory = $projectModelFactory;
-        $this->metaDataElementRepository = $metaDataElementRepository;
-        $this->metaDataElementModelFactory = $metaDataElementModelFactory;
-    }
-
-    /**
-     * @return ProjectRepository
-     */
-    private function getProjectRepository(): ProjectRepository
-    {
-        return $this->projectRepository;
-    }
-
-    /**
-     * @return ProjectModelFactory
-     */
-    private function getProjectModelFactory(): ProjectModelFactory
-    {
-        return $this->projectModelFactory;
-    }
-
-    /**
-     * @return MetaDataElementRepository
-     */
-    private function getMetaDataElementRepository(): MetaDataElementRepository
-    {
-        return $this->metaDataElementRepository;
-    }
-
-    /**
-     * @return MetaDataElementModelFactory
-     */
-    private function getMetaDataElementModelFactory(): MetaDataElementModelFactory
-    {
-        return $this->metaDataElementModelFactory;
     }
 
     /**
@@ -95,11 +35,11 @@ class ProjectManager
      */
     public function createProject(string $label, string $description, array $metaDataElements): ProjectModel
     {
-        $project = $this->getProjectModelFactory()->create($label, $description);
+        $project = $this->projectModelFactory->create($label, $description);
 
         foreach ($metaDataElements as $metaDataElement) {
             $project->addMetaDataElement(
-                $this->getMetaDataElementModelFactory()->create(
+                $this->metaDataElementModelFactory->create(
                     $project,
                     $metaDataElement[MetaDataElementModel::PROPERTY_NAME],
                     $metaDataElement[MetaDataElementModel::PROPERTY_LABEL],
@@ -110,7 +50,7 @@ class ProjectManager
             );
         }
 
-        return $this->getProjectRepository()->save($project);
+        return $this->projectRepository->save($project);
     }
 
     /**
@@ -120,32 +60,11 @@ class ProjectManager
      */
     public function getProject(string $uuid): ProjectModel
     {
-        $project = $this->getProjectRepository()->findOneByUuid($uuid);
+        $project = $this->projectRepository->findOneByUuid($uuid);
         if (!$project) {
             throw new ModelNotFoundException(\sprintf('Project with uuid %s not found', $uuid));
         }
 
         return $project;
-    }
-
-    /**
-     * @param ProjectModel $project
-     *
-     * @return Collection
-     */
-    public function getProjectMembers(ProjectModel $project): Collection
-    {
-        $metaDataMap = [];
-        foreach ($project->getMetaData() as $metaData) {
-            if (empty($metaDataMap[$metaData->getUser()->getId()])) {
-                $metaDataMap[$metaData->getUser()->getId()] = [];
-            }
-
-            $metaDataMap[$metaData->getUser()->getId()][] = $metaData;
-        }
-
-        return $project->getMembers()->map(
-            fn (UserModel $user) => $user->setMetaData($metaDataMap[$user->getId()] ?? [])
-        );
     }
 }

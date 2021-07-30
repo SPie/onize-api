@@ -7,7 +7,6 @@ use App\Models\SoftDelete;
 use App\Models\Timestamps;
 use App\Models\Uuid;
 use App\Projects\Invites\InvitationModel;
-use App\Users\UserModel;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
@@ -50,15 +49,11 @@ final class RoleDoctrineModel extends AbstractDoctrineModel implements RoleModel
     private ProjectModel $project;
 
     /**
-     * @ORM\ManyToMany(targetEntity="App\Users\UserDoctrineModel", inversedBy="roles")
-     * @ORM\JoinTable(name="roles_users",
-     *     joinColumns={@ORM\JoinColumn(name="role_id", referencedColumnName="id")},
-     *     inverseJoinColumns={@ORM\JoinColumn(name="user_id", referencedColumnName="id")}
-     *     )
+     * @ORM\OneToMany(targetEntity="App\Projects\MemberDoctrineModel", mappedBy="role", cascade={"persist"})
      *
-     * @var UserModel[]|Collection
+     * @var MemberModel[]|Collection
      */
-    private Collection $users;
+    private Collection $members;
 
     /**
      * @ORM\ManyToMany(targetEntity="App\Projects\PermissionDoctrineModel", inversedBy="roles")
@@ -92,7 +87,7 @@ final class RoleDoctrineModel extends AbstractDoctrineModel implements RoleModel
         $this->project = $project;
         $this->label = $label;
         $this->owner = $owner;
-        $this->users = new ArrayCollection();
+        $this->members = new ArrayCollection();
         $this->permissions = new ArrayCollection();
         $this->invitations = new ArrayCollection();
     }
@@ -146,37 +141,37 @@ final class RoleDoctrineModel extends AbstractDoctrineModel implements RoleModel
     }
 
     /**
-     * @param array $users
+     * @param MemberModel[] $members
      *
      * @return RoleModel
      */
-    public function setUsers(array $users): RoleModel
+    public function setMembers(array $members): RoleModel
     {
-        $this->users = new ArrayCollection($users);
+        $this->members = new ArrayCollection($members);
 
         return $this;
     }
 
     /**
-     * @param UserModel $user
+     * @param MemberModel $member
      *
      * @return RoleModel
      */
-    public function addUser(UserModel $user): RoleModel
+    public function addMember(MemberModel $member): RoleModel
     {
-        if (!$this->getUsers()->contains($user)) {
-            $this->getUsers()->add($user);
+        if (!$this->members->contains($member)) {
+            $this->members->add($member);
         }
 
         return $this;
     }
 
     /**
-     * @return Collection
+     * @return MemberModel[]|Collection
      */
-    public function getUsers(): Collection
+    public function getMembers(): Collection
     {
-        return $this->users;
+        return $this->members;
     }
 
     /**

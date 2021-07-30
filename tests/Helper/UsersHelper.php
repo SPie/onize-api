@@ -2,6 +2,7 @@
 
 namespace Tests\Helper;
 
+use App\Projects\MemberModel;
 use App\Projects\ProjectModel;
 use App\Projects\RoleModel;
 use App\Users\UserDoctrineModel;
@@ -156,38 +157,6 @@ trait UsersHelper
     }
 
     /**
-     * @param MockInterface $userModel
-     * @param array         $memberData
-     *
-     * @return $this
-     */
-    private function mockUserModelMemberData(MockInterface $userModel, array $memberData): self
-    {
-        $userModel
-            ->shouldReceive('memberData')
-            ->andReturn($memberData);
-
-        return $this;
-    }
-
-    /**
-     * @param UserModel|MockInterface $userModel
-     * @param array                   $metaData
-     *
-     * @return $this
-     */
-    private function mockUserModelSetMetaData(MockInterface $userModel, array $metaData): self
-    {
-        $userModel
-            ->shouldReceive('setMetaData')
-            ->with($metaData)
-            ->andReturn($userModel)
-            ->once();
-
-        return $this;
-    }
-
-    /**
      * @param UserModel|MockInterface $userModel
      * @param RoleModel|null          $role
      * @param ProjectModel            $project
@@ -215,6 +184,21 @@ trait UsersHelper
         $userModel
             ->shouldReceive('getEmail')
             ->andReturn($email);
+
+        return $this;
+    }
+
+    /**
+     * @param UserModel|MockInterface  $userModel
+     * @param MemberModel[]|Collection $members
+     *
+     * @return $this
+     */
+    private function mockUserModelGetMembers(MockInterface $userModel, Collection $members): self
+    {
+        $userModel
+            ->shouldReceive('getMembers')
+            ->andReturn($members);
 
         return $this;
     }
@@ -418,6 +402,17 @@ trait UsersHelper
      */
     private function createUserWithRole(RoleModel $role): UserModel
     {
-        return $this->createUserEntities(1, [UserModel::PROPERTY_ROLES => new ArrayCollection([$role])])->first();
+        /** @var UserModel $user */
+        $user = $this->createUserEntities()->first();
+
+        $member = $this->createMemberEntities(
+            1,
+            [
+                MemberModel::PROPERTY_USER => $user,
+                MemberModel::PROPERTY_ROLE => $role,
+            ]
+        )->first();
+
+        return $user->addMember($member);
     }
 }

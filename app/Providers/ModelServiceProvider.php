@@ -14,18 +14,18 @@ use App\Projects\Invites\InvitationDoctrineRepository;
 use App\Projects\Invites\InvitationModel;
 use App\Projects\Invites\InvitationModelFactory;
 use App\Projects\Invites\InvitationRepository;
-use App\Projects\MetaDataDoctrineModel;
-use App\Projects\MetaDataDoctrineModelFactory;
-use App\Projects\MetaDataDoctrineRepository;
+use App\Projects\MemberDoctrineModel;
+use App\Projects\MemberDoctrineModelFactory;
+use App\Projects\MemberDoctrineRepository;
+use App\Projects\MemberModel;
+use App\Projects\MemberModelFactory;
+use App\Projects\MemberRepository;
 use App\Projects\MetaDataElementDoctrineModel;
 use App\Projects\MetaDataElementDoctrineModelFactory;
 use App\Projects\MetaDataElementDoctrineRepository;
 use App\Projects\MetaDataElementModel;
 use App\Projects\MetaDataElementModelFactory;
 use App\Projects\MetaDataElementRepository;
-use App\Projects\MetaDataModel;
-use App\Projects\MetaDataModelFactory;
-use App\Projects\MetaDataRepository;
 use App\Projects\PermissionDoctrineModel;
 use App\Projects\PermissionDoctrineRepository;
 use App\Projects\PermissionModel;
@@ -84,7 +84,7 @@ final class ModelServiceProvider extends ServiceProvider
         $this->app->bind(ProjectModel::class, ProjectDoctrineModel::class);
         $this->app->bind(MetaDataElementModel::class, MetaDataElementDoctrineModel::class);
         $this->app->bind(RoleModel::class, RoleDoctrineModel::class);
-        $this->app->bind(MetaDataModel::class, MetaDataDoctrineModel::class);
+        $this->app->bind(MemberModel::class, MemberDoctrineModel::class);
         $this->app->bind(PermissionModel::class, PermissionDoctrineModel::class);
         $this->app->bind(InvitationModel::class, InvitationDoctrineModel::class);
 
@@ -100,7 +100,7 @@ final class ModelServiceProvider extends ServiceProvider
         $this->app->singleton(ProjectModelFactory::class, ProjectDoctrineModelFactory::class);
         $this->app->singleton(MetaDataElementModelFactory::class, MetaDataElementDoctrineModelFactory::class);
         $this->app->singleton(RoleModelFactory::class, RoleDoctrineModelFactory::class);
-        $this->app->singleton(MetaDataModelFactory::class, MetaDataDoctrineModelFactory::class);
+        $this->app->singleton(MemberModelFactory::class, MemberDoctrineModelFactory::class);
         $this->app->singleton(InvitationModelFactory::class, fn () => new InvitationDoctrineModelFactory(
             $this->app->get(UuidGenerator::class),
             $this->app['config']['projects.invitations.validUntilMinutes']
@@ -154,8 +154,8 @@ final class ModelServiceProvider extends ServiceProvider
             fn () => new RoleDoctrineRepository($this->makeDatabaseHandler(RoleDoctrineModel::class))
         );
         $this->app->singleton(
-            MetaDataRepository::class,
-            fn () => new MetaDataDoctrineRepository($this->makeDatabaseHandler(MetaDataDoctrineModel::class))
+            MemberRepository::class,
+            fn () => new MemberDoctrineRepository($this->makeDatabaseHandler(MemberDoctrineModel::class))
         );
         $this->app->singleton(
             PermissionRepository::class,

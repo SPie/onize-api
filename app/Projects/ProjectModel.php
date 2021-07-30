@@ -6,7 +6,6 @@ use App\Models\Model;
 use App\Models\SoftDeletable;
 use App\Models\Timestampable;
 use App\Models\UuidModel;
-use App\Users\UserModel;
 use Doctrine\Common\Collections\Collection;
 
 /**
@@ -20,7 +19,6 @@ interface ProjectModel extends Model, SoftDeletable, Timestampable, UuidModel
     public const PROPERTY_DESCRIPTION        = 'description';
     public const PROPERTY_ROLES              = 'roles';
     public const PROPERTY_META_DATA_ELEMENTS = 'metaDataElements';
-    public const PROPERTY_META_DATA          = 'metaData';
 
     /**
      * @param string $label
@@ -85,31 +83,12 @@ interface ProjectModel extends Model, SoftDeletable, Timestampable, UuidModel
     public function getMetaDataElements(): Collection;
 
     /**
-     * @param MetaDataModel[] $metaData
-     *
-     * @return $this
-     */
-    public function setMetaData(array $metaData): self;
-
-    /**
-     * @param MetaDataModel $metaData
-     *
-     * @return $this
-     */
-    public function addMetaData(MetaDataModel $metaData): self;
-
-    /**
-     * @return MetaDataModel[]|Collection
-     */
-    public function getMetaData(): Collection;
-
-    /**
      * @return array
      */
     public function toArray(): array;
 
     /**
-     * @return UserModel[]|Collection
+     * @return MemberModel[]|Collection
      */
     public function getMembers(): Collection;
 

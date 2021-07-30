@@ -5,15 +5,12 @@ namespace App\Http\Controllers;
 use App\Auth\AuthManager;
 use App\Http\Requests\Projects\Create;
 use App\Http\Requests\Projects\Invite;
-use App\Policies\ProjectPolicy;
 use App\Projects\Invites\InvitationManager;
+use App\Projects\MemberModel;
 use App\Projects\ProjectManager;
 use App\Projects\ProjectModel;
 use App\Projects\RoleManager;
 use App\Projects\RoleModel;
-use App\Users\UserModel;
-use Illuminate\Auth\Access\AuthorizationException;
-use Illuminate\Contracts\Auth\Access\Gate;
 use Illuminate\Contracts\Routing\ResponseFactory;
 use Illuminate\Http\JsonResponse;
 
@@ -36,29 +33,14 @@ final class ProjectsController extends Controller
     private const RESPONSE_PARAMETER_INVITATION = 'invitation';
 
     /**
-     * @var ProjectManager
-     */
-    private ProjectManager $projectManager;
-
-    /**
      * ProjectsController constructor.
      *
      * @param ProjectManager  $projectManager
      * @param ResponseFactory $responseFactory
      */
-    public function __construct(ProjectManager $projectManager, ResponseFactory $responseFactory)
+    public function __construct(private ProjectManager $projectManager, ResponseFactory $responseFactory)
     {
         parent::__construct($responseFactory);
-
-        $this->projectManager = $projectManager;
-    }
-
-    /**
-     * @return ProjectManager
-     */
-    private function getProjectManager(): ProjectManager
-    {
-        return $this->projectManager;
     }
 
     //region Controller actions
@@ -72,7 +54,7 @@ final class ProjectsController extends Controller
      */
     public function create(Create $request, AuthManager $authManager, RoleManager $roleManager): JsonResponse
     {
-        $project = $this->getProjectManager()->createProject(
+        $project = $this->projectManager->createProject(
             $request->getLabel(),
             $request->getDescription(),
             $request->getMetaDataElements()
@@ -96,8 +78,8 @@ final class ProjectsController extends Controller
     public function usersProjects(AuthManager $authManager): JsonResponse
     {
         return $this->getResponseFactory()->json([
-            self::RESPONSE_PARAMETER_PROJECTS => $authManager->authenticatedUser()->getRoles()
-                ->map(fn (RoleModel $role) => $role->toArray(true))
+            self::RESPONSE_PARAMETER_PROJECTS => $authManager->authenticatedUser()->getMembers()
+                ->map(fn (MemberModel $member) => $member->getRole()->toArray(true))
                 ->toArray()
         ]);
     }
@@ -120,8 +102,13 @@ final class ProjectsController extends Controller
     public function members(ProjectModel $project): JsonResponse
     {
         return $this->getResponseFactory()->json([
-            self::RESPONSE_PARAMETER_MEMBERS => $this->getProjectManager()->getProjectMembers($project)
-                ->map(fn (UserModel $member) => $member->memberData())
+            self::RESPONSE_PARAMETER_MEMBERS => $project->getMembers()
+                ->map(
+                    fn (MemberModel $member) => \array_merge(
+                        $member->getUser()->toArray(),
+                        [MemberModel::PROPERTY_META_DATA => $member->getMetaData()]
+                    )
+                )
                 ->getValues()
         ]);
     }

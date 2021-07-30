@@ -56,11 +56,11 @@ final class UserDoctrineModelTest extends TestCase
 
     /**
      * @param bool $isMember
-     * @param bool $withRoles
+     * @param bool $withMember
      *
      * @return array
      */
-    private function setUpIsMemberOfProjectTest(bool $isMember = true, bool $withRoles = true): array
+    private function setUpIsMemberOfProjectTest(bool $isMember = true, bool $withMember = true): array
     {
         $project = $this->createProjectModel();
         $this->mockModelGetId($project, $this->getFaker()->numberBetween());
@@ -68,9 +68,11 @@ final class UserDoctrineModelTest extends TestCase
         $this->mockModelGetId($otherProject, $project->getId() + 1);
         $role = $this->createRoleModel();
         $this->mockRoleModelGetProject($role, $isMember ? $project : $otherProject);
+        $member = $this->createMemberModel();
+        $this->mockMemberModelGetRole($member, $role);
         $user = $this->getUserDoctrineModel();
-        if ($withRoles) {
-            $user->addRole($role);
+        if ($withMember) {
+            $user->addMember($member);
         }
 
         return [$user, $project];
@@ -101,37 +103,12 @@ final class UserDoctrineModelTest extends TestCase
     /**
      * @return void
      */
-    public function testIsMemberOfProjectWithoutRoles(): void
+    public function testIsMemberOfProjectWithoutMembers(): void
     {
         /** @var UserDoctrineModel $user */
         [$user, $project] = $this->setUpIsMemberOfProjectTest(true, false);
 
         $this->assertFalse($user->isMemberOfProject($project));
-    }
-
-    /**
-     * @return void
-     */
-    public function testMemberData(): void
-    {
-        $metaDataName = $this->getFaker()->word;
-        $metaDataValue = $this->getFaker()->word;
-        $metaData = $this->createMetaDataModel();
-        $this
-            ->mockMetaDataModelGetName($metaData, $metaDataName)
-            ->mockMetaDataModelGetValue($metaData, $metaDataValue);
-        $user = $this->getUserDoctrineModel()->setMetaData([$metaData]);
-
-        $this->assertEquals(
-            [
-                'uuid' => $user->getUuid(),
-                'email' => $user->getEmail(),
-                'metaData' => [
-                    $metaDataName => $metaDataValue
-                ]
-            ],
-            $user->memberData()
-        );
     }
 
     /**
@@ -150,8 +127,12 @@ final class UserDoctrineModelTest extends TestCase
         $this->mockRoleModelGetProject($role, $withRoleForProject ? $project : $otherProject);
         $otherRole = $this->createRoleModel();
         $this->mockRoleModelGetProject($otherRole, $otherProject);
+        $member = $this->createMemberModel();
+        $this->mockMemberModelGetRole($member, $role);
+        $otherMember = $this->createMemberModel();
+        $this->mockMemberModelGetRole($otherMember, $otherRole);
         $user = $this->getUserDoctrineModel();
-        $user->setRoles($withRoles ? [$otherRole, $role] : []);
+        $user->setMembers($withRoles ? [$otherMember, $member] : []);
 
         return [$user, $project, $role];
     }

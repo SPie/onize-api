@@ -3,8 +3,8 @@
 namespace Tests\Unit\Projects;
 
 use App\Models\Exceptions\ModelNotFoundException;
-use App\Projects\MetaDataModelFactory;
-use App\Projects\MetaDataRepository;
+use App\Projects\MemberModelFactory;
+use App\Projects\MemberRepository;
 use App\Projects\RoleManager;
 use App\Projects\RoleModelFactory;
 use App\Projects\RoleRepository;
@@ -33,30 +33,33 @@ final class RoleManagerTest extends TestCase
     {
         $project = $this->createProjectModel();
         $user = $this->createUserModel();
-        $metaDataName = $this->getFaker()->word;
-        $metaDataValue = $this->getFaker()->word;
+        $metaData = [$this->getFaker()->word => $this->getFaker()->word];
+        $member = $this->createMemberModel();
         $role = $this->createRoleModel();
-        $this->mockRoleModelAddUser($role, $user);
+        $this->mockRoleModelAddMember($role, $member);
         $roleModelFactory = $this->createRoleModelFactory();
         $this->mockRoleModelFactoryCreate($roleModelFactory, $role, $project, 'Owner', true);
         $roleRepository = $this->createRoleRepository();
         $this->mockRepositorySave($roleRepository, $role);
-        $metaDataModel = $this->createMetaDataModel();
-        $metaDataModelFactory = $this->createMetaDataModelFactory();
-        $this->mockMetaDataModelFactoryCreate($metaDataModelFactory, $metaDataModel, $project, $user, $metaDataName, $metaDataValue);
-        $metaDataRepository = $this->createMetaDataRepository();
-        $this->mockRepositorySave($metaDataRepository, $metaDataModel, false);
-        $roleManager = $this->getRoleManager($roleRepository, $roleModelFactory, $metaDataRepository, $metaDataModelFactory);
+        $memberModelFactory = $this->createMemberModelFactory();
+        $this->mockMemberModelFactoryCreate($memberModelFactory, $member, $user, $role, $metaData);
+        $memberRepository = $this->createMemberRepository();
+        $this->mockRepositorySave($memberRepository, $member);
+        $roleManager = $this->getRoleManager(
+            $roleRepository,
+            $roleModelFactory,
+            $memberRepository,
+            $memberModelFactory
+        );
 
         return [
             $roleManager,
             $project,
             $user,
-            [$metaDataName => $metaDataValue],
+            $metaData,
             $roleRepository,
             $role,
-            $metaDataRepository,
-            $metaDataModel,
+            $member
         ];
     }
 
@@ -73,16 +76,13 @@ final class RoleManagerTest extends TestCase
             $metaData,
             $roleRepository,
             $role,
-            $metaDataRepository,
-            $metaDataModel,
+            $member
         ] = $this->setUpCreateOwnerRoleTest();
 
         $this->assertEquals($role, $roleManager->createOwnerRole($project, $user, $metaData));
         $this
-            ->assertRoleModelAddUser($role, $user)
-            ->assertRepositorySave($roleRepository, $role)
-            ->assertRepositorySave($metaDataRepository, $metaDataModel, false)
-            ->assertRepositoryFlush($metaDataRepository);
+            ->assertRoleModelAddMember($role, $member)
+            ->assertRepositorySave($roleRepository, $role);
     }
 
     /**
@@ -197,22 +197,22 @@ final class RoleManagerTest extends TestCase
     /**
      * @param RoleRepository|null       $roleRepository
      * @param RoleModelFactory|null     $roleModelFactory
-     * @param MetaDataRepository|null   $metaDataRepository
-     * @param MetaDataModelFactory|null $metaDataModelFactory
+     * @param MemberRepository|null     $memberRepository
+     * @param MemberModelFactory|null   $memberModelFactory
      *
      * @return RoleManager
      */
     private function getRoleManager(
         RoleRepository $roleRepository = null,
         RoleModelFactory $roleModelFactory = null,
-        MetaDataRepository $metaDataRepository = null,
-        MetaDataModelFactory $metaDataModelFactory = null
+        MemberRepository $memberRepository = null,
+        MemberModelFactory $memberModelFactory = null
     ): RoleManager {
         return new RoleManager(
             $roleRepository ?: $this->createRoleRepository(),
             $roleModelFactory ?: $this->createRoleModelFactory(),
-            $metaDataRepository ?: $this->createMetaDataRepository(),
-            $metaDataModelFactory ?: $this->createMetaDataModelFactory()
+            $memberRepository ?: $this->createMemberRepository(),
+            $memberModelFactory ?: $this->createMemberModelFactory()
         );
     }
 }

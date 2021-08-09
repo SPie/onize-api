@@ -14,14 +14,18 @@ trait Uuid
     /**
      * @ORM\Column(name="uuid", type="string", length=255, nullable=false)
      *
-     * @var string
+     * @var string|null
      */
-    private string $uuid;
+    private ?string $uuid = null;
 
-    /**
-     * @return string
-     */
-    public function getUuid(): string
+    public function setUuid(string $uuid): self
+    {
+        $this->uuid = $uuid;
+
+        return $this;
+    }
+
+    public function getUuid(): ?string
     {
         return $this->uuid;
     }

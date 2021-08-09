@@ -67,22 +67,12 @@ final class InvitationDoctrineModel extends AbstractDoctrineModel implements Inv
      */
     private string $metaData;
 
-    /**
-     * InvitationDoctrineModel constructor.
-     *
-     * @param RoleModel       $role
-     * @param string          $email
-     * @param CarbonImmutable $validUntil
-     * @param array           $metaData
-     */
     public function __construct(
-        string $uuid,
         RoleModel $role,
         string $email,
         CarbonImmutable $validUntil,
         array $metaData = []
     ) {
-        $this->uuid = $uuid;
         $this->role = $role;
         $this->email = $email;
         $this->validUntil = $validUntil->toDateTime();

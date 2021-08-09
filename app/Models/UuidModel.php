@@ -11,8 +11,7 @@ interface UuidModel
 {
     public const PROPERTY_UUID = 'uuid';
 
-    /**
-     * @return string
-     */
-    public function getUuid(): string;
+    public function setUuid(string $uuid): self;
+
+    public function getUuid(): ?string;
 }

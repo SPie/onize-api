@@ -22,16 +22,14 @@ final class ProjectDoctrineModelTest extends TestCase
 
     //region Tests
 
-    /**
-     * @return void
-     */
     public function testToArray(): void
     {
-        $project = $this->getProjectDoctrineModel();
+        $uuid = $this->getFaker()->uuid;
+        $project = $this->getProjectDoctrineModel()->setUuid($uuid);
 
         $this->assertEquals(
             [
-                'uuid'             => $project->getUuid(),
+                'uuid'             => $uuid,
                 'label'            => $project->getLabel(),
                 'description'      => $project->getDescription(),
                 'metaDataElements' => [],
@@ -41,11 +39,9 @@ final class ProjectDoctrineModelTest extends TestCase
         );
     }
 
-    /**
-     * @return void
-     */
     public function testToArrayWithMetaDataElementsAndRoles(): void
     {
+        $uuid = $this->getFaker()->uuid;
         $metaDataElementModelData = [$this->getFaker()->word => $this->getFaker()];
         $metaDataElement = $this->createMetaDataElementModel();
         $this->mockMetaDataElementModelToArray($metaDataElement, $metaDataElementModelData);
@@ -53,12 +49,13 @@ final class ProjectDoctrineModelTest extends TestCase
         $role = $this->createRoleModel();
         $this->mockRoleModelToArray($role, $roleData);
         $project = $this->getProjectDoctrineModel()
+            ->setUuid($uuid)
             ->addMetaDataElement($metaDataElement)
             ->addRole($role);
 
         $this->assertEquals(
             [
-                'uuid'             => $project->getUuid(),
+                'uuid'             => $uuid,
                 'label'            => $project->getLabel(),
                 'description'      => $project->getDescription(),
                 'metaDataElements' => [$metaDataElementModelData],
@@ -68,12 +65,6 @@ final class ProjectDoctrineModelTest extends TestCase
         );
     }
 
-    /**
-     * @param bool $withRoles
-     * @param bool $withUsers
-     *
-     * @return array
-     */
     private function setUpGetMembersTest(bool $withRoles = true, bool $withUsers = true): array
     {
         $member = $this->createMemberModel();
@@ -84,9 +75,6 @@ final class ProjectDoctrineModelTest extends TestCase
         return [$project, $member];
     }
 
-    /**
-     * @return void
-     */
     public function testGetMembers(): void
     {
         /** @var ProjectModel $project */
@@ -95,9 +83,6 @@ final class ProjectDoctrineModelTest extends TestCase
         $this->assertEquals(new ArrayCollection([$member]), $project->getMembers());
     }
 
-    /**
-     * @return void
-     */
     public function testGetMembersWithoutRoles(): void
     {
         /** @var ProjectModel $project */
@@ -106,9 +91,6 @@ final class ProjectDoctrineModelTest extends TestCase
         $this->assertTrue($project->getMembers()->isEmpty());
     }
 
-    /**
-     * @return void
-     */
     public function testGetMembersWithoutUsersOnRoles(): void
     {
         /** @var ProjectModel $project */
@@ -117,11 +99,6 @@ final class ProjectDoctrineModelTest extends TestCase
         $this->assertTrue($project->getMembers()->isEmpty());
     }
 
-    /**
-     * @param bool $withMember
-     *
-     * @return array
-     */
     private function setUpHasMemberWithEmailTest(bool $withMember = true): array
     {
         $email = $this->getFaker()->safeEmail;
@@ -137,9 +114,6 @@ final class ProjectDoctrineModelTest extends TestCase
         return [$projectModel, $email];
     }
 
-    /**
-     * @return void
-     */
     public function testHasMemberWithEmailWithMember(): void
     {
         /** @var ProjectDoctrineModel $projectModel */
@@ -148,9 +122,6 @@ final class ProjectDoctrineModelTest extends TestCase
         $this->assertTrue($projectModel->hasMemberWithEmail($email));
     }
 
-    /**
-     * @return void
-     */
     public function testHasMemberWithEmailWithoutMember(): void
     {
         /** @var ProjectDoctrineModel $projectModel */
@@ -161,20 +132,11 @@ final class ProjectDoctrineModelTest extends TestCase
 
     //endregion
 
-    /**
-     * @param string|null $uuid
-     * @param string|null $label
-     * @param string|null $description
-     *
-     * @return ProjectDoctrineModel
-     */
     private function getProjectDoctrineModel(
-        string $uuid = null,
         string $label = null,
         string $description = null
     ): ProjectDoctrineModel {
         return new ProjectDoctrineModel(
-            $uuid ?: $this->getFaker()->uuid,
             $label ?: $this->getFaker()->word,
             $description ?: $this->getFaker()->word
         );

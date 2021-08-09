@@ -102,7 +102,6 @@ final class ModelServiceProvider extends ServiceProvider
         $this->app->singleton(RoleModelFactory::class, RoleDoctrineModelFactory::class);
         $this->app->singleton(MemberModelFactory::class, MemberDoctrineModelFactory::class);
         $this->app->singleton(InvitationModelFactory::class, fn () => new InvitationDoctrineModelFactory(
-            $this->app->get(UuidGenerator::class),
             $this->app['config']['projects.invitations.validUntilMinutes']
         ));
 

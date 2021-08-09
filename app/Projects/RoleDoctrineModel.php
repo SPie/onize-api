@@ -81,9 +81,8 @@ final class RoleDoctrineModel extends AbstractDoctrineModel implements RoleModel
      * @param string       $label
      * @param bool         $owner
      */
-    public function __construct(string $uuid, ProjectModel $project, string $label, bool $owner = false)
+    public function __construct(ProjectModel $project, string $label, bool $owner = false)
     {
-        $this->uuid = $uuid;
         $this->project = $project;
         $this->label = $label;
         $this->owner = $owner;

@@ -6,7 +6,6 @@ use App\Models\AbstractDoctrineModel;
 use App\Models\SoftDelete;
 use App\Models\Timestamps;
 use App\Models\Uuid;
-use App\Users\UserModel;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
@@ -55,16 +54,8 @@ final class ProjectDoctrineModel extends AbstractDoctrineModel implements Projec
      */
     private Collection $metaDataElements;
 
-    /**
-     * ProjectDoctrineModel constructor.
-     *
-     * @param string $uuid
-     * @param string $label
-     * @param string $description
-     */
-    public function __construct(string $uuid, string $label, string $description)
+    public function __construct(string $label, string $description)
     {
-        $this->uuid = $uuid;
         $this->label = $label;
         $this->description = $description;
         $this->roles = new ArrayCollection();

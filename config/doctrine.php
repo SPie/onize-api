@@ -98,6 +98,8 @@ return [
         //LaravelDoctrine\Extensions\Blameable\BlameableExtension::class,
         //LaravelDoctrine\Extensions\IpTraceable\IpTraceableExtension::class,
         //LaravelDoctrine\Extensions\Translatable\TranslatableExtension::class
+
+        App\Models\UuidExtension::class,
     ],
     /*
     |--------------------------------------------------------------------------

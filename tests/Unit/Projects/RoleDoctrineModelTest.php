@@ -18,16 +18,14 @@ final class RoleDoctrineModelTest extends TestCase
 
     //region Tests
 
-    /**
-     * @return void
-     */
     public function testToArray(): void
     {
-        $role = $this->getRoleDoctrineModel();
+        $uuid = $this->getFaker()->uuid;
+        $role = $this->getRoleDoctrineModel()->setUuid($uuid);
 
         $this->assertEquals(
             [
-                'uuid'  => $role->getUuid(),
+                'uuid'  => $uuid,
                 'label' => $role->getLabel(),
                 'owner' => false,
             ],
@@ -35,19 +33,17 @@ final class RoleDoctrineModelTest extends TestCase
         );
     }
 
-    /**
-     * @return void
-     */
     public function testToArrayWithProject(): void
     {
+        $uuid = $this->getFaker()->uuid;
         $projectData = [$this->getFaker()->word => $this->getFaker()->word];
         $project = $this->createProjectModel();
         $this->mockProjectModelToArray($project, $projectData);
-        $role = $this->getRoleDoctrineModel(null, $project);
+        $role = $this->getRoleDoctrineModel($project)->setUuid($uuid);
 
         $this->assertEquals(
             [
-                'uuid'    => $role->getUuid(),
+                'uuid'    => $uuid,
                 'label'   => $role->getLabel(),
                 'owner'   => false,
                 'project' => $projectData,
@@ -56,9 +52,6 @@ final class RoleDoctrineModelTest extends TestCase
         );
     }
 
-    /**
-     * @return array
-     */
     private function setUpHasPermissionTest(bool $withPermission = true, bool $withPermissionName = true): array
     {
         $permissionName = $this->getFaker()->word;
@@ -72,9 +65,6 @@ final class RoleDoctrineModelTest extends TestCase
         return [$role, $permissionName];
     }
 
-    /**
-     * @return void
-     */
     public function testHasPermission(): void
     {
         /** @var RoleDoctrineModel $role */
@@ -83,9 +73,6 @@ final class RoleDoctrineModelTest extends TestCase
         $this->assertTrue($role->hasPermission($permissionName));
     }
 
-    /**
-     * @return void
-     */
     public function testHasPermissionWithoutPermission(): void
     {
         /** @var RoleDoctrineModel $role */
@@ -94,9 +81,6 @@ final class RoleDoctrineModelTest extends TestCase
         $this->assertFalse($role->hasPermission($permissionName));
     }
 
-    /**
-     * @return void
-     */
     public function testHasPermissionWithoutPermissionName(): void
     {
         /** @var RoleDoctrineModel $role */
@@ -107,17 +91,9 @@ final class RoleDoctrineModelTest extends TestCase
 
     //endregion
 
-    /**
-     * @param string|null       $uuid
-     * @param ProjectModel|null $project
-     * @param string|null       $label
-     *
-     * @return RoleDoctrineModel
-     */
-    private function getRoleDoctrineModel(string $uuid = null, ProjectModel $project = null, string $label = null): RoleDoctrineModel
+    private function getRoleDoctrineModel(ProjectModel $project = null, string $label = null): RoleDoctrineModel
     {
         return new RoleDoctrineModel(
-            $uuid ?: $this->getFaker()->uuid,
             $project ?: $this->createProjectModel(),
             $label ?: $this->getFaker()->word
         );

@@ -21,37 +21,26 @@ final class RoleDoctrineModelFactoryTest extends TestCase
 
     //region Tests
 
-    /**
-     * @return void
-     */
     public function testCreate(): void
     {
         $project = $this->createProjectModel();
         $label = $this->getFaker()->word;
         $owner = $this->getFaker()->boolean;
-        $uuid = $this->getFaker()->uuid;
-        $uuidGenerator = $this->createUuidGenerator($uuid);
 
         $this->assertEquals(
             new RoleDoctrineModel(
-                $uuid,
                 $project,
                 $label,
                 $owner
             ),
-            $this->getRoleDoctrineModelFactory($uuidGenerator)->create($project, $label, $owner)
+            $this->getRoleDoctrineModelFactory()->create($project, $label, $owner)
         );
     }
 
     //endregion
 
-    /**
-     * @param UuidGenerator|null $uuidGenerator
-     *
-     * @return RoleDoctrineModelFactory
-     */
-    private function getRoleDoctrineModelFactory(UuidGenerator $uuidGenerator = null): RoleDoctrineModelFactory
+    private function getRoleDoctrineModelFactory(): RoleDoctrineModelFactory
     {
-        return new RoleDoctrineModelFactory($uuidGenerator ?: $this->createUuidGenerator());
+        return new RoleDoctrineModelFactory();
     }
 }

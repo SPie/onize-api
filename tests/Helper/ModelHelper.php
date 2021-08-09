@@ -10,6 +10,7 @@ use App\Models\UuidGenerator;
 use App\Models\UuidModel;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
+use Doctrine\ORM\Event\LifecycleEventArgs;
 use Mockery as m;
 use Mockery\MockInterface;
 
@@ -364,6 +365,29 @@ trait ModelHelper
         $uuidModel
             ->shouldReceive('getUuid')
             ->andReturn($uuid);
+
+        return $this;
+    }
+
+    /**
+     * @return LifecycleEventArgs|MockInterface
+     */
+    private function createLifecycleEventArgs(): LifecycleEventArgs
+    {
+        return m::spy(LifecycleEventArgs::class);
+    }
+
+    /**
+     * @param LifecycleEventArgs|MockInterface $lifecycleVentArgs
+     * @param mixed                            $entity
+     *
+     * @return $this
+     */
+    private function mockLifecycleEventArgsGetEntity(MockInterface $lifecycleVentArgs, $entity): self
+    {
+        $lifecycleVentArgs
+            ->shouldReceive('getEntity')
+            ->andReturn($entity);
 
         return $this;
     }

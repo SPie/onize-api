@@ -53,13 +53,11 @@ class UserDoctrineModel extends AbstractDoctrineModel implements UserModel
     /**
      * UserDoctrineModel constructor.
      *
-     * @param string $uuid
      * @param string $email
      * @param string $password
      */
-    public function __construct(string $uuid, string $email, string $password)
+    public function __construct(string $email, string $password)
     {
-        $this->uuid = $uuid;
         $this->email = $email;
         $this->password = $password;
         $this->members = new ArrayCollection();

@@ -19,4 +19,6 @@ interface InvitationRepository extends Repository
      * @return InvitationModel
      */
     public function save(Model $model, bool $flush = true): Model;
+
+    public function findOneByUuid(string $uuid): ?InvitationModel;
 }

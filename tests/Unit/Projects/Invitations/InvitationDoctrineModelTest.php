@@ -49,12 +49,30 @@ final class InvitationDoctrineModelTest extends TestCase
         );
     }
 
+    public function testIsExpired(): void
+    {
+        $now = new CarbonImmutable();
+        $this->setCarbonMock($now);
+        $validUntil = $now->addDay();
+
+        $this->assertFalse($this->getInvitationDoctrineModel(null, null, $validUntil)->isExpired());
+    }
+
+    public function testIsExpiredWithExpiredInvitation(): void
+    {
+        $now = new CarbonImmutable();
+        $this->setCarbonMock($now);
+        $validUntil = $now->subDay();
+
+        $this->assertTrue($this->getInvitationDoctrineModel(null, null, $validUntil)->isExpired());
+    }
+
     //endregion
 
     private function getInvitationDoctrineModel(
         RoleModel $roleModel = null,
         string $email = null,
-        CarbonImmutable $validUntil = null,
+        \DateTimeImmutable $validUntil = null,
         array $metaData = []
     ): InvitationDoctrineModel {
         return new InvitationDoctrineModel(

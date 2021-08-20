@@ -5,9 +5,8 @@ namespace App\Http\Requests\Projects;
 use App\Http\Rules\ValidMetaData;
 use Illuminate\Foundation\Http\FormRequest;
 
-class Invite extends FormRequest
+class AcceptInvitation extends FormRequest
 {
-    private const PARAMETER_EMAIL = 'email';
     private const PARAMETER_META_DATA = 'metaData';
 
     public function __construct(
@@ -25,17 +24,10 @@ class Invite extends FormRequest
 
     public function rules(): array
     {
-        $this->validMetaDataRule->setProject($this->route('role')->getProject());
+        $project = $this->route('invitation')->getRole()->getProject();
+        $this->validMetaDataRule->setProject($project);
 
-        return [
-            self::PARAMETER_EMAIL     => ['required', 'email'],
-            self::PARAMETER_META_DATA => [$this->validMetaDataRule],
-        ];
-    }
-
-    public function getEmail(): string
-    {
-        return $this->get(self::PARAMETER_EMAIL);
+        return [self::PARAMETER_META_DATA => [$this->validMetaDataRule]];
     }
 
     public function getMetaData(): array

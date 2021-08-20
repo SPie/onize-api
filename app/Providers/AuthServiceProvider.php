@@ -3,8 +3,10 @@
 namespace App\Providers;
 
 use App\Auth\UserProvider;
+use App\Policies\InvitationPolicy;
 use App\Policies\ProjectPolicy;
 use App\Policies\RolePolicy;
+use App\Projects\Invites\InvitationModel;
 use App\Projects\ProjectModel;
 use App\Projects\RoleModel;
 use Illuminate\Contracts\Auth\StatefulGuard;
@@ -23,8 +25,9 @@ class AuthServiceProvider extends ServiceProvider
      * @var array
      */
     protected $policies = [
-        ProjectModel::class => ProjectPolicy::class,
-        RoleModel::class    => RolePolicy::class,
+        ProjectModel::class    => ProjectPolicy::class,
+        RoleModel::class       => RolePolicy::class,
+        InvitationModel::class => InvitationPolicy::class,
     ];
 
     /**

@@ -6,6 +6,8 @@ use App\Http\Requests\Auth\Authenticate;
 use App\Http\Requests\Users\UpdatePassword;
 use App\Http\Rules\RoleExists;
 use App\Http\Rules\UniqueUser;
+use App\Http\Rules\ValidMetaData;
+use App\Projects\ProjectModel;
 use App\Projects\RoleModel;
 use Illuminate\Contracts\Routing\Registrar;
 use Illuminate\Contracts\Routing\ResponseFactory;
@@ -350,6 +352,24 @@ trait HttpHelper
         $roleExists
             ->shouldReceive('getRole')
             ->andReturn($role);
+
+        return $this;
+    }
+
+    /**
+     * @return ValidMetaData|MockInterface
+     */
+    private function createValidMetaDataRule(): ValidMetaData
+    {
+        return m::spy(ValidMetaData::class);
+    }
+
+    private function mockValidMetaDataRuleSetProject(MockInterface $validMetaDataRule, ProjectModel $project): self
+    {
+        $validMetaDataRule
+            ->shouldReceive('setProject')
+            ->with($project)
+            ->once();
 
         return $this;
     }

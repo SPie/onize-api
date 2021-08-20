@@ -911,6 +911,81 @@ trait ProjectHelper
     }
 
     /**
+     * @param InvitationModel|MockInterface $invitationModel
+     * @param RoleModel                     $role
+     *
+     * @return $this
+     */
+    private function mockInvitationModelGetRole(MockInterface $invitationModel, RoleModel $role): self
+    {
+        $invitationModel
+            ->shouldReceive('getRole')
+            ->andReturn($role);
+
+        return $this;
+    }
+
+    /**
+     * @param InvitationModel|MockInterface $invitationModel
+     * @param bool                          $expired
+     *
+     * @return $this
+     */
+    private function mockInvitationModelIsExpired(MockInterface $invitationModel, bool $expired): self
+    {
+        $invitationModel
+            ->shouldReceive('isExpired')
+            ->andReturn($expired);
+
+        return $this;
+    }
+
+    /**
+     * @param InvitationModel|MockInterface $invitationModel
+     * @param \DateTimeImmutable|null       $acceptedAt
+     *
+     * @return $this
+     */
+    private function mockInvitationModelGetAcceptedAt(MockInterface $invitationModel, ?\DateTimeImmutable $acceptedAt): self
+    {
+        $invitationModel
+            ->shouldReceive('getAcceptedAt')
+            ->andReturn($acceptedAt);
+
+        return $this;
+    }
+
+    /**
+     * @param InvitationModel|MockInterface $invitationModel
+     * @param \DateTimeImmutable|null       $declinedAt
+     *
+     * @return $this
+     */
+    private function mockInvitationModelGetDeclinedAt(MockInterface $invitationModel, ?\DateTimeImmutable $declinedAt): self
+    {
+        $invitationModel
+            ->shouldReceive('getDeclinedAt')
+            ->andReturn($declinedAt);
+
+        return $this;
+    }
+
+    /**
+     * @param InvitationModel|MockInterface $invitationModel
+     * @param string                        $email
+     *
+     * @return $this
+     */
+    private function mockInvitationModelGetEmail(MockInterface $invitationModel, string $email): self
+    {
+        $invitationModel
+            ->shouldReceive('getEmail')
+            ->andReturn($email);
+
+        return $this;
+    }
+
+    /**
      * @return InvitationModelFactory|MockInterface
      */
     private function createInvitationModelFactory(): InvitationModelFactory
@@ -951,6 +1026,26 @@ trait ProjectHelper
     }
 
     /**
+     * @param InvitationRepository|MockInterface $invitationRepository
+     * @param InvitationModel|null               $invitation
+     * @param string                             $uuid
+     *
+     * @return $this
+     */
+    private function mockInvitationRepositoryFindOneByUuid(
+        MockInterface $invitationRepository,
+        ?InvitationModel $invitation,
+        string $uuid
+    ): self {
+        $invitationRepository
+            ->shouldReceive('findOneByUuid')
+            ->with($uuid)
+            ->andReturn($invitation);
+
+        return $this;
+    }
+
+    /**
      * @return InvitationManager|MockInterface
      */
     private function createInvitationManager(): InvitationManager
@@ -977,6 +1072,45 @@ trait ProjectHelper
         $invitationManager
             ->shouldReceive('inviteMember')
             ->with($role, $email, $metaData)
+            ->andThrow($invitation);
+
+        return $this;
+    }
+
+    /**
+     * @param InvitationManager|MockInterface $invitationManager
+     * @param InvitationModel                 $invitation
+     * @param UserModel                       $user
+     * @param array                           $metaData
+     *
+     * @return $this
+     */
+    private function assertInvitationManagerAcceptInvitation(
+        MockInterface $invitationManager,
+        InvitationModel $invitation,
+        UserModel $user,
+        array $metaData
+    ): self {
+        $invitationManager
+            ->shouldHaveReceived('acceptInvitation')
+            ->with($invitation, $user, $metaData)
+            ->once();
+
+        return $this;
+    }
+
+    /**
+     * @param InvitationManager|MockInterface $invitationManager
+     * @param InvitationModel|\Exception      $invitation
+     * @param string                          $uuid
+     *
+     * @return $this
+     */
+    private function mockInvitationManagerGetInvitation(MockInterface $invitationManager, $invitation, string $uuid): self
+    {
+        $invitationManager
+            ->shouldReceive('getInvitation')
+            ->with($uuid)
             ->andThrow($invitation);
 
         return $this;

@@ -22,52 +22,23 @@ interface InvitationModel extends Model, Timestampable, UuidModel
     public const PROPERTY_DECLINED_AT = 'declinedAt';
     public const PROPERTY_ROLE        = 'role';
 
-    /**
-     * @return string
-     */
     public function getEmail(): string;
 
-    /**
-     * @return RoleModel
-     */
     public function getRole(): RoleModel;
 
-    /**
-     * @return array
-     */
     public function getMetaData(): array;
 
-    /**
-     * @return CarbonImmutable
-     */
-    public function getValidUntil(): CarbonImmutable;
+    public function getValidUntil(): \DateTimeImmutable;
 
-    /**
-     * @param CarbonImmutable|null $acceptedAt
-     *
-     * @return $this
-     */
-    public function setAcceptedAt(?CarbonImmutable $acceptedAt): self;
+    public function isExpired(): bool;
 
-    /**
-     * @return CarbonImmutable|null
-     */
-    public function getAcceptedAt(): ?CarbonImmutable;
+    public function setAcceptedAt(?\DateTimeImmutable $acceptedAt): self;
 
-    /**
-     * @param CarbonImmutable|null $declinedAt
-     *
-     * @return $this
-     */
-    public function setDeclinedAt(?CarbonImmutable $declinedAt): self;
+    public function getAcceptedAt(): ?\DateTimeImmutable;
 
-    /**
-     * @return CarbonImmutable|null
-     */
-    public function getDeclinedAt(): ?CarbonImmutable;
+    public function setDeclinedAt(?\DateTimeImmutable $declinedAt): self;
 
-    /**
-     * @return array
-     */
+    public function getDeclinedAt(): ?\DateTimeImmutable;
+
     public function toArray(): array;
 }

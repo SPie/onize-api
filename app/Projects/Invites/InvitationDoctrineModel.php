@@ -21,7 +21,6 @@ use Gedmo\Mapping\Annotation as Gedmo;
  */
 final class InvitationDoctrineModel extends AbstractDoctrineModel implements InvitationModel
 {
-    use DateTimeCarbonConversion;
     use Timestamps;
     use Uuid;
 
@@ -41,24 +40,18 @@ final class InvitationDoctrineModel extends AbstractDoctrineModel implements Inv
 
     /**
      * @ORM\Column(name="valid_until", type="datetime", nullable=false)
-     *
-     * @var \DateTime
      */
-    private \DateTime $validUntil;
+    private \DateTimeImmutable $validUntil;
 
     /**
      * @ORM\Column(name="accepted_at", type="datetime", nullable=true)
-     *
-     * @var \DateTime|null
      */
-    private ?\DateTime $acceptedAt;
+    private ?\DateTimeImmutable $acceptedAt;
 
     /**
      * @ORM\Column(name="declined_at", type="datetime", nullable=true)
-     *
-     * @var \DateTime|null
      */
-    private ?\DateTime $declinedAt;
+    private ?\DateTimeImmutable $declinedAt;
 
     /**
      * @ORM\Column(name="meta_data", type="string", length=255, nullable=false)
@@ -70,92 +63,66 @@ final class InvitationDoctrineModel extends AbstractDoctrineModel implements Inv
     public function __construct(
         RoleModel $role,
         string $email,
-        CarbonImmutable $validUntil,
+        \DateTimeImmutable $validUntil,
         array $metaData = []
     ) {
         $this->role = $role;
         $this->email = $email;
-        $this->validUntil = $validUntil->toDateTime();
+        $this->validUntil = $validUntil;
         $this->metaData = \json_encode($metaData);
         $this->acceptedAt = null;
         $this->declinedAt = null;
     }
 
-    /**
-     * @return RoleModel
-     */
     public function getRole(): RoleModel
     {
         return $this->role;
     }
 
-    /**
-     * @return string
-     */
     public function getEmail(): string
     {
         return $this->email;
     }
 
-    /**
-     * @return CarbonImmutable
-     */
-    public function getValidUntil(): CarbonImmutable
+    public function getValidUntil(): \DateTimeImmutable
     {
-        return $this->convertDateTime($this->validUntil);
+        return $this->validUntil;
     }
 
-    /**
-     * @return array
-     */
     public function getMetaData(): array
     {
         return \json_decode($this->metaData, true);
     }
 
-    /**
-     * @param CarbonImmutable|null $acceptedAt
-     *
-     * @return InvitationModel
-     */
-    public function setAcceptedAt(?CarbonImmutable $acceptedAt): InvitationModel
+    public function setAcceptedAt(?\DateTimeImmutable $acceptedAt): InvitationModel
     {
-        $this->acceptedAt = $this->convertCarbon($acceptedAt);
+        $this->acceptedAt = $acceptedAt;
 
         return $this;
     }
 
-    /**
-     * @return CarbonImmutable|null
-     */
-    public function getAcceptedAt(): ?CarbonImmutable
+    public function getAcceptedAt(): ?\DateTimeImmutable
     {
-        return $this->convertDateTime($this->acceptedAt);
+        return $this->acceptedAt;
     }
 
-    /**
-     * @param CarbonImmutable|null $declinedAt
-     *
-     * @return InvitationModel
-     */
-    public function setDeclinedAt(?CarbonImmutable $declinedAt): InvitationModel
+    public function setDeclinedAt(?\DateTimeImmutable $declinedAt): InvitationModel
     {
-        $this->declinedAt = $this->convertCarbon($declinedAt);
+        $this->declinedAt = $declinedAt;
 
         return $this;
     }
 
-    /**
-     * @return CarbonImmutable|null
-     */
-    public function getDeclinedAt(): ?CarbonImmutable
+    public function getDeclinedAt(): ?\DateTimeImmutable
     {
-        return $this->convertDateTime($this->declinedAt);
+        return $this->declinedAt;
     }
 
-    /**
-     * @return array
-     */
+    public function isExpired(): bool
+    {
+        return $this->validUntil < new CarbonImmutable();
+    }
+
     public function toArray(): array
     {
         return [
@@ -164,8 +131,8 @@ final class InvitationDoctrineModel extends AbstractDoctrineModel implements Inv
             self::PROPERTY_ROLE        => $this->getRole()->toArray(true),
             self::PROPERTY_VALID_UNTIL => $this->getValidUntil()->format('Y-m-d H:i:s'),
             self::PROPERTY_META_DATA   => $this->getMetaData(),
-            self::PROPERTY_ACCEPTED_AT => $this->getAcceptedAt() ? $this->getAcceptedAt()->format('Y-m-d H:i:s') : null,
-            self::PROPERTY_DECLINED_AT => $this->getDeclinedAt() ? $this->getDeclinedAt()->format('Y-m-d H:i:s') : null,
+            self::PROPERTY_ACCEPTED_AT => $this->getAcceptedAt()?->format('Y-m-d H:i:s'),
+            self::PROPERTY_DECLINED_AT => $this->getDeclinedAt()?->format('Y-m-d H:i:s'),
         ];
     }
 }

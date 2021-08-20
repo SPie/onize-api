@@ -3,6 +3,7 @@
 namespace Tests\Unit\Http\Controllers;
 
 use App\Http\Controllers\ProjectsController;
+use App\Http\Requests\Projects\AcceptInvitation;
 use App\Http\Requests\Projects\Create;
 use App\Http\Requests\Projects\Invite;
 use App\Projects\ProjectManager;
@@ -237,6 +238,31 @@ final class ProjectsControllerTest extends TestCase
         $this->assertEquals($response, $projectsController->invite($role, $request, $invitationManager));
     }
 
+    public function testAcceptInvitation(): void
+    {
+        $invitation = $this->createInvitationModel();
+        $metaData = [$this->getFaker()->word => $this->getFaker()->word];
+        $request = $this->createAcceptInvitationRequest($metaData);
+        $user = $this->createUserModel();
+        $authManager = $this->createAuthManager();
+        $this->mockAuthManagerAuthenticatedUser($authManager, $user);
+        $invitationManager = $this->createInvitationManager();
+        $response = $this->createJsonResponse();
+        $responseFactory = $this->createResponseFactory();
+        $this->mockResponseFactoryJson($responseFactory, $response, [], 201);
+
+        $this->assertEquals(
+            $response,
+            $this->getProjectsController(null, $responseFactory)->acceptInvitation(
+                $invitation,
+                $request,
+                $authManager,
+                $invitationManager
+            )
+        );
+        $this->assertInvitationManagerAcceptInvitation($invitationManager, $invitation, $user, $metaData);
+    }
+
     //endregion
 
     /**
@@ -297,6 +323,19 @@ final class ProjectsControllerTest extends TestCase
             ->shouldReceive('getEmail')
             ->andReturn($email ?: $this->getFaker()->safeEmail)
             ->getMock()
+            ->shouldReceive('getMetaData')
+            ->andReturn($metaData)
+            ->getMock();
+    }
+
+    /**
+     * @param array $metaData
+     *
+     * @return AcceptInvitation|MockInterface
+     */
+    private function createAcceptInvitationRequest(array $metaData = []): AcceptInvitation
+    {
+        return m::spy(AcceptInvitation::class)
             ->shouldReceive('getMetaData')
             ->andReturn($metaData)
             ->getMock();

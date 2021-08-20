@@ -3,9 +3,11 @@
 namespace App\Http\Controllers;
 
 use App\Auth\AuthManager;
+use App\Http\Requests\Projects\AcceptInvitation;
 use App\Http\Requests\Projects\Create;
 use App\Http\Requests\Projects\Invite;
 use App\Projects\Invites\InvitationManager;
+use App\Projects\Invites\InvitationModel;
 use App\Projects\MemberModel;
 use App\Projects\ProjectManager;
 use App\Projects\ProjectModel;
@@ -21,11 +23,12 @@ use Illuminate\Http\JsonResponse;
  */
 final class ProjectsController extends Controller
 {
-    public const ROUTE_NAME_CREATE         = 'projects.create';
-    public const ROUTE_NAME_USERS_PROJECTS = 'projects.usersProjects';
-    public const ROUTE_NAME_SHOW           = 'projects.show';
-    public const ROUTE_NAME_MEMBERS        = 'projects.members';
-    public const ROUTE_NAME_INVITE         = 'projects.invitations.invite';
+    public const ROUTE_NAME_CREATE            = 'projects.create';
+    public const ROUTE_NAME_USERS_PROJECTS    = 'projects.usersProjects';
+    public const ROUTE_NAME_SHOW              = 'projects.show';
+    public const ROUTE_NAME_MEMBERS           = 'projects.members';
+    public const ROUTE_NAME_INVITE            = 'projects.invitations.invite';
+    public const ROUTE_NAME_ACCEPT_INVITATION = 'projects.invitations.accept';
 
     private const RESPONSE_PARAMETER_PROJECT    = 'project';
     private const RESPONSE_PARAMETER_PROJECTS   = 'projects';
@@ -45,13 +48,6 @@ final class ProjectsController extends Controller
 
     //region Controller actions
 
-    /**
-     * @param Create      $request
-     * @param AuthManager $authManager
-     * @param RoleManager $roleManager
-     *
-     * @return JsonResponse
-     */
     public function create(Create $request, AuthManager $authManager, RoleManager $roleManager): JsonResponse
     {
         $project = $this->projectManager->createProject(
@@ -70,11 +66,6 @@ final class ProjectsController extends Controller
         );
     }
 
-    /**
-     * @param AuthManager $authManager
-     *
-     * @return JsonResponse
-     */
     public function usersProjects(AuthManager $authManager): JsonResponse
     {
         return $this->getResponseFactory()->json([
@@ -84,21 +75,11 @@ final class ProjectsController extends Controller
         ]);
     }
 
-    /**
-     * @param ProjectModel $project
-     *
-     * @return JsonResponse
-     */
     public function show(ProjectModel $project): JsonResponse
     {
         return $this->getResponseFactory()->json([self::RESPONSE_PARAMETER_PROJECT => $project->toArray()]);
     }
 
-    /**
-     * @param ProjectModel $project
-     *
-     * @return JsonResponse
-     */
     public function members(ProjectModel $project): JsonResponse
     {
         return $this->getResponseFactory()->json([
@@ -113,13 +94,6 @@ final class ProjectsController extends Controller
         ]);
     }
 
-    /**
-     * @param RoleModel         $role
-     * @param Invite            $invite
-     * @param InvitationManager $invitationManager
-     *
-     * @return JsonResponse
-     */
     public function invite(RoleModel $role, Invite $invite, InvitationManager $invitationManager): JsonResponse
     {
         return $this->getResponseFactory()->json(
@@ -132,6 +106,17 @@ final class ProjectsController extends Controller
             ],
             JsonResponse::HTTP_CREATED
         );
+    }
+
+    public function acceptInvitation(
+        InvitationModel $invitation,
+        AcceptInvitation $request,
+        AuthManager $authManager,
+        InvitationManager $invitationManager
+    ): JsonResponse {
+        $invitationManager->acceptInvitation($invitation, $authManager->authenticatedUser(), $request->getMetaData());
+
+        return $this->getResponseFactory()->json([], JsonResponse::HTTP_CREATED);
     }
 
     //endregion

@@ -3,55 +3,38 @@
 namespace App\Projects\Invites;
 
 use App\Emails\EmailService;
+use App\Models\Exceptions\ModelNotFoundException;
+use App\Projects\Invites\Exceptions\AlreadyAcceptedException;
 use App\Projects\Invites\Exceptions\AlreadyMemberException;
+use App\Projects\Invites\Exceptions\InvitationDeclinedException;
+use App\Projects\Invites\Exceptions\InvitationExpiredException;
+use App\Projects\MemberModel;
+use App\Projects\MemberModelFactory;
+use App\Projects\MemberRepository;
 use App\Projects\RoleModel;
+use App\Users\UserModel;
 
-/**
- * Class InvitationManager
- *
- * @package App\Projects\Invites
- */
 class InvitationManager
 {
-    /**
-     * @var InvitationRepository
-     */
-    private InvitationRepository $invitationRepository;
-
-    /**
-     * @var InvitationModelFactory
-     */
-    private InvitationModelFactory $invitationModelFactory;
-
-    /**
-     * @var EmailService
-     */
-    private EmailService $emailService;
-
-    /**
-     * InvitationManager constructor.
-     *
-     * @param InvitationRepository   $invitationRepository
-     * @param InvitationModelFactory $invitationModelFactory
-     * @param EmailService           $emailService
-     */
     public function __construct(
-        InvitationRepository $invitationRepository,
-        InvitationModelFactory $invitationModelFactory,
-        EmailService $emailService
+        private InvitationRepository $invitationRepository,
+        private InvitationModelFactory $invitationModelFactory,
+        private EmailService $emailService,
+        private MemberRepository $memberRepository,
+        private MemberModelFactory $memberModelFactory
     ) {
-        $this->invitationRepository = $invitationRepository;
-        $this->invitationModelFactory = $invitationModelFactory;
-        $this->emailService = $emailService;
     }
 
-    /**
-     * @param RoleModel $role
-     * @param string    $email
-     * @param array     $metaData
-     *
-     * @return InvitationModel
-     */
+    public function getInvitation(string $uuid): InvitationModel
+    {
+        $invitation = $this->invitationRepository->findOneByUuid($uuid);
+        if (!$invitation) {
+            throw new ModelNotFoundException(\sprintf('Invitation with uuid %s not found.', $uuid));
+        }
+
+        return $invitation;
+    }
+
     public function inviteMember(RoleModel $role, string $email, array $metaData = []): InvitationModel
     {
         if ($role->getProject()->hasMemberWithEmail($email)) {
@@ -66,5 +49,20 @@ class InvitationManager
         }
 
         return $invitation;
+    }
+
+    public function acceptInvitation(InvitationModel $invitation, UserModel $user, array $metaData): MemberModel
+    {
+        if ($invitation->isExpired()) {
+            throw new InvitationExpiredException('Invitation is expired.');
+        }
+        if ($invitation->getAcceptedAt()) {
+            throw new AlreadyAcceptedException('Invitation was already accepted.');
+        }
+        if ($invitation->getDeclinedAt()) {
+            throw new InvitationDeclinedException('Invitation was declined.');
+        }
+
+        return $this->memberRepository->save($this->memberModelFactory->create($user, $invitation->getRole(), $metaData));
     }
 }

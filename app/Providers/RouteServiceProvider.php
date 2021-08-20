@@ -2,6 +2,7 @@
 
 namespace App\Providers;
 
+use App\Http\Binders\InvitationBinder;
 use App\Http\Binders\ProjectBinder;
 use App\Http\Binders\RoleBinder;
 use Illuminate\Foundation\Support\Providers\RouteServiceProvider as ServiceProvider;
@@ -42,6 +43,7 @@ class RouteServiceProvider extends ServiceProvider
     {
         Route::bind('project', ProjectBinder::class);
         Route::bind('role', RoleBinder::class);
+        Route::bind('invitation', InvitationBinder::class);
 
         return $this;
     }

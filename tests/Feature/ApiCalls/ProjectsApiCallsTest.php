@@ -3,8 +3,10 @@
 namespace Tests\Feature\ApiCalls;
 
 use App\Http\Controllers\ProjectsController;
+use App\Projects\Invites\InvitationModel;
 use App\Projects\Invites\InvitationRepository;
 use App\Projects\MemberModel;
+use App\Projects\MemberRepository;
 use App\Projects\MetaDataElementModel;
 use App\Projects\MetaDataModel;
 use App\Projects\ProjectModel;
@@ -979,9 +981,6 @@ final class ProjectsApiCallsTest extends FeatureTestCase
         $response->assertOk();
     }
 
-    /**
-     * @return array
-     */
     private function setUpInviteTest(
         bool $withExistingMetaData = true,
         bool $withRequiredMetaData = true,
@@ -1014,7 +1013,7 @@ final class ProjectsApiCallsTest extends FeatureTestCase
         $email = $this->getFaker()->safeEmail;
         $metaDataName = $metaDataElement->getName() . ($withExistingMetaData ? '' : $this->getFaker()->word);
         $metaData = $withRequiredMetaData
-            ? [$metaDataName => $validMetaData ? $this->getValidMetaData($type) : $this->getInvalidValidMetaData($type)]
+            ? [$metaDataName => $validMetaData ? $this->getValidMetaData($type) : $this->getInvalidMetaData($type)]
             : [];
         $now = new CarbonImmutable();
         $this->setCarbonMock($now);
@@ -1048,7 +1047,7 @@ final class ProjectsApiCallsTest extends FeatureTestCase
      *
      * @return \DateTime|int|string
      */
-    private function getInvalidValidMetaData(string $type)
+    private function getInvalidMetaData(string $type)
     {
         switch ($type) {
             case 'email':
@@ -1176,7 +1175,7 @@ final class ProjectsApiCallsTest extends FeatureTestCase
         );
 
         $response->assertStatus(422);
-        $response->assertJsonFragment(['metaData' => [$metaDataName => ['validation.not-existing']]]);
+        $response->assertJsonFragment(['metaData' => [\sprintf('%s.validation.not-existing', $metaDataName)]]);
     }
 
     /**
@@ -1197,7 +1196,7 @@ final class ProjectsApiCallsTest extends FeatureTestCase
         );
 
         $response->assertStatus(422);
-        $response->assertJsonFragment(['metaData' => [$metaDataName => ['validation.required']]]);
+        $response->assertJsonFragment(['metaData' => [\sprintf('%s.validation.required', $metaDataName)]]);
     }
 
     /**
@@ -1218,7 +1217,7 @@ final class ProjectsApiCallsTest extends FeatureTestCase
         );
 
         $response->assertStatus(422);
-        $response->assertJsonFragment(['metaData' => [$metaDataName => ['validation.string']]]);
+        $response->assertJsonFragment(['metaData' => [\sprintf('%s.validation.string', $metaDataName)]]);
     }
 
     /**
@@ -1239,7 +1238,7 @@ final class ProjectsApiCallsTest extends FeatureTestCase
         );
 
         $response->assertStatus(422);
-        $response->assertJsonFragment(['metaData' => [$metaDataName => ['validation.email']]]);
+        $response->assertJsonFragment(['metaData' => [\sprintf('%s.validation.email', $metaDataName)]]);
     }
 
     /**
@@ -1260,7 +1259,7 @@ final class ProjectsApiCallsTest extends FeatureTestCase
         );
 
         $response->assertStatus(422);
-        $response->assertJsonFragment(['metaData' => [$metaDataName => ['validation.numeric']]]);
+        $response->assertJsonFragment(['metaData' => [\sprintf('%s.validation.numeric', $metaDataName)]]);
     }
 
     /**
@@ -1281,7 +1280,7 @@ final class ProjectsApiCallsTest extends FeatureTestCase
         );
 
         $response->assertStatus(422);
-        $response->assertJsonFragment(['metaData' => [$metaDataName => ['validation.date']]]);
+        $response->assertJsonFragment(['metaData' => [\sprintf('%s.validation.date', $metaDataName)]]);
     }
 
     /**
@@ -1365,29 +1364,310 @@ final class ProjectsApiCallsTest extends FeatureTestCase
         $response->assertCreated();
     }
 
+    private function setUpAcceptInvitationTest(
+        bool $withRequiredMetaData = false,
+        string $metaDataType = 'string',
+        bool $withValidInvitation = true,
+        bool $alreadyAccepted = false,
+        bool $declinedInvitation = false,
+        bool $withAuthenticatedUser = true,
+        bool $invitationBelongsToUser = true,
+        bool $alreadyMember = false
+    ): array {
+        $user = $this->createUserEntities()->first();
+        if ($withAuthenticatedUser) {
+            $this->actingAs($user);
+        }
+        $invitation = $this->createInvitationEntities(
+            1,
+            [
+                InvitationModel::PROPERTY_EMAIl       => ($invitationBelongsToUser ? '' : $this->getFaker()->word) . $user->getEmail(),
+                InvitationModel::PROPERTY_VALID_UNTIL => $withValidInvitation ? (new CarbonImmutable())->addDay() : (new CarbonImmutable())->subDay(),
+                InvitationModel::PROPERTY_ACCEPTED_AT => $alreadyAccepted ? new CarbonImmutable() : null,
+                InvitationModel::PROPERTY_DECLINED_AT => $declinedInvitation ? new CarbonImmutable() : null,
+            ]
+        )->first();
+        $metaDataElement = $this->createMetaDataElementEntities(
+            1,
+            [
+                MetaDataElementModel::PROPERTY_PROJECT  => $invitation->getRole()->getProject(),
+                MetaDataElementModel::PROPERTY_REQUIRED => $withRequiredMetaData,
+                MetaDataElementModel::PROPERTY_TYPE     => $metaDataType,
+            ]
+        )->first();
+        $invitation->getRole()->getProject()->addMetaDataElement($metaDataElement);
+        if ($alreadyMember) {
+            $member = $this->createMemberEntities(1, [MemberModel::PROPERTY_USER => $user, MemberModel::PROPERTY_ROLE => $invitation->getRole()])->first();
+            $user->addMember($member);
+        }
+
+        return [$invitation, $user, $metaDataElement->getName()];
+    }
+
+    public function testAcceptInvitationWithoutMetaData(): void
+    {
+        [$invitation, $user] = $this->setUpAcceptInvitationTest();
+
+        $response = $this->doApiCall(
+            'POST',
+            $this->getUrl(ProjectsController::ROUTE_NAME_ACCEPT_INVITATION, ['invitation' => $invitation->getUuid()])
+        );
+
+        $response->assertCreated();
+        $member = $this->getMemberRepository()->findAll()->first();
+        $this->assertEquals($invitation->getRole(), $member->getRole());
+        $this->assertEquals($user, $member->getUser());
+    }
+
+    public function testAcceptInvitationWithMetaData(): void
+    {
+        [$invitation, $user, $metaDataName] = $this->setUpAcceptInvitationTest();
+        $metaDataValue = $this->getFaker()->word;
+
+        $response = $this->doApiCall(
+            'POST',
+            $this->getUrl(ProjectsController::ROUTE_NAME_ACCEPT_INVITATION, ['invitation' => $invitation->getUuid()]),
+            [
+                'metaData' => [$metaDataName => $metaDataValue],
+            ]
+        );
+
+        $response->assertCreated();
+        $member = $this->getMemberRepository()->findAll()->first();
+        $this->assertEquals([$metaDataName => $metaDataValue], $member->getMetaData());
+    }
+
+    public function testAcceptInvitationWithoutInvitationFound(): void
+    {
+        $this->setUpAcceptInvitationTest();
+
+        $response = $this->doApiCall(
+            'POST',
+            $this->getUrl(ProjectsController::ROUTE_NAME_ACCEPT_INVITATION, ['invitation' => $this->getFaker()->uuid])
+        );
+
+        $response->assertNotFound();
+    }
+
+    public function testAcceptInvitationWithInvalidMetaData(): void
+    {
+        [$invitation] = $this->setUpAcceptInvitationTest();
+
+        $response = $this->doApiCall(
+            'POST',
+            $this->getUrl(ProjectsController::ROUTE_NAME_ACCEPT_INVITATION, ['invitation' => $invitation->getUuid()]),
+            ['metaData' => $this->getFaker()->word]
+        );
+
+        $response->assertStatus(422);
+        $response->assertJsonFragment(['metaData' => ['validation.array']]);
+    }
+
+    public function testAcceptInvitationWithNonExistingMetaData(): void
+    {
+        [$invitation, $user, $metaDataName] = $this->setUpAcceptInvitationTest();
+        $metaDataName = $metaDataName . $this->getFaker()->word;
+
+        $response = $this->doApiCall(
+            'POST',
+            $this->getUrl(ProjectsController::ROUTE_NAME_ACCEPT_INVITATION, ['invitation' => $invitation->getUuid()]),
+            ['metaData' => [$metaDataName => $this->getFaker()->word]]
+        );
+
+        $response->assertStatus(422);
+        $response->assertJsonFragment(['metaData' => [\sprintf('%s.validation.not-existing', $metaDataName)]]);
+    }
+
+    public function testAcceptInvitationWithoutRequiredMetaData(): void
+    {
+        [$invitation, $user, $metaDataName] = $this->setUpAcceptInvitationTest(true);
+
+        $response = $this->doApiCall(
+            'POST',
+            $this->getUrl(ProjectsController::ROUTE_NAME_ACCEPT_INVITATION, ['invitation' => $invitation->getUuid()])
+        );
+
+        $response->assertStatus(422);
+        $response->assertJsonFragment(['metaData' => [\sprintf('%s.validation.required', $metaDataName)]]);
+    }
+
+    public function testAcceptInvitationWithInvalidStringMetaData(): void
+    {
+        [$invitation, $user, $metaDataName] = $this->setUpAcceptInvitationTest();
+
+        $response = $this->doApiCall(
+            'POST',
+            $this->getUrl(ProjectsController::ROUTE_NAME_ACCEPT_INVITATION, ['invitation' => $invitation->getUuid()]),
+            ['metaData' => [$metaDataName => $this->getFaker()->numberBetween()]]
+        );
+
+        $response->assertStatus(422);
+        $response->assertJsonFragment(['metaData' => [\sprintf('%s.validation.string', $metaDataName)]]);
+    }
+
+    public function testAcceptInvitationWithInvalidNumberMetaData(): void
+    {
+        [$invitation, $user, $metaDataName] = $this->setUpAcceptInvitationTest(false, 'numeric');
+
+        $response = $this->doApiCall(
+            'POST',
+            $this->getUrl(ProjectsController::ROUTE_NAME_ACCEPT_INVITATION, ['invitation' => $invitation->getUuid()]),
+            ['metaData' => [$metaDataName => $this->getFaker()->word]]
+        );
+
+        $response->assertStatus(422);
+        $response->assertJsonFragment(['metaData' => [\sprintf('%s.validation.numeric', $metaDataName)]]);
+    }
+
+    public function testAcceptInvitationWithInvalidEmailMetaData(): void
+    {
+        [$invitation, $user, $metaDataName] = $this->setUpAcceptInvitationTest(false, 'email');
+
+        $response = $this->doApiCall(
+            'POST',
+            $this->getUrl(ProjectsController::ROUTE_NAME_ACCEPT_INVITATION, ['invitation' => $invitation->getUuid()]),
+            ['metaData' => [$metaDataName => $this->getFaker()->word]]
+        );
+
+        $response->assertStatus(422);
+        $response->assertJsonFragment(['metaData' => [\sprintf('%s.validation.email', $metaDataName)]]);
+    }
+
+    public function testAcceptInvitationWithInvalidDateMetaData(): void
+    {
+        [$invitation, $user, $metaDataName] = $this->setUpAcceptInvitationTest(false, 'date');
+
+        $response = $this->doApiCall(
+            'POST',
+            $this->getUrl(ProjectsController::ROUTE_NAME_ACCEPT_INVITATION, ['invitation' => $invitation->getUuid()]),
+            ['metaData' => [$metaDataName => $this->getFaker()->word]]
+        );
+
+        $response->assertStatus(422);
+        $response->assertJsonFragment(['metaData' => [\sprintf('%s.validation.date', $metaDataName)]]);
+    }
+
+    public function testAcceptInvitationWithInvalidWithExpiredInvitation(): void
+    {
+        [$invitation, $user, $metaDataName] = $this->setUpAcceptInvitationTest(false, 'string', false);
+
+        $response = $this->doApiCall(
+            'POST',
+            $this->getUrl(ProjectsController::ROUTE_NAME_ACCEPT_INVITATION, ['invitation' => $invitation->getUuid()]),
+            ['metaData' => [$metaDataName => $this->getFaker()->word]]
+        );
+
+        $response->assertStatus(400);
+    }
+
+    public function testAcceptInvitationWithInvalidWithAlreadyAccepted(): void
+    {
+        [$invitation, $user, $metaDataName] = $this->setUpAcceptInvitationTest(false, 'string', true, true);
+
+        $response = $this->doApiCall(
+            'POST',
+            $this->getUrl(ProjectsController::ROUTE_NAME_ACCEPT_INVITATION, ['invitation' => $invitation->getUuid()]),
+            ['metaData' => [$metaDataName => $this->getFaker()->word]]
+        );
+
+        $response->assertStatus(400);
+    }
+
+    public function testAcceptInvitationWithInvalidWithDeclinedInvitation(): void
+    {
+        [$invitation, $user, $metaDataName] = $this->setUpAcceptInvitationTest(false, 'string', true, false, true);
+
+        $response = $this->doApiCall(
+            'POST',
+            $this->getUrl(ProjectsController::ROUTE_NAME_ACCEPT_INVITATION, ['invitation' => $invitation->getUuid()]),
+            ['metaData' => [$metaDataName => $this->getFaker()->word]]
+        );
+
+        $response->assertStatus(400);
+    }
+
+    public function testAcceptInvitationWithInvalidWithAuthenticatedUser(): void
+    {
+        [$invitation, $user, $metaDataName] = $this->setUpAcceptInvitationTest(
+            false,
+            'string',
+            true,
+            false,
+            false,
+            false
+        );
+
+        $response = $this->doApiCall(
+            'POST',
+            $this->getUrl(ProjectsController::ROUTE_NAME_ACCEPT_INVITATION, ['invitation' => $invitation->getUuid()]),
+            ['metaData' => [$metaDataName => $this->getFaker()->word]]
+        );
+
+        $response->assertStatus(401);
+    }
+
+    public function testAcceptInvitationWithInvalidWithInvitationNotBelongingToUser(): void
+    {
+        [$invitation, $user, $metaDataName] = $this->setUpAcceptInvitationTest(
+            false,
+            'string',
+            true,
+            false,
+            false,
+            true,
+            false
+        );
+
+        $response = $this->doApiCall(
+            'POST',
+            $this->getUrl(ProjectsController::ROUTE_NAME_ACCEPT_INVITATION, ['invitation' => $invitation->getUuid()]),
+            ['metaData' => [$metaDataName => $this->getFaker()->word]]
+        );
+
+        $response->assertStatus(403);
+    }
+
+    public function testAcceptInvitationWithInvalidWithUserAlreadyMember(): void
+    {
+        [$invitation, $user, $metaDataName] = $this->setUpAcceptInvitationTest(
+            false,
+            'string',
+            true,
+            false,
+            false,
+            true,
+            true,
+            true
+        );
+
+        $response = $this->doApiCall(
+            'POST',
+            $this->getUrl(ProjectsController::ROUTE_NAME_ACCEPT_INVITATION, ['invitation' => $invitation->getUuid()]),
+            ['metaData' => [$metaDataName => $this->getFaker()->word]]
+        );
+
+        $response->assertStatus(403);
+    }
+
     //endregion
 
-    /**
-     * @return ProjectRepository
-     */
     private function getConcreteProjectRepository(): ProjectRepository
     {
         return $this->app->get(ProjectRepository::class);
     }
 
-    /**
-     * @return RoleRepository
-     */
     private function getConcreteRoleRepository(): RoleRepository
     {
         return $this->app->get(RoleRepository::class);
     }
 
-    /**
-     * @return InvitationRepository
-     */
-    protected function getInvitationRepository(): InvitationRepository
+    private function getInvitationRepository(): InvitationRepository
     {
         return $this->app->get(InvitationRepository::class);
+    }
+
+    private function getMemberRepository(): MemberRepository
+    {
+        return $this->app->get(MemberRepository::class);
     }
 }

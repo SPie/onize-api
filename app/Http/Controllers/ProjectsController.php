@@ -3,24 +3,14 @@
 namespace App\Http\Controllers;
 
 use App\Auth\AuthManager;
-use App\Http\Requests\Projects\AcceptInvitation;
 use App\Http\Requests\Projects\Create;
-use App\Http\Requests\Projects\Invite;
-use App\Projects\Invites\InvitationManager;
-use App\Projects\Invites\InvitationModel;
 use App\Projects\MemberModel;
 use App\Projects\ProjectManager;
 use App\Projects\ProjectModel;
 use App\Projects\RoleManager;
-use App\Projects\RoleModel;
 use Illuminate\Contracts\Routing\ResponseFactory;
 use Illuminate\Http\JsonResponse;
 
-/**
- * Class ProjectsController
- *
- * @package App\Http\Controllers
- */
 final class ProjectsController extends Controller
 {
     public const ROUTE_NAME_CREATE            = 'projects.create';
@@ -33,14 +23,7 @@ final class ProjectsController extends Controller
     private const RESPONSE_PARAMETER_PROJECT    = 'project';
     private const RESPONSE_PARAMETER_PROJECTS   = 'projects';
     private const RESPONSE_PARAMETER_MEMBERS    = 'members';
-    private const RESPONSE_PARAMETER_INVITATION = 'invitation';
 
-    /**
-     * ProjectsController constructor.
-     *
-     * @param ProjectManager  $projectManager
-     * @param ResponseFactory $responseFactory
-     */
     public function __construct(private ProjectManager $projectManager, ResponseFactory $responseFactory)
     {
         parent::__construct($responseFactory);
@@ -92,31 +75,6 @@ final class ProjectsController extends Controller
                 )
                 ->getValues()
         ]);
-    }
-
-    public function invite(RoleModel $role, Invite $invite, InvitationManager $invitationManager): JsonResponse
-    {
-        return $this->getResponseFactory()->json(
-            [
-                self::RESPONSE_PARAMETER_INVITATION => $invitationManager->inviteMember(
-                    $role,
-                    $invite->getEmail(),
-                    $invite->getMetaData()
-                )->toArray()
-            ],
-            JsonResponse::HTTP_CREATED
-        );
-    }
-
-    public function acceptInvitation(
-        InvitationModel $invitation,
-        AcceptInvitation $request,
-        AuthManager $authManager,
-        InvitationManager $invitationManager
-    ): JsonResponse {
-        $invitationManager->acceptInvitation($invitation, $authManager->authenticatedUser(), $request->getMetaData());
-
-        return $this->getResponseFactory()->json([], JsonResponse::HTTP_CREATED);
     }
 
     //endregion

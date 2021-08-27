@@ -45,7 +45,7 @@ $router->group(['middleware' => 'auth'], function (Router $router) {
 
         $router->get('{project}')->name(ProjectsController::ROUTE_NAME_SHOW)->middleware('can:show,project')->uses('ProjectsController@show');
 
-        $router->post('{role}/invitations')->name(ProjectsController::ROUTE_NAME_INVITE)->middleware('can:invite,role')->uses('ProjectsController@invite');
-        $router->post('invitations/{invitation}')->name(ProjectsController::ROUTE_NAME_ACCEPT_INVITATION)->middleware('can:accept,invitation')->uses('ProjectsController@acceptInvitation');
+        $router->post('{role}/invitations')->name(ProjectsController::ROUTE_NAME_INVITE)->middleware('can:invite,role')->uses('InvitationsController@invite');
+        $router->post('invitations/{invitation}')->name(ProjectsController::ROUTE_NAME_ACCEPT_INVITATION)->middleware('can:accept,invitation')->uses('InvitationsController@acceptInvitation');
     });
 });

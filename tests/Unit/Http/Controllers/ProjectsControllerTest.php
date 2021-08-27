@@ -3,13 +3,9 @@
 namespace Tests\Unit\Http\Controllers;
 
 use App\Http\Controllers\ProjectsController;
-use App\Http\Requests\Projects\AcceptInvitation;
 use App\Http\Requests\Projects\Create;
-use App\Http\Requests\Projects\Invite;
 use App\Projects\ProjectManager;
-use App\Projects\RoleModel;
 use Doctrine\Common\Collections\ArrayCollection;
-use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Contracts\Routing\ResponseFactory;
 use Mockery as m;
 use Mockery\MockInterface;
@@ -19,11 +15,6 @@ use Tests\Helper\ProjectHelper;
 use Tests\Helper\UsersHelper;
 use Tests\TestCase;
 
-/**
- * Class ProjectsControllerTest
- *
- * @package Tests\Unit\Http\Controllers
- */
 final class ProjectsControllerTest extends TestCase
 {
     use AuthHelper;
@@ -33,9 +24,6 @@ final class ProjectsControllerTest extends TestCase
 
     //region Tests
 
-    /**
-     * @return array
-     */
     private function setUpCreateTest(): array
     {
         $metaDataElements = [$this->getFaker()->word => $this->getFaker()->word];
@@ -67,9 +55,6 @@ final class ProjectsControllerTest extends TestCase
         return [$projectsController, $request, $authManager, $roleManager, $response, $project, $user];
     }
 
-    /**
-     * @return void
-     */
     public function testCreate(): void
     {
         /** @var ProjectsController $projectsController */
@@ -79,11 +64,6 @@ final class ProjectsControllerTest extends TestCase
         $this->assertRoleManagerCreateOwnerRole($roleManager, $project, $user, $request->getMetaData());
     }
 
-    /**
-     * @param bool $withProjects
-     *
-     * @return array
-     */
     private function setUpUsersProjectsTest(bool $withProjects = true): array
     {
         $roleData = [$this->getFaker()->word => $this->getFaker()->word];
@@ -107,9 +87,6 @@ final class ProjectsControllerTest extends TestCase
         return [$projectsController, $authManager, $response];
     }
 
-    /**
-     * @return void
-     */
     public function testUsersProjects(): void
     {
         /** @var ProjectsController $projectsController */
@@ -118,9 +95,6 @@ final class ProjectsControllerTest extends TestCase
         $this->assertEquals($response, $projectsController->usersProjects($authManager));
     }
 
-    /**
-     * @return void
-     */
     public function testUsersProjectsWithoutProjects(): void
     {
         /** @var ProjectsController $projectsController */
@@ -129,9 +103,6 @@ final class ProjectsControllerTest extends TestCase
         $this->assertEquals($response, $projectsController->usersProjects($authManager));
     }
 
-    /**
-     * @return array
-     */
     private function setUpShowTest(): array
     {
         $projectData = [$this->getFaker()->word => $this->getFaker()->word];
@@ -145,9 +116,6 @@ final class ProjectsControllerTest extends TestCase
         return [$projectsController, $project, $response];
     }
 
-    /**
-     * @return void
-     */
     public function testShow(): void
     {
         /** @var ProjectsController $projectsController */
@@ -156,9 +124,6 @@ final class ProjectsControllerTest extends TestCase
         $this->assertEquals($response, $projectsController->show($project));
     }
 
-    /**
-     * @return array
-     */
     private function setUpMembersTest(bool $withMembers = true): array
     {
         $userData = [$this->getFaker()->word => $this->getFaker()->word];
@@ -183,9 +148,6 @@ final class ProjectsControllerTest extends TestCase
         return [$projectsController, $project, $response];
     }
 
-    /**
-     * @return void
-     */
     public function testMembers(): void
     {
         /** @var ProjectsController $projectsController */
@@ -194,9 +156,6 @@ final class ProjectsControllerTest extends TestCase
         $this->assertEquals($response, $projectsController->members($project));
     }
 
-    /**
-     * @return void
-     */
     public function testMembersWithoutMembers(): void
     {
         /** @var ProjectsController $projectsController */
@@ -205,72 +164,8 @@ final class ProjectsControllerTest extends TestCase
         $this->assertEquals($response, $projectsController->members($project));
     }
 
-    /**
-     * @return array
-     */
-    private function setUpInviteTest(): array
-    {
-        $email = $this->getFaker()->safeEmail;
-        $metaData = [$this->getFaker()->word => $this->getFaker()->word];
-        $role = $this->createRoleModel();
-        $request = $this->createInviteRequest($email, $metaData);
-        $invitationData = [$this->getFaker()->word => $this->getFaker()->word];
-        $invitation = $this->createInvitationModel();
-        $this->mockInvitationModelToArray($invitation, $invitationData);
-        $invitationManager = $this->createInvitationManager();
-        $this->mockinvitationManagerInviteMember($invitationManager, $invitation, $role, $email, $metaData);
-        $response = $this->createJsonResponse();
-        $responseFactory = $this->createResponseFactory();
-        $this->mockResponseFactoryJson($responseFactory, $response, ['invitation' => $invitationData], 201);
-        $projectsController = $this->getProjectsController(null, $responseFactory);
-
-        return [$projectsController, $role, $request, $invitationManager, $response];
-    }
-
-    /**
-     * @return void
-     */
-    public function testInvite(): void
-    {
-        /** @var ProjectsController $projectsController */
-        [$projectsController, $role, $request, $invitationManager, $response] = $this->setUpInviteTest();
-
-        $this->assertEquals($response, $projectsController->invite($role, $request, $invitationManager));
-    }
-
-    public function testAcceptInvitation(): void
-    {
-        $invitation = $this->createInvitationModel();
-        $metaData = [$this->getFaker()->word => $this->getFaker()->word];
-        $request = $this->createAcceptInvitationRequest($metaData);
-        $user = $this->createUserModel();
-        $authManager = $this->createAuthManager();
-        $this->mockAuthManagerAuthenticatedUser($authManager, $user);
-        $invitationManager = $this->createInvitationManager();
-        $response = $this->createJsonResponse();
-        $responseFactory = $this->createResponseFactory();
-        $this->mockResponseFactoryJson($responseFactory, $response, [], 201);
-
-        $this->assertEquals(
-            $response,
-            $this->getProjectsController(null, $responseFactory)->acceptInvitation(
-                $invitation,
-                $request,
-                $authManager,
-                $invitationManager
-            )
-        );
-        $this->assertInvitationManagerAcceptInvitation($invitationManager, $invitation, $user, $metaData);
-    }
-
     //endregion
 
-    /**
-     * @param ProjectManager|null  $projectManager
-     * @param ResponseFactory|null $responseFactory
-     *
-     * @return ProjectsController
-     */
     private function getProjectsController(
         ProjectManager $projectManager = null,
         ResponseFactory $responseFactory = null
@@ -284,8 +179,7 @@ final class ProjectsControllerTest extends TestCase
     /**
      * @param string|null $label
      * @param string|null $description
-     * @param array|null  $metaDataElements
-     *
+     * @param array       $metaDataElements
      * @param array       $metaData
      *
      * @return Create|MockInterface
@@ -306,36 +200,6 @@ final class ProjectsControllerTest extends TestCase
             ->shouldReceive('getMetaDataElements')
             ->andReturn($metaDataElements)
             ->getMock()
-            ->shouldReceive('getMetaData')
-            ->andReturn($metaData)
-            ->getMock();
-    }
-
-    /**
-     * @param string|null    $email
-     * @param array          $metaData
-     *
-     * @return Invite|MockInterface
-     */
-    private function createInviteRequest(string $email = null, array $metaData = []): Invite
-    {
-        return m::spy(Invite::class)
-            ->shouldReceive('getEmail')
-            ->andReturn($email ?: $this->getFaker()->safeEmail)
-            ->getMock()
-            ->shouldReceive('getMetaData')
-            ->andReturn($metaData)
-            ->getMock();
-    }
-
-    /**
-     * @param array $metaData
-     *
-     * @return AcceptInvitation|MockInterface
-     */
-    private function createAcceptInvitationRequest(array $metaData = []): AcceptInvitation
-    {
-        return m::spy(AcceptInvitation::class)
             ->shouldReceive('getMetaData')
             ->andReturn($metaData)
             ->getMock();

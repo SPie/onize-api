@@ -8,7 +8,7 @@ use App\Projects\Invites\InvitationRepository;
 use App\Projects\MemberModel;
 use App\Projects\MemberRepository;
 use App\Projects\MetaDataElementModel;
-use App\Projects\MetaDataModel;
+use App\Projects\PermissionModel;
 use App\Projects\ProjectModel;
 use App\Projects\ProjectRepository;
 use App\Projects\RoleModel;
@@ -22,11 +22,6 @@ use Tests\Helper\ModelHelper;
 use Tests\Helper\ProjectHelper;
 use Tests\Helper\UsersHelper;
 
-/**
- * Class ProjectsApiCallsTest
- *
- * @package Tests\Feature\ApiCalls
- */
 final class ProjectsApiCallsTest extends FeatureTestCase
 {
     use ApiHelper;
@@ -37,11 +32,6 @@ final class ProjectsApiCallsTest extends FeatureTestCase
 
     //region Tests
 
-    /**
-     * @param bool $withAuthenticatedUser
-     *
-     * @return array
-     */
     private function setUpCreateTest(bool $withAuthenticatedUser = true): array
     {
         $user = $this->createUserEntities()->first();
@@ -70,9 +60,6 @@ final class ProjectsApiCallsTest extends FeatureTestCase
         ];
     }
 
-    /**
-     * @return void
-     */
     public function testCreateProject(): void
     {
         [
@@ -132,9 +119,6 @@ final class ProjectsApiCallsTest extends FeatureTestCase
         ]);
     }
 
-    /**
-     * @return void
-     */
     public function testCreateProjectWithRole(): void
     {
         /** @var UserModel $user */
@@ -174,9 +158,6 @@ final class ProjectsApiCallsTest extends FeatureTestCase
         $this->assertEquals($project, $role->getProject());
     }
 
-    /**
-     * @return void
-     */
     public function testCreateProjectWithoutMetaData(): void
     {
         [$projectLabel, $projectDescription] = $this->setUpCreateTest();
@@ -197,9 +178,6 @@ final class ProjectsApiCallsTest extends FeatureTestCase
         ]);
     }
 
-    /**
-     * @return void
-     */
     public function testCreateProjectWithoutOptionalMetaDataElementParameters(): void
     {
         [
@@ -230,9 +208,6 @@ final class ProjectsApiCallsTest extends FeatureTestCase
         $response->assertStatus(201);
     }
 
-    /**
-     * @return void
-     */
     public function testCreateProjectWithoutRequiredParameters(): void
     {
         [
@@ -268,9 +243,6 @@ final class ProjectsApiCallsTest extends FeatureTestCase
         ]);
     }
 
-    /**
-     * @return void
-     */
     public function testCreateProjectWithoutRequiredMetaData(): void
     {
         [
@@ -305,9 +277,6 @@ final class ProjectsApiCallsTest extends FeatureTestCase
         ]);
     }
 
-    /**
-     * @return void
-     */
     public function testCreateProjectWithNonExistingMetaDataField(): void
     {
         [$projectLabel, $projectDescription, $metaDataName] = $this->setUpCreateTest();
@@ -328,9 +297,7 @@ final class ProjectsApiCallsTest extends FeatureTestCase
             'metaData' => [$metaDataName => ['validation.not-existing']],
         ]);
     }
-    /**
-     * @return void
-     */
+
     public function testCreateProjectWithValidNumericMetaData(): void
     {
         [
@@ -361,9 +328,6 @@ final class ProjectsApiCallsTest extends FeatureTestCase
         $response->assertStatus(201);
     }
 
-    /**
-     * @return void
-     */
     public function testCreateProjectWithValidEmailMetaData(): void
     {
         [
@@ -394,9 +358,6 @@ final class ProjectsApiCallsTest extends FeatureTestCase
         $response->assertStatus(201);
     }
 
-    /**
-     * @return void
-     */
     public function testCreateProjectWithValidDateMetaData(): void
     {
         [
@@ -427,9 +388,6 @@ final class ProjectsApiCallsTest extends FeatureTestCase
         $response->assertStatus(201);
     }
 
-    /**
-     * @return void
-     */
     public function testCreateProjectWithInvalidStringMetaData(): void
     {
         [
@@ -463,9 +421,6 @@ final class ProjectsApiCallsTest extends FeatureTestCase
         ]);
     }
 
-    /**
-     * @return void
-     */
     public function testCreateProjectWithInvalidNumericMetaData(): void
     {
         [
@@ -499,9 +454,6 @@ final class ProjectsApiCallsTest extends FeatureTestCase
         ]);
     }
 
-    /**
-     * @return void
-     */
     public function testCreateProjectWithInvalidEmailMetaData(): void
     {
         [
@@ -535,9 +487,6 @@ final class ProjectsApiCallsTest extends FeatureTestCase
         ]);
     }
 
-    /**
-     * @return void
-     */
     public function testCreateProjectWithInvalidDateMetaData(): void
     {
         [
@@ -571,9 +520,6 @@ final class ProjectsApiCallsTest extends FeatureTestCase
         ]);
     }
 
-    /**
-     * @return void
-     */
     public function testCreateProjectWithoutAuthenticatedUser(): void
     {
         [
@@ -608,12 +554,6 @@ final class ProjectsApiCallsTest extends FeatureTestCase
         $response->assertStatus(401);
     }
 
-    /**
-     * @param bool $withProjects
-     * @param bool $withAuthenticatedUser
-     *
-     * @return array
-     */
     private function setUpUsersProjectsTest(bool $withProjects = true, bool $withAuthenticatedUser = true): array
     {
         $project = $this->createProjectEntities()->first();
@@ -629,9 +569,6 @@ final class ProjectsApiCallsTest extends FeatureTestCase
         return [$project, $role];
     }
 
-    /**
-     * @return void
-     */
     public function testUsersProjectsWithProjects(): void
     {
         /**
@@ -667,9 +604,6 @@ final class ProjectsApiCallsTest extends FeatureTestCase
         ]);
     }
 
-    /**
-     * @return void
-     */
     public function testUsersProjectsWithoutProjects(): void
     {
         $this->setUpUsersProjectsTest(false);
@@ -680,9 +614,6 @@ final class ProjectsApiCallsTest extends FeatureTestCase
         $response->assertJsonFragment(['projects' => []]);
     }
 
-    /**
-     * @return void
-     */
     public function testUsersProjectsWithoutAuthenticatedUser(): void
     {
         $this->setUpUsersProjectsTest(true, false);
@@ -692,12 +623,6 @@ final class ProjectsApiCallsTest extends FeatureTestCase
         $response->assertStatus(401);
     }
 
-    /**
-     * @param bool $withAuthenticatedUser
-     * @param bool $withAuthorizedUser
-     *
-     * @return array
-     */
     private function setUpShowProjectTest(bool $withAuthenticatedUser = true, bool $withAuthorizedUser = true): array
     {
         $project = $this->createProjectEntities()->first();
@@ -710,9 +635,6 @@ final class ProjectsApiCallsTest extends FeatureTestCase
         return [$project];
     }
 
-    /**
-     * @return void
-     */
     public function testShowProject(): void
     {
         /** @var ProjectModel $project */
@@ -732,9 +654,6 @@ final class ProjectsApiCallsTest extends FeatureTestCase
         ]);
     }
 
-    /**
-     * @return void
-     */
     public function testShowProjectWithoutProject(): void
     {
         $this->setUpShowProjectTest();
@@ -744,9 +663,6 @@ final class ProjectsApiCallsTest extends FeatureTestCase
         $response->assertNotFound();
     }
 
-    /**
-     * @return void
-     */
     public function testShowProjectWithoutAuthenticatedUser(): void
     {
         /** @var ProjectModel $project */
@@ -757,9 +673,6 @@ final class ProjectsApiCallsTest extends FeatureTestCase
         $response->assertStatus(401);
     }
 
-    /**
-     * @return void
-     */
     public function testShowProjectWithoutAuthorizedUser(): void
     {
         /** @var ProjectModel $project */
@@ -770,16 +683,6 @@ final class ProjectsApiCallsTest extends FeatureTestCase
         $response->assertStatus(403);
     }
 
-    /**
-     * @param bool $withMembers
-     * @param bool $withRoles
-     * @param bool $withMetaData
-     * @param bool $withAuthenticatedUser
-     * @param bool $withAuthorizedUser
-     * @param bool $withOwner
-     *
-     * @return array
-     */
     private function setUpMembersTest(
         bool $withMembers = true,
         bool $withRoles = true,
@@ -821,9 +724,6 @@ final class ProjectsApiCallsTest extends FeatureTestCase
         return [$project, $user, $metaData];
     }
 
-    /**
-     * @return void
-     */
     public function testMembers(): void
     {
         /**
@@ -849,9 +749,6 @@ final class ProjectsApiCallsTest extends FeatureTestCase
         ]);
     }
 
-    /**
-     * @return void
-     */
     public function testMembersWithoutMembers(): void
     {
         /** @var ProjectModel $project */
@@ -866,9 +763,6 @@ final class ProjectsApiCallsTest extends FeatureTestCase
         $response->assertJsonFragment(['members' => []]);
     }
 
-    /**
-     * @return void
-     */
     public function testMembersWithoutRoles(): void
     {
         /** @var ProjectModel $project */
@@ -883,9 +777,6 @@ final class ProjectsApiCallsTest extends FeatureTestCase
         $response->assertJsonFragment(['members' => []]);
     }
 
-    /**
-     * @return void
-     */
     public function testMembersWithoutMetaData(): void
     {
         /**
@@ -911,9 +802,6 @@ final class ProjectsApiCallsTest extends FeatureTestCase
        ]);
     }
 
-    /**
-     * @return void
-     */
     public function testMembersWithoutProject(): void
     {
         $this->setUpMembersTest();
@@ -926,9 +814,6 @@ final class ProjectsApiCallsTest extends FeatureTestCase
         $response->assertNotFound();
     }
 
-    /**
-     * @return void
-     */
     public function testMembersWithoutAuthenticatedUser(): void
     {
         /** @var ProjectModel $project */
@@ -942,9 +827,6 @@ final class ProjectsApiCallsTest extends FeatureTestCase
         $response->assertStatus(401);
     }
 
-    /**
-     * @return void
-     */
     public function testMembersWithoutAuthorizedUser(): void
     {
         /** @var ProjectModel $project */
@@ -958,9 +840,6 @@ final class ProjectsApiCallsTest extends FeatureTestCase
         $response->assertStatus(403);
     }
 
-    /**
-     * @return void
-     */
     public function testMembersWithoutOwner(): void
     {
         /** @var ProjectModel $project */
@@ -1023,8 +902,6 @@ final class ProjectsApiCallsTest extends FeatureTestCase
     }
 
     /**
-     * @param string $type
-     *
      * @return \DateTime|int|string
      */
     private function getValidMetaData(string $type)
@@ -1043,8 +920,6 @@ final class ProjectsApiCallsTest extends FeatureTestCase
     }
 
     /**
-     * @param string $type
-     *
      * @return \DateTime|int|string
      */
     private function getInvalidMetaData(string $type)
@@ -1060,9 +935,6 @@ final class ProjectsApiCallsTest extends FeatureTestCase
         }
     }
 
-    /**
-     * @return void
-     */
     public function testInvite(): void
     {
         /**
@@ -1096,9 +968,6 @@ final class ProjectsApiCallsTest extends FeatureTestCase
         ]);
     }
 
-    /**
-     * @return void
-     */
     public function testInviteWithoutEmail(): void
     {
         /** @var RoleModel $role */
@@ -1116,9 +985,6 @@ final class ProjectsApiCallsTest extends FeatureTestCase
         $response->assertJsonFragment(['email' => ['validation.required']]);
     }
 
-    /**
-     * @return void
-     */
     public function testInviteWithoutExistingRole(): void
     {
         /** @var RoleModel $role */
@@ -1136,9 +1002,6 @@ final class ProjectsApiCallsTest extends FeatureTestCase
         $response->assertNotFound();
     }
 
-    /**
-     * @return void
-     */
     public function testInviteWithInvalidMetaData(): void
     {
         /** @var RoleModel $role */
@@ -1157,9 +1020,6 @@ final class ProjectsApiCallsTest extends FeatureTestCase
         $response->assertJsonFragment(['metaData' => ['validation.array']]);
     }
 
-    /**
-     * @return void
-     */
     public function testInviteWithoutExistingMetaData(): void
     {
         /** @var RoleModel $role */
@@ -1178,9 +1038,6 @@ final class ProjectsApiCallsTest extends FeatureTestCase
         $response->assertJsonFragment(['metaData' => [\sprintf('%s.validation.not-existing', $metaDataName)]]);
     }
 
-    /**
-     * @return void
-     */
     public function testInviteWithoutRequiredMetaData(): void
     {
         /** @var RoleModel $role */
@@ -1199,9 +1056,6 @@ final class ProjectsApiCallsTest extends FeatureTestCase
         $response->assertJsonFragment(['metaData' => [\sprintf('%s.validation.required', $metaDataName)]]);
     }
 
-    /**
-     * @return void
-     */
     public function testInviteWithInvalidStringMetaData(): void
     {
         /** @var RoleModel $role */
@@ -1220,9 +1074,6 @@ final class ProjectsApiCallsTest extends FeatureTestCase
         $response->assertJsonFragment(['metaData' => [\sprintf('%s.validation.string', $metaDataName)]]);
     }
 
-    /**
-     * @return void
-     */
     public function testInviteWithInvalidEmailMetaData(): void
     {
         /** @var RoleModel $role */
@@ -1241,9 +1092,6 @@ final class ProjectsApiCallsTest extends FeatureTestCase
         $response->assertJsonFragment(['metaData' => [\sprintf('%s.validation.email', $metaDataName)]]);
     }
 
-    /**
-     * @return void
-     */
     public function testInviteWithInvalidNumericMetaData(): void
     {
         /** @var RoleModel $role */
@@ -1262,9 +1110,6 @@ final class ProjectsApiCallsTest extends FeatureTestCase
         $response->assertJsonFragment(['metaData' => [\sprintf('%s.validation.numeric', $metaDataName)]]);
     }
 
-    /**
-     * @return void
-     */
     public function testInviteWithInvalidDateMetaData(): void
     {
         /** @var RoleModel $role */
@@ -1283,9 +1128,6 @@ final class ProjectsApiCallsTest extends FeatureTestCase
         $response->assertJsonFragment(['metaData' => [\sprintf('%s.validation.date', $metaDataName)]]);
     }
 
-    /**
-     * @return void
-     */
     public function testInviteWithoutAuthenticatedUser(): void
     {
         /** @var RoleModel $role */
@@ -1309,9 +1151,6 @@ final class ProjectsApiCallsTest extends FeatureTestCase
         $response->assertStatus(401);
     }
 
-    /**
-     * @return void
-     */
     public function testInviteWithoutAuthorizedUser(): void
     {
         /** @var RoleModel $role */
@@ -1336,9 +1175,6 @@ final class ProjectsApiCallsTest extends FeatureTestCase
         $response->assertStatus(403);
     }
 
-    /**
-     * @return void
-     */
     public function testInviteWithOwnerRole(): void
     {
         /** @var RoleModel $role */
@@ -1374,6 +1210,8 @@ final class ProjectsApiCallsTest extends FeatureTestCase
         bool $invitationBelongsToUser = true,
         bool $alreadyMember = false
     ): array {
+        $now = new CarbonImmutable();
+        $this->setCarbonMock($now);
         $user = $this->createUserEntities()->first();
         if ($withAuthenticatedUser) {
             $this->actingAs($user);
@@ -1401,12 +1239,12 @@ final class ProjectsApiCallsTest extends FeatureTestCase
             $user->addMember($member);
         }
 
-        return [$invitation, $user, $metaDataElement->getName()];
+        return [$invitation, $user, $metaDataElement->getName(), $now];
     }
 
     public function testAcceptInvitationWithoutMetaData(): void
     {
-        [$invitation, $user] = $this->setUpAcceptInvitationTest();
+        [$invitation, $user, $metaDataName, $now] = $this->setUpAcceptInvitationTest();
 
         $response = $this->doApiCall(
             'POST',
@@ -1417,6 +1255,7 @@ final class ProjectsApiCallsTest extends FeatureTestCase
         $member = $this->getMemberRepository()->findAll()->first();
         $this->assertEquals($invitation->getRole(), $member->getRole());
         $this->assertEquals($user, $member->getUser());
+        $this->assertEquals($now, $invitation->getAcceptedAt());
     }
 
     public function testAcceptInvitationWithMetaData(): void
@@ -1644,6 +1483,142 @@ final class ProjectsApiCallsTest extends FeatureTestCase
             'POST',
             $this->getUrl(ProjectsController::ROUTE_NAME_ACCEPT_INVITATION, ['invitation' => $invitation->getUuid()]),
             ['metaData' => [$metaDataName => $this->getFaker()->word]]
+        );
+
+        $response->assertStatus(403);
+    }
+
+    private function setUpDeclineInvitationTest(
+        bool $withDeclinedInvitation = false,
+        bool $withExpiredInvitation = false,
+        bool $withAcceptedInvitation = false,
+        bool $withInvitedUser = true,
+        bool $withPermission = true,
+        bool $withMember = true
+    ): array {
+        $now = new CarbonImmutable();
+        $this->setCarbonMock($now);
+
+        if ($withPermission) {
+            $role = $this->createRoleWithPermission($this->getConcretePermission(PermissionModel::PERMISSION_PROJECTS_INVITATIONS_MANAGEMENT));
+        } else {
+            $role = $this->createRoleEntities()->first();
+        }
+        if ($withMember && !$withInvitedUser) {
+            $user = $this->createUserWithRole($role);
+        } else {
+            $user = $this->createUserEntities()->first();
+        }
+        $this->actingAs($user);
+
+        $invitation = $this->createInvitationEntities(
+            1,
+            [
+                InvitationModel::PROPERTY_ROLE        => $role,
+                InvitationModel::PROPERTY_EMAIl       =>  ($withInvitedUser ? '' : $this->getFaker()->word) . $user->getEmail(),
+                InvitationModel::PROPERTY_DECLINED_AT => $withDeclinedInvitation ? $now : null,
+                InvitationModel::PROPERTY_VALID_UNTIL => $withExpiredInvitation ? $now->subDay() : $now->addDay(),
+                InvitationModel::PROPERTY_ACCEPTED_AT => $withAcceptedInvitation ? $now : null
+            ]
+        )->first();
+        $role->addInvitation($invitation);
+
+        return [$invitation];
+    }
+
+    public function testDeclineInvitationByInvitedUser(): void
+    {
+        [$invitation] = $this->setUpDeclineInvitationTest();
+
+        $response = $this->doApiCall(
+            'DELETE',
+            $this->getUrl(ProjectsController::ROUTE_NAME_DECLINE_INVITATION, ['invitation' => $invitation->getUuid()])
+        );
+
+        $response->assertNoContent();
+        $this->assertNotEmpty($invitation->getDeclinedAt());
+    }
+
+    public function testDeclineInvitationWithoutExistingInvitation(): void
+    {
+        $this->setUpDeclineInvitationTest();
+
+        $response = $this->doApiCall(
+            'DELETE',
+            $this->getUrl(ProjectsController::ROUTE_NAME_DECLINE_INVITATION, ['invitation' => $this->getFaker()->uuid])
+        );
+
+        $response->assertNotFound();
+    }
+
+    public function testDeclineInvitationWithAlreadyDeclinedInvitation(): void
+    {
+        [$invitation] = $this->setUpDeclineInvitationTest(withDeclinedInvitation: true);
+
+        $response = $this->doApiCall(
+            'DELETE',
+            $this->getUrl(ProjectsController::ROUTE_NAME_DECLINE_INVITATION, ['invitation' => $invitation->getUuid()])
+        );
+
+        $response->assertStatus(400);
+    }
+
+    public function testDeclineInvitationWithExpiredException(): void
+    {
+        [$invitation] = $this->setUpDeclineInvitationTest(withExpiredInvitation: true);
+
+        $response = $this->doApiCall(
+            'DELETE',
+            $this->getUrl(ProjectsController::ROUTE_NAME_DECLINE_INVITATION, ['invitation' => $invitation->getUuid()])
+        );
+
+        $response->assertStatus(400);
+    }
+
+    public function testDeclineInvitationWithAlreadyAcceptedInvitation(): void
+    {
+        [$invitation] = $this->setUpDeclineInvitationTest(withAcceptedInvitation: true);
+
+        $response = $this->doApiCall(
+            'DELETE',
+            $this->getUrl(ProjectsController::ROUTE_NAME_DECLINE_INVITATION, ['invitation' => $invitation->getUuid()])
+        );
+
+        $response->assertStatus(400);
+    }
+
+    public function testDeclineInvitationByProjectMemberWithPermission(): void
+    {
+        [$invitation] = $this->setUpDeclineInvitationTest(withInvitedUser: false);
+
+        $response = $this->doApiCall(
+            'DELETE',
+            $this->getUrl(ProjectsController::ROUTE_NAME_DECLINE_INVITATION, ['invitation' => $invitation->getUuid()])
+        );
+
+        $response->assertNoContent();
+        $this->assertNotEmpty($invitation->getDeclinedAt());
+    }
+
+    public function testDeclineInvitationByProjectMemberWithoutPermission(): void
+    {
+        [$invitation] = $this->setUpDeclineInvitationTest(withInvitedUser: false, withPermission: false);
+
+        $response = $this->doApiCall(
+            'DELETE',
+            $this->getUrl(ProjectsController::ROUTE_NAME_DECLINE_INVITATION, ['invitation' => $invitation->getUuid()])
+        );
+
+        $response->assertStatus(403);
+    }
+
+    public function testDeclineInvitationWithoutMemberAndInvitedUser(): void
+    {
+        [$invitation] = $this->setUpDeclineInvitationTest(withInvitedUser: false, withMember: false);
+
+        $response = $this->doApiCall(
+            'DELETE',
+            $this->getUrl(ProjectsController::ROUTE_NAME_DECLINE_INVITATION, ['invitation' => $invitation->getUuid()])
         );
 
         $response->assertStatus(403);

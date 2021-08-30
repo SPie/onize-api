@@ -13,6 +13,7 @@ use App\Projects\MemberModelFactory;
 use App\Projects\MemberRepository;
 use App\Projects\RoleModel;
 use App\Users\UserModel;
+use Carbon\CarbonImmutable;
 
 class InvitationManager
 {
@@ -53,6 +54,22 @@ class InvitationManager
 
     public function acceptInvitation(InvitationModel $invitation, UserModel $user, array $metaData): MemberModel
     {
+        $this->validateInvitation($invitation);
+
+        $invitation->setAcceptedAt(new CarbonImmutable());
+
+        return $this->memberRepository->save($this->memberModelFactory->create($user, $invitation->getRole(), $metaData));
+    }
+
+    public function declineInvitation(InvitationModel $invitation): InvitationModel
+    {
+        $this->validateInvitation($invitation);
+
+        return $this->invitationRepository->save($invitation->setDeclinedAt(new CarbonImmutable()));
+    }
+
+    private function validateInvitation(InvitationModel $invitation): self
+    {
         if ($invitation->isExpired()) {
             throw new InvitationExpiredException('Invitation is expired.');
         }
@@ -63,6 +80,6 @@ class InvitationManager
             throw new InvitationDeclinedException('Invitation was declined.');
         }
 
-        return $this->memberRepository->save($this->memberModelFactory->create($user, $invitation->getRole(), $metaData));
+        return $this;
     }
 }

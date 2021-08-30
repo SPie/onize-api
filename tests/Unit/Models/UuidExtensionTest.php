@@ -16,7 +16,7 @@ final class UuidExtensionTest extends TestCase
 
     public function testPrePersist(): void
     {
-        $model = new class() implements UuidModel {
+        $model = new class () implements UuidModel {
             public ?string $uuid = null;
 
             public function setUuid(string $uuid): UuidModel
@@ -43,7 +43,7 @@ final class UuidExtensionTest extends TestCase
 
     public function testPrePersistWithoutUuidModel(): void
     {
-        $model = new class() {
+        $model = new class () {
             public ?string $uuid = null;
         };
         $lifecycleEventArgs = $this->createLifecycleEventArgs();
@@ -58,7 +58,7 @@ final class UuidExtensionTest extends TestCase
 
     public function testPrePersistWithModelWithUuid(): void
     {
-        $model = new class() implements UuidModel {
+        $model = new class () implements UuidModel {
             public ?string $uuid = null;
 
             public function setUuid(string $uuid): UuidModel

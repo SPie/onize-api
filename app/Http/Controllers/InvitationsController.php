@@ -34,10 +34,17 @@ final class InvitationsController extends Controller
         );
     }
 
-    public function acceptInvitation(InvitationModel $invitation, AcceptInvitation $request,AuthManager $authManager): JsonResponse
+    public function acceptInvitation(InvitationModel $invitation, AcceptInvitation $request, AuthManager $authManager): JsonResponse
     {
         $this->invitationManager->acceptInvitation($invitation, $authManager->authenticatedUser(), $request->getMetaData());
 
         return $this->getResponseFactory()->json([], JsonResponse::HTTP_CREATED);
+    }
+
+    public function declineInvitation(InvitationModel $invitation): JsonResponse
+    {
+        $this->invitationManager->declineInvitation($invitation);
+
+        return $this->getResponseFactory()->json([], JsonResponse::HTTP_NO_CONTENT);
     }
 }

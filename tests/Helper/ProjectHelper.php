@@ -985,6 +985,36 @@ trait ProjectHelper
         return $this;
     }
 
+    private function mockInvitationModelSetDeclinedAt(MockInterface $invitationModel, ?\DateTimeImmutable $declinedAt): self
+    {
+        $invitationModel
+            ->shouldReceive('setDeclinedAt')
+            ->with(m::on(fn (?\DateTimeImmutable $actual) => $actual == $declinedAt))
+            ->andReturn($invitationModel);
+
+        return $this;
+    }
+
+    private function assertInvitationModelSetDeclinedAt(MockInterface $invitationModel, ?\DateTimeImmutable $declinedAt): self
+    {
+        $invitationModel
+            ->shouldHaveReceived('setDeclinedAt')
+            ->with(m::on(fn (?\DateTimeImmutable $actual) => $actual == $declinedAt))
+            ->once();
+
+        return $this;
+    }
+
+    private function assertInvitationModelSetAcceptedAt(MockInterface $invitationModel, ?\DateTimeImmutable $acceptedAt): self
+    {
+        $invitationModel
+            ->shouldHaveReceived('setAcceptedAt')
+            ->with(m::on(fn (?\DateTimeImmutable $actual) => $actual == $acceptedAt))
+            ->once();
+
+        return $this;
+    }
+
     /**
      * @return InvitationModelFactory|MockInterface
      */
@@ -1112,6 +1142,18 @@ trait ProjectHelper
             ->shouldReceive('getInvitation')
             ->with($uuid)
             ->andThrow($invitation);
+
+        return $this;
+    }
+
+    private function assertInvitationManagerDeclineInvitation(
+        MockInterface $invitationManager,
+        InvitationModel $invitation
+    ): self {
+        $invitationManager
+            ->shouldHaveReceived('declineInvitation')
+            ->with($invitation)
+            ->once();
 
         return $this;
     }

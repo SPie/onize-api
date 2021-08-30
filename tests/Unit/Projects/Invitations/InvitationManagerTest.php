@@ -20,11 +20,6 @@ use Tests\Helper\ProjectHelper;
 use Tests\Helper\UsersHelper;
 use Tests\TestCase;
 
-/**
- * Class InvitationManagerTest
- *
- * @package Tests\Unit\Projects\Invitations
- */
 final class InvitationManagerTest extends TestCase
 {
     use EmailsHelper;
@@ -34,12 +29,6 @@ final class InvitationManagerTest extends TestCase
 
     //region Tests
 
-    /**
-     * @param bool $alreadyMember
-     * @param bool $withExceptionOnEmail
-     *
-     * @return array
-     */
     private function setUpInviteMemberTest(bool $alreadyMember = false, bool $withExceptionOnEmail = false): array
     {
         $email = $this->getFaker()->safeEmail;
@@ -73,9 +62,6 @@ final class InvitationManagerTest extends TestCase
         return [$invitationManager, $role, $email, $metaData, $invitation];
     }
 
-    /**
-     * @return void
-     */
     public function testInviteMember(): void
     {
         /** @var InvitationManager $invitationManager */
@@ -84,9 +70,6 @@ final class InvitationManagerTest extends TestCase
         $this->assertEquals($invitation, $invitationManager->inviteMember($role, $email, $metaData));
     }
 
-    /**
-     * @return void
-     */
     public function testInviteMemberWithEmailAlreadyMember(): void
     {
         /** @var InvitationManager $invitationManager */
@@ -97,9 +80,6 @@ final class InvitationManagerTest extends TestCase
         $invitationManager->inviteMember($role, $email, $metaData);
     }
 
-    /**
-     * @return void
-     */
     public function testInviteMemberWithExceptionOnSendingEmail(): void
     {
         /** @var InvitationManager $invitationManager */
@@ -113,6 +93,8 @@ final class InvitationManagerTest extends TestCase
         bool $invitationAccepted = false,
         bool $invitationDeclined = false
     ): array {
+        $now = new CarbonImmutable();
+        $this->setCarbonMock($now);
         $role = $this->createRoleModel();
         $invitation = $this->createInvitationModel();
         $this
@@ -131,15 +113,16 @@ final class InvitationManagerTest extends TestCase
         }
         $invitationManager = $this->getInvitationManager(null, null, null, $memberRepository, $memberModelFactory);
 
-        return [$invitationManager, $invitation, $user, $metaData, $member];
+        return [$invitationManager, $invitation, $user, $metaData, $member, $now];
     }
 
     public function testAcceptInvitation(): void
     {
         /** @var InvitationManager $invitationManager */
-        [$invitationManager, $invitation, $user, $metaData, $member] = $this->setUpAcceptInvitationTest();
+        [$invitationManager, $invitation, $user, $metaData, $member, $now] = $this->setUpAcceptInvitationTest();
 
         $this->assertEquals($member, $invitationManager->acceptInvitation($invitation, $user, $metaData));
+        $this->assertInvitationModelSetAcceptedAt($invitation, $now);
     }
 
     public function testAcceptInvitationInvalidInvitation(): void
@@ -199,6 +182,67 @@ final class InvitationManagerTest extends TestCase
         $this->expectException(ModelNotFoundException::class);
 
         $invitationManager->getInvitation($uuid);
+    }
+
+    private function setUpDeclineInvitationTest(
+        bool $alreadyAccepted = false,
+        bool $validInvitation = true,
+        bool $alreadyDeclined = false
+    ): array {
+        $now = new CarbonImmutable();
+        $this->setCarbonMock($now);
+        $invitation = $this->createInvitationModel();
+        $this
+            ->mockInvitationModelSetDeclinedAt($invitation, $now)
+            ->mockInvitationModelIsExpired($invitation, !$validInvitation)
+            ->mockInvitationModelGetDeclinedAt($invitation, $alreadyDeclined ? new CarbonImmutable() : null)
+            ->mockInvitationModelGetAcceptedAt($invitation, $alreadyAccepted ? new CarbonImmutable() : null);
+        $invitationRepository = $this->createInvitationRepository();
+        if (!$alreadyAccepted && $validInvitation && !$alreadyDeclined) {
+            $this->mockRepositorySave($invitationRepository, $invitation);
+        }
+        $invitationManager = $this->getInvitationManager($invitationRepository);
+
+        return [$invitationManager, $invitation, $now];
+    }
+
+    public function testDeclineInvitation(): void
+    {
+        /** @var InvitationManager $invitationManager */
+        [$invitationManager, $invitation, $now] = $this->setUpDeclineInvitationTest();
+
+        $this->assertEquals($invitation, $invitationManager->declineInvitation($invitation));
+        $this->assertInvitationModelSetDeclinedAt($invitation, $now);
+    }
+
+    public function testDeclineInvitationForAlreadyAcceptedInvitation(): void
+    {
+        /** @var InvitationManager $invitationManager */
+        [$invitationManager, $invitation] = $this->setUpDeclineInvitationTest(true);
+
+        $this->expectException(AlreadyAcceptedException::class);
+
+        $invitationManager->declineInvitation($invitation);
+    }
+
+    public function testDeclineInvitationForAlreadyExpiredInvitation(): void
+    {
+        /** @var InvitationManager $invitationManager */
+        [$invitationManager, $invitation] = $this->setUpDeclineInvitationTest(false, false);
+
+        $this->expectException(InvitationExpiredException::class);
+
+        $invitationManager->declineInvitation($invitation);
+    }
+
+    public function testDeclineInvitationForAlreadyDeclinedInvitation(): void
+    {
+        /** @var InvitationManager $invitationManager */
+        [$invitationManager, $invitation] = $this->setUpDeclineInvitationTest(false, true, true);
+
+        $this->expectException(InvitationDeclinedException::class);
+
+        $invitationManager->declineInvitation($invitation);
     }
 
     //endregion

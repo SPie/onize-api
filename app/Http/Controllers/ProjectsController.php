@@ -13,12 +13,13 @@ use Illuminate\Http\JsonResponse;
 
 final class ProjectsController extends Controller
 {
-    public const ROUTE_NAME_CREATE            = 'projects.create';
-    public const ROUTE_NAME_USERS_PROJECTS    = 'projects.usersProjects';
-    public const ROUTE_NAME_SHOW              = 'projects.show';
-    public const ROUTE_NAME_MEMBERS           = 'projects.members';
-    public const ROUTE_NAME_INVITE            = 'projects.invitations.invite';
-    public const ROUTE_NAME_ACCEPT_INVITATION = 'projects.invitations.accept';
+    public const ROUTE_NAME_CREATE             = 'projects.create';
+    public const ROUTE_NAME_USERS_PROJECTS     = 'projects.usersProjects';
+    public const ROUTE_NAME_SHOW               = 'projects.show';
+    public const ROUTE_NAME_MEMBERS            = 'projects.members';
+    public const ROUTE_NAME_INVITE             = 'projects.invitations.invite';
+    public const ROUTE_NAME_ACCEPT_INVITATION  = 'projects.invitations.accept';
+    public const ROUTE_NAME_DECLINE_INVITATION = 'projects.invitations.decline';
 
     private const RESPONSE_PARAMETER_PROJECT    = 'project';
     private const RESPONSE_PARAMETER_PROJECTS   = 'projects';

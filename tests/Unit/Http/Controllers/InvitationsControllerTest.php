@@ -72,6 +72,21 @@ final class InvitationsControllerTest extends TestCase
         $this->assertInvitationManagerAcceptInvitation($invitationManager, $invitation, $user, $metaData);
     }
 
+    public function testDeclineInvitation(): void
+    {
+        $invitation = $this->createInvitationModel();
+        $invitationManager = $this->createInvitationManager();
+        $response = $this->createJsonResponse();
+        $responseFactory = $this->createResponseFactory();
+        $this->mockResponseFactoryJson($responseFactory, $response, [], 204);
+
+        $this->assertEquals(
+            $response,
+            $this->getInvitationsController($invitationManager, $responseFactory)->declineInvitation($invitation)
+        );
+        $this->assertInvitationManagerDeclineInvitation($invitationManager, $invitation);
+    }
+
     private function getInvitationsController(
         InvitationManager $invitationManager = null,
         ResponseFactory $responseFactory = null

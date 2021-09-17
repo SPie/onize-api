@@ -22,7 +22,39 @@ final class ProjectsControllerTest extends TestCase
     use ProjectHelper;
     use UsersHelper;
 
-    //region Tests
+    private function getProjectsController(
+        ProjectManager $projectManager = null,
+        ResponseFactory $responseFactory = null
+    ): ProjectsController {
+        return new ProjectsController(
+            $projectManager ?: $this->createProjectManager(),
+            $responseFactory ?: $this->createResponseFactory()
+        );
+    }
+
+    /**
+     * @return Create|MockInterface
+     */
+    private function createCreateRequest(
+        string $label = null,
+        string $description = null,
+        array $metaDataElements = [],
+        array $metaData = []
+    ): Create {
+        return m::spy(Create::class)
+            ->shouldReceive('getLabel')
+            ->andReturn($label ?: $this->getFaker()->word)
+            ->getMock()
+            ->shouldReceive('getDescription')
+            ->andReturn($description ?: $this->getFaker()->word)
+            ->getMock()
+            ->shouldReceive('getMetaDataElements')
+            ->andReturn($metaDataElements)
+            ->getMock()
+            ->shouldReceive('getMetaData')
+            ->andReturn($metaData)
+            ->getMock();
+    }
 
     private function setUpCreateTest(): array
     {
@@ -164,44 +196,16 @@ final class ProjectsControllerTest extends TestCase
         $this->assertEquals($response, $projectsController->members($project));
     }
 
-    //endregion
+    public function testRemoveMember(): void
+    {
+        $project = $this->createProjectModel();
+        $user = $this->createUserModel();
+        $projectManager = $this->createProjectManager();
+        $jsonResponse = $this->createJsonResponse();
+        $responseFactory = $this->createResponseFactory();
+        $this->mockResponseFactoryJson($responseFactory, $jsonResponse, [], 204);
 
-    private function getProjectsController(
-        ProjectManager $projectManager = null,
-        ResponseFactory $responseFactory = null
-    ): ProjectsController {
-        return new ProjectsController(
-            $projectManager ?: $this->createProjectManager(),
-            $responseFactory ?: $this->createResponseFactory()
-        );
-    }
-
-    /**
-     * @param string|null $label
-     * @param string|null $description
-     * @param array       $metaDataElements
-     * @param array       $metaData
-     *
-     * @return Create|MockInterface
-     */
-    private function createCreateRequest(
-        string $label = null,
-        string $description = null,
-        array $metaDataElements = [],
-        array $metaData = []
-    ): Create {
-        return m::spy(Create::class)
-            ->shouldReceive('getLabel')
-            ->andReturn($label ?: $this->getFaker()->word)
-            ->getMock()
-            ->shouldReceive('getDescription')
-            ->andReturn($description ?: $this->getFaker()->word)
-            ->getMock()
-            ->shouldReceive('getMetaDataElements')
-            ->andReturn($metaDataElements)
-            ->getMock()
-            ->shouldReceive('getMetaData')
-            ->andReturn($metaData)
-            ->getMock();
+        $this->assertEquals($jsonResponse, $this->getProjectsController($projectManager, $responseFactory)->removeMember($project, $user));
+        $this->assertProjectManagerRemoveMember($projectManager, $project, $user);
     }
 }

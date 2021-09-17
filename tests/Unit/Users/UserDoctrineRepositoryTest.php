@@ -8,23 +8,16 @@ use Tests\Helper\ModelHelper;
 use Tests\Helper\UsersHelper;
 use Tests\TestCase;
 
-/**
- * Class UserDoctrineRepositoryTest
- *
- * @package Tests\Unit\Users
- */
 final class UserDoctrineRepositoryTest extends TestCase
 {
     use ModelHelper;
     use UsersHelper;
 
-    //region Tests
+    private function getUserDoctrineRepository(DatabaseHandler $databaseHandler = null): UserDoctrineRepository
+    {
+        return new UserDoctrineRepository($databaseHandler ?: $this->createDatabaseHandler());
+    }
 
-    /**
-     * @param bool $withUser
-     *
-     * @return array
-     */
     private function setUpFindOneByEmailTest(bool $withUser = true): array
     {
         $email = $this->getFaker()->safeEmail;
@@ -36,9 +29,6 @@ final class UserDoctrineRepositoryTest extends TestCase
         return [$userDoctrineRepository, $email, $user];
     }
 
-    /**
-     * @return void
-     */
     public function testFindOneByEmail(): void
     {
         /** @var UserDoctrineRepository $userDoctrineRepository */
@@ -47,9 +37,6 @@ final class UserDoctrineRepositoryTest extends TestCase
         $this->assertEquals($user, $userDoctrineRepository->findOneByEmail($email));
     }
 
-    /**
-     * @return void
-     */
     public function testFindOneByEmailWithoutUser(): void
     {
         /** @var UserDoctrineRepository $userDoctrineRepository */
@@ -58,15 +45,30 @@ final class UserDoctrineRepositoryTest extends TestCase
         $this->assertNull($userDoctrineRepository->findOneByEmail($email));
     }
 
-    //endregion
-
-    /**
-     * @param DatabaseHandler|null $databaseHandler
-     *
-     * @return UserDoctrineRepository
-     */
-    private function getUserDoctrineRepository(DatabaseHandler $databaseHandler = null): UserDoctrineRepository
+    private function setUpFindOneByUuidTest(bool $withUser = true): array
     {
-        return new UserDoctrineRepository($databaseHandler ?: $this->createDatabaseHandler());
+        $uuid = $this->getFaker()->uuid;
+        $user = $this->createUserModel();
+        $databaseHandler = $this->createDatabaseHandler();
+        $this->mockDatabaseHandlerLoad($databaseHandler, $withUser ? $user : null, ['uuid' => $uuid]);
+        $userDoctrineRepository = $this->getUserDoctrineRepository($databaseHandler);
+
+        return [$userDoctrineRepository, $uuid, $user];
+    }
+
+    public function testFindOneByUuid(): void
+    {
+        /** @var UserDoctrineRepository $userDoctrineRepository */
+        [$userDoctrineRepository, $uuid, $user] = $this->setUpFindOneByUuidTest();
+
+        $this->assertEquals($user, $userDoctrineRepository->findOneByUuid($uuid));
+    }
+
+    public function testFindOneByUuidWithoutUser(): void
+    {
+        /** @var UserDoctrineRepository $userDoctrineRepository */
+        [$userDoctrineRepository, $uuid] = $this->setUpFindOneByUuidTest(withUser: false);
+
+        $this->assertNull($userDoctrineRepository->findOneByUuid($uuid));
     }
 }

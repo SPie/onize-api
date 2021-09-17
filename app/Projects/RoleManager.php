@@ -5,21 +5,8 @@ namespace App\Projects;
 use App\Models\Exceptions\ModelNotFoundException;
 use App\Users\UserModel;
 
-/**
- * Class RoleManager
- *
- * @package App\Projects
- */
 class RoleManager
 {
-    /**
-     * RoleManager constructor.
-     *
-     * @param RoleRepository     $roleRepository
-     * @param RoleModelFactory   $roleModelFactory
-     * @param MemberRepository   $memberRepository
-     * @param MemberModelFactory $memberModelFactory
-     */
     public function __construct(
         private RoleRepository $roleRepository,
         private RoleModelFactory $roleModelFactory,
@@ -28,11 +15,6 @@ class RoleManager
     ) {
     }
 
-    /**
-     * @param string $uuid
-     *
-     * @return RoleModel
-     */
     public function getRole(string $uuid): RoleModel
     {
         $role = $this->roleRepository->findOneByUuid($uuid);
@@ -43,13 +25,6 @@ class RoleManager
         return $role;
     }
 
-    /**
-     * @param ProjectModel $project
-     * @param UserModel    $user
-     * @param array        $metaData
-     *
-     * @return RoleModel
-     */
     public function createOwnerRole(ProjectModel $project, UserModel $user, array $metaData): RoleModel
     {
         $role = $this->roleRepository->save(
@@ -60,13 +35,6 @@ class RoleManager
         return $role->addMember($member);
     }
 
-    /**
-     * @param ProjectModel $project
-     * @param UserModel    $user
-     * @param string       $permission
-     *
-     * @return bool
-     */
     public function hasPermissionForAction(ProjectModel $project, UserModel $user, string $permission): bool
     {
         $role = $user->getRoleForProject($project);

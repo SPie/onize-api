@@ -3,14 +3,16 @@
 namespace App\Projects;
 
 use App\Models\Exceptions\ModelNotFoundException;
-use App\Models\Model;
+use App\Projects\Invites\Exceptions\UserNotMemberException;
+use App\Users\UserModel;
 
 class ProjectManager
 {
     public function __construct(
         private ProjectRepository $projectRepository,
         private ProjectModelFactory $projectModelFactory,
-        private MetaDataElementModelFactory $metaDataElementModelFactory
+        private MetaDataElementModelFactory $metaDataElementModelFactory,
+        private MemberRepository $memberRepository
     ) {
     }
 
@@ -42,5 +44,18 @@ class ProjectManager
         }
 
         return $project;
+    }
+
+    public function removeMember(ProjectModel $project, UserModel $user): ProjectModel
+    {
+        foreach ($project->getMembers() as $member) {
+            if ($member->getUser()->getId() === $user->getId()) {
+                $this->memberRepository->delete($member);
+
+                return $project;
+            }
+        }
+
+        throw new UserNotMemberException(\sprintf('User %s is no member of project %s', $user->getUuid(), $project->getUuid()));
     }
 }

@@ -30,7 +30,8 @@ final class Version20210202203900 extends AbstractMigration
     {
         $this->addSql('INSERT INTO `permissions` (`name`, `description`) VALUES
 (\'' . PermissionModel::PERMISSION_PROJECTS_MEMBERS_SHOW . '\', \'Show projects members\'),
-(\'' . PermissionModel::PERMISSION_PROJECTS_INVITATIONS_MANAGEMENT . '\', \'Invitations Management\')');
+(\'' . PermissionModel::PERMISSION_PROJECTS_INVITATIONS_MANAGEMENT . '\', \'Invitations Management\'),
+(\'' . PermissionModel::PERMISSION_PROJECTS_MEMBER_MANAGEMENT . '\', \'Members Management\')');
 
         return $this;
     }

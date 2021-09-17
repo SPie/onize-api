@@ -211,14 +211,6 @@ trait UsersHelper
         return m::spy(UserManager::class);
     }
 
-    /**
-     * @param UserManager|MockInterface $userManager
-     * @param UserModel|\Exception      $user
-     * @param string                    $email
-     * @param string                    $password
-     *
-     * @return $this
-     */
     private function mockUserManagerCreateUser(MockInterface $userManager, $user, string $email, string $password): self
     {
         $userManager
@@ -229,13 +221,6 @@ trait UsersHelper
         return $this;
     }
 
-    /**
-     * @param UserManager|MockInterface $userManager
-     * @param UserModel|\Exception      $user
-     * @param int                       $id
-     *
-     * @return $this
-     */
     private function mockUserManagerGetUserById(MockInterface $userManager, $user, int $id): self
     {
         $userManager
@@ -246,13 +231,6 @@ trait UsersHelper
         return $this;
     }
 
-    /**
-     * @param UserManager|MockInterface $userManager
-     * @param UserModel|\Exception      $user
-     * @param string                    $email
-     *
-     * @return $this
-     */
     private function mockUserManagerGetUserByEmail(MockInterface $userManager, $user, string $email): self
     {
         $userManager
@@ -263,14 +241,6 @@ trait UsersHelper
         return $this;
     }
 
-    /**
-     * @param MockInterface $userManager
-     * @param UserModel     $updatedUser
-     * @param UserModel     $user
-     * @param string|null   $email
-     *
-     * @return $this
-     */
     private function mockUserManagerUpdateUserData(
         MockInterface $userManager,
         UserModel $updatedUser,
@@ -285,14 +255,6 @@ trait UsersHelper
         return $this;
     }
 
-    /**
-     * @param UserManager|MockInterface $userManager
-     * @param UserModel                 $updatedUser
-     * @param UserModel                 $user
-     * @param string|null               $password
-     *
-     * @return $this
-     */
     private function mockUserManagerUpdatePassword(
         MockInterface $userManager,
         UserModel $updatedUser,
@@ -303,6 +265,19 @@ trait UsersHelper
             ->shouldReceive('updatePassword')
             ->with($user, $password)
             ->andReturn($updatedUser);
+
+        return $this;
+    }
+
+    /**
+     * @param UserModel|\Exception $user
+     */
+    private function mockUserManagerGetUserByUuid(MockInterface $userManager, $user, string $uuid): self
+    {
+        $userManager
+            ->shouldReceive('getUserByUuid')
+            ->with($uuid)
+            ->andThrow($user);
 
         return $this;
     }
@@ -367,18 +342,21 @@ trait UsersHelper
         return m::spy(UserRepository::class);
     }
 
-    /**
-     * @param UserRepository|MockInterface $userRepository
-     * @param UserModel|null               $user
-     * @param string                       $email
-     *
-     * @return $this
-     */
     private function mockUserRepositoryFindOneByEmail(MockInterface $userRepository, ?UserModel $user, string $email): self
     {
         $userRepository
             ->shouldReceive('findOneByEmail')
             ->with($email)
+            ->andReturn($user);
+
+        return $this;
+    }
+
+    private function mockUserRepositoryFindOneByUuid(MockInterface $userRepository, ?UserModel $user, string $uuid): self
+    {
+        $userRepository
+            ->shouldReceive('findOneByUuid')
+            ->with($uuid)
             ->andReturn($user);
 
         return $this;

@@ -5,14 +5,10 @@ namespace App\Providers;
 use App\Http\Binders\InvitationBinder;
 use App\Http\Binders\ProjectBinder;
 use App\Http\Binders\RoleBinder;
+use App\Http\Binders\UserBinder;
 use Illuminate\Foundation\Support\Providers\RouteServiceProvider as ServiceProvider;
 use Illuminate\Support\Facades\Route;
 
-/**
- * Class RouteServiceProvider
- *
- * @package App\Providers
- */
 class RouteServiceProvider extends ServiceProvider
 {
     /**
@@ -36,14 +32,12 @@ class RouteServiceProvider extends ServiceProvider
         parent::boot();
     }
 
-    /**
-     * @return $this
-     */
     private function bootBinders(): self
     {
         Route::bind('project', ProjectBinder::class);
         Route::bind('role', RoleBinder::class);
         Route::bind('invitation', InvitationBinder::class);
+        Route::bind('user', UserBinder::class);
 
         return $this;
     }

@@ -2,6 +2,7 @@
 
 namespace Tests\Feature\ApiCalls;
 
+use App\Http\Controllers\InvitationsController;
 use App\Http\Controllers\ProjectsController;
 use App\Projects\Invites\InvitationModel;
 use App\Projects\Invites\InvitationRepository;
@@ -30,7 +31,25 @@ final class ProjectsApiCallsTest extends FeatureTestCase
     use ProjectHelper;
     use UsersHelper;
 
-    //region Tests
+    private function getConcreteProjectRepository(): ProjectRepository
+    {
+        return $this->app->get(ProjectRepository::class);
+    }
+
+    private function getConcreteRoleRepository(): RoleRepository
+    {
+        return $this->app->get(RoleRepository::class);
+    }
+
+    private function getInvitationRepository(): InvitationRepository
+    {
+        return $this->app->get(InvitationRepository::class);
+    }
+
+    private function getMemberRepository(): MemberRepository
+    {
+        return $this->app->get(MemberRepository::class);
+    }
 
     private function setUpCreateTest(bool $withAuthenticatedUser = true): array
     {
@@ -945,7 +964,7 @@ final class ProjectsApiCallsTest extends FeatureTestCase
 
         $response = $this->doApiCall(
             'POST',
-            $this->getUrl(ProjectsController::ROUTE_NAME_INVITE, ['role' => $role->getUuid()]),
+            $this->getUrl(InvitationsController::ROUTE_NAME_INVITE, ['role' => $role->getUuid()]),
             [
                 'email'    => $email,
                 'role'     => $role->getUuid(),
@@ -975,7 +994,7 @@ final class ProjectsApiCallsTest extends FeatureTestCase
 
         $response = $this->doApiCall(
             'POST',
-            $this->getUrl(ProjectsController::ROUTE_NAME_INVITE, ['role' => $role->getUuid()]),
+            $this->getUrl(InvitationsController::ROUTE_NAME_INVITE, ['role' => $role->getUuid()]),
             [
                 'metaData' => $metaData,
             ]
@@ -992,7 +1011,7 @@ final class ProjectsApiCallsTest extends FeatureTestCase
 
         $response = $this->doApiCall(
             'POST',
-            $this->getUrl(ProjectsController::ROUTE_NAME_INVITE, ['role' => $this->getFaker()->uuid]),
+            $this->getUrl(InvitationsController::ROUTE_NAME_INVITE, ['role' => $this->getFaker()->uuid]),
             [
                 'email'    => $email,
                 'metaData' => $metaData,
@@ -1009,7 +1028,7 @@ final class ProjectsApiCallsTest extends FeatureTestCase
 
         $response = $this->doApiCall(
             'POST',
-            $this->getUrl(ProjectsController::ROUTE_NAME_INVITE, ['role' => $role->getUuid()]),
+            $this->getUrl(InvitationsController::ROUTE_NAME_INVITE, ['role' => $role->getUuid()]),
             [
                 'email'    => $email,
                 'metaData' => $this->getFaker()->word,
@@ -1027,7 +1046,7 @@ final class ProjectsApiCallsTest extends FeatureTestCase
 
         $response = $this->doApiCall(
             'POST',
-            $this->getUrl(ProjectsController::ROUTE_NAME_INVITE, ['role' => $role->getUuid()]),
+            $this->getUrl(InvitationsController::ROUTE_NAME_INVITE, ['role' => $role->getUuid()]),
             [
                 'email'    => $email,
                 'metaData' => $metaData,
@@ -1045,7 +1064,7 @@ final class ProjectsApiCallsTest extends FeatureTestCase
 
         $response = $this->doApiCall(
             'POST',
-            $this->getUrl(ProjectsController::ROUTE_NAME_INVITE, ['role' => $role->getUuid()]),
+            $this->getUrl(InvitationsController::ROUTE_NAME_INVITE, ['role' => $role->getUuid()]),
             [
                 'email'    => $email,
                 'metaData' => $metaData,
@@ -1063,7 +1082,7 @@ final class ProjectsApiCallsTest extends FeatureTestCase
 
         $response = $this->doApiCall(
             'POST',
-            $this->getUrl(ProjectsController::ROUTE_NAME_INVITE, ['role' => $role->getUuid()]),
+            $this->getUrl(InvitationsController::ROUTE_NAME_INVITE, ['role' => $role->getUuid()]),
             [
                 'email'    => $email,
                 'metaData' => $metaData,
@@ -1081,7 +1100,7 @@ final class ProjectsApiCallsTest extends FeatureTestCase
 
         $response = $this->doApiCall(
             'POST',
-            $this->getUrl(ProjectsController::ROUTE_NAME_INVITE, ['role' => $role->getUuid()]),
+            $this->getUrl(InvitationsController::ROUTE_NAME_INVITE, ['role' => $role->getUuid()]),
             [
                 'email'    => $email,
                 'metaData' => $metaData,
@@ -1099,7 +1118,7 @@ final class ProjectsApiCallsTest extends FeatureTestCase
 
         $response = $this->doApiCall(
             'POST',
-            $this->getUrl(ProjectsController::ROUTE_NAME_INVITE, ['role' => $role->getUuid()]),
+            $this->getUrl(InvitationsController::ROUTE_NAME_INVITE, ['role' => $role->getUuid()]),
             [
                 'email'    => $email,
                 'metaData' => $metaData,
@@ -1117,7 +1136,7 @@ final class ProjectsApiCallsTest extends FeatureTestCase
 
         $response = $this->doApiCall(
             'POST',
-            $this->getUrl(ProjectsController::ROUTE_NAME_INVITE, ['role' => $role->getUuid()]),
+            $this->getUrl(InvitationsController::ROUTE_NAME_INVITE, ['role' => $role->getUuid()]),
             [
                 'email'    => $email,
                 'metaData' => $metaData,
@@ -1141,7 +1160,7 @@ final class ProjectsApiCallsTest extends FeatureTestCase
 
         $response = $this->doApiCall(
             'POST',
-            $this->getUrl(ProjectsController::ROUTE_NAME_INVITE, ['role' => $role->getUuid()]),
+            $this->getUrl(InvitationsController::ROUTE_NAME_INVITE, ['role' => $role->getUuid()]),
             [
                 'email'    => $email,
                 'metaData' => $metaData,
@@ -1165,7 +1184,7 @@ final class ProjectsApiCallsTest extends FeatureTestCase
 
         $response = $this->doApiCall(
             'POST',
-            $this->getUrl(ProjectsController::ROUTE_NAME_INVITE, ['role' => $role->getUuid()]),
+            $this->getUrl(InvitationsController::ROUTE_NAME_INVITE, ['role' => $role->getUuid()]),
             [
                 'email'    => $email,
                 'metaData' => $metaData,
@@ -1190,7 +1209,7 @@ final class ProjectsApiCallsTest extends FeatureTestCase
 
         $response = $this->doApiCall(
             'POST',
-            $this->getUrl(ProjectsController::ROUTE_NAME_INVITE, ['role' => $role->getUuid()]),
+            $this->getUrl(InvitationsController::ROUTE_NAME_INVITE, ['role' => $role->getUuid()]),
             [
                 'email'    => $email,
                 'metaData' => $metaData,
@@ -1248,7 +1267,7 @@ final class ProjectsApiCallsTest extends FeatureTestCase
 
         $response = $this->doApiCall(
             'POST',
-            $this->getUrl(ProjectsController::ROUTE_NAME_ACCEPT_INVITATION, ['invitation' => $invitation->getUuid()])
+            $this->getUrl(InvitationsController::ROUTE_NAME_ACCEPT_INVITATION, ['invitation' => $invitation->getUuid()])
         );
 
         $response->assertCreated();
@@ -1265,7 +1284,7 @@ final class ProjectsApiCallsTest extends FeatureTestCase
 
         $response = $this->doApiCall(
             'POST',
-            $this->getUrl(ProjectsController::ROUTE_NAME_ACCEPT_INVITATION, ['invitation' => $invitation->getUuid()]),
+            $this->getUrl(InvitationsController::ROUTE_NAME_ACCEPT_INVITATION, ['invitation' => $invitation->getUuid()]),
             [
                 'metaData' => [$metaDataName => $metaDataValue],
             ]
@@ -1282,7 +1301,7 @@ final class ProjectsApiCallsTest extends FeatureTestCase
 
         $response = $this->doApiCall(
             'POST',
-            $this->getUrl(ProjectsController::ROUTE_NAME_ACCEPT_INVITATION, ['invitation' => $this->getFaker()->uuid])
+            $this->getUrl(InvitationsController::ROUTE_NAME_ACCEPT_INVITATION, ['invitation' => $this->getFaker()->uuid])
         );
 
         $response->assertNotFound();
@@ -1294,7 +1313,7 @@ final class ProjectsApiCallsTest extends FeatureTestCase
 
         $response = $this->doApiCall(
             'POST',
-            $this->getUrl(ProjectsController::ROUTE_NAME_ACCEPT_INVITATION, ['invitation' => $invitation->getUuid()]),
+            $this->getUrl(InvitationsController::ROUTE_NAME_ACCEPT_INVITATION, ['invitation' => $invitation->getUuid()]),
             ['metaData' => $this->getFaker()->word]
         );
 
@@ -1309,7 +1328,7 @@ final class ProjectsApiCallsTest extends FeatureTestCase
 
         $response = $this->doApiCall(
             'POST',
-            $this->getUrl(ProjectsController::ROUTE_NAME_ACCEPT_INVITATION, ['invitation' => $invitation->getUuid()]),
+            $this->getUrl(InvitationsController::ROUTE_NAME_ACCEPT_INVITATION, ['invitation' => $invitation->getUuid()]),
             ['metaData' => [$metaDataName => $this->getFaker()->word]]
         );
 
@@ -1323,7 +1342,7 @@ final class ProjectsApiCallsTest extends FeatureTestCase
 
         $response = $this->doApiCall(
             'POST',
-            $this->getUrl(ProjectsController::ROUTE_NAME_ACCEPT_INVITATION, ['invitation' => $invitation->getUuid()])
+            $this->getUrl(InvitationsController::ROUTE_NAME_ACCEPT_INVITATION, ['invitation' => $invitation->getUuid()])
         );
 
         $response->assertStatus(422);
@@ -1336,7 +1355,7 @@ final class ProjectsApiCallsTest extends FeatureTestCase
 
         $response = $this->doApiCall(
             'POST',
-            $this->getUrl(ProjectsController::ROUTE_NAME_ACCEPT_INVITATION, ['invitation' => $invitation->getUuid()]),
+            $this->getUrl(InvitationsController::ROUTE_NAME_ACCEPT_INVITATION, ['invitation' => $invitation->getUuid()]),
             ['metaData' => [$metaDataName => $this->getFaker()->numberBetween()]]
         );
 
@@ -1350,7 +1369,7 @@ final class ProjectsApiCallsTest extends FeatureTestCase
 
         $response = $this->doApiCall(
             'POST',
-            $this->getUrl(ProjectsController::ROUTE_NAME_ACCEPT_INVITATION, ['invitation' => $invitation->getUuid()]),
+            $this->getUrl(InvitationsController::ROUTE_NAME_ACCEPT_INVITATION, ['invitation' => $invitation->getUuid()]),
             ['metaData' => [$metaDataName => $this->getFaker()->word]]
         );
 
@@ -1364,7 +1383,7 @@ final class ProjectsApiCallsTest extends FeatureTestCase
 
         $response = $this->doApiCall(
             'POST',
-            $this->getUrl(ProjectsController::ROUTE_NAME_ACCEPT_INVITATION, ['invitation' => $invitation->getUuid()]),
+            $this->getUrl(InvitationsController::ROUTE_NAME_ACCEPT_INVITATION, ['invitation' => $invitation->getUuid()]),
             ['metaData' => [$metaDataName => $this->getFaker()->word]]
         );
 
@@ -1378,7 +1397,7 @@ final class ProjectsApiCallsTest extends FeatureTestCase
 
         $response = $this->doApiCall(
             'POST',
-            $this->getUrl(ProjectsController::ROUTE_NAME_ACCEPT_INVITATION, ['invitation' => $invitation->getUuid()]),
+            $this->getUrl(InvitationsController::ROUTE_NAME_ACCEPT_INVITATION, ['invitation' => $invitation->getUuid()]),
             ['metaData' => [$metaDataName => $this->getFaker()->word]]
         );
 
@@ -1392,7 +1411,7 @@ final class ProjectsApiCallsTest extends FeatureTestCase
 
         $response = $this->doApiCall(
             'POST',
-            $this->getUrl(ProjectsController::ROUTE_NAME_ACCEPT_INVITATION, ['invitation' => $invitation->getUuid()]),
+            $this->getUrl(InvitationsController::ROUTE_NAME_ACCEPT_INVITATION, ['invitation' => $invitation->getUuid()]),
             ['metaData' => [$metaDataName => $this->getFaker()->word]]
         );
 
@@ -1405,7 +1424,7 @@ final class ProjectsApiCallsTest extends FeatureTestCase
 
         $response = $this->doApiCall(
             'POST',
-            $this->getUrl(ProjectsController::ROUTE_NAME_ACCEPT_INVITATION, ['invitation' => $invitation->getUuid()]),
+            $this->getUrl(InvitationsController::ROUTE_NAME_ACCEPT_INVITATION, ['invitation' => $invitation->getUuid()]),
             ['metaData' => [$metaDataName => $this->getFaker()->word]]
         );
 
@@ -1418,7 +1437,7 @@ final class ProjectsApiCallsTest extends FeatureTestCase
 
         $response = $this->doApiCall(
             'POST',
-            $this->getUrl(ProjectsController::ROUTE_NAME_ACCEPT_INVITATION, ['invitation' => $invitation->getUuid()]),
+            $this->getUrl(InvitationsController::ROUTE_NAME_ACCEPT_INVITATION, ['invitation' => $invitation->getUuid()]),
             ['metaData' => [$metaDataName => $this->getFaker()->word]]
         );
 
@@ -1438,7 +1457,7 @@ final class ProjectsApiCallsTest extends FeatureTestCase
 
         $response = $this->doApiCall(
             'POST',
-            $this->getUrl(ProjectsController::ROUTE_NAME_ACCEPT_INVITATION, ['invitation' => $invitation->getUuid()]),
+            $this->getUrl(InvitationsController::ROUTE_NAME_ACCEPT_INVITATION, ['invitation' => $invitation->getUuid()]),
             ['metaData' => [$metaDataName => $this->getFaker()->word]]
         );
 
@@ -1459,7 +1478,7 @@ final class ProjectsApiCallsTest extends FeatureTestCase
 
         $response = $this->doApiCall(
             'POST',
-            $this->getUrl(ProjectsController::ROUTE_NAME_ACCEPT_INVITATION, ['invitation' => $invitation->getUuid()]),
+            $this->getUrl(InvitationsController::ROUTE_NAME_ACCEPT_INVITATION, ['invitation' => $invitation->getUuid()]),
             ['metaData' => [$metaDataName => $this->getFaker()->word]]
         );
 
@@ -1481,7 +1500,7 @@ final class ProjectsApiCallsTest extends FeatureTestCase
 
         $response = $this->doApiCall(
             'POST',
-            $this->getUrl(ProjectsController::ROUTE_NAME_ACCEPT_INVITATION, ['invitation' => $invitation->getUuid()]),
+            $this->getUrl(InvitationsController::ROUTE_NAME_ACCEPT_INVITATION, ['invitation' => $invitation->getUuid()]),
             ['metaData' => [$metaDataName => $this->getFaker()->word]]
         );
 
@@ -1532,7 +1551,7 @@ final class ProjectsApiCallsTest extends FeatureTestCase
 
         $response = $this->doApiCall(
             'DELETE',
-            $this->getUrl(ProjectsController::ROUTE_NAME_DECLINE_INVITATION, ['invitation' => $invitation->getUuid()])
+            $this->getUrl(InvitationsController::ROUTE_NAME_DECLINE_INVITATION, ['invitation' => $invitation->getUuid()])
         );
 
         $response->assertNoContent();
@@ -1545,7 +1564,7 @@ final class ProjectsApiCallsTest extends FeatureTestCase
 
         $response = $this->doApiCall(
             'DELETE',
-            $this->getUrl(ProjectsController::ROUTE_NAME_DECLINE_INVITATION, ['invitation' => $this->getFaker()->uuid])
+            $this->getUrl(InvitationsController::ROUTE_NAME_DECLINE_INVITATION, ['invitation' => $this->getFaker()->uuid])
         );
 
         $response->assertNotFound();
@@ -1557,7 +1576,7 @@ final class ProjectsApiCallsTest extends FeatureTestCase
 
         $response = $this->doApiCall(
             'DELETE',
-            $this->getUrl(ProjectsController::ROUTE_NAME_DECLINE_INVITATION, ['invitation' => $invitation->getUuid()])
+            $this->getUrl(InvitationsController::ROUTE_NAME_DECLINE_INVITATION, ['invitation' => $invitation->getUuid()])
         );
 
         $response->assertStatus(400);
@@ -1569,7 +1588,7 @@ final class ProjectsApiCallsTest extends FeatureTestCase
 
         $response = $this->doApiCall(
             'DELETE',
-            $this->getUrl(ProjectsController::ROUTE_NAME_DECLINE_INVITATION, ['invitation' => $invitation->getUuid()])
+            $this->getUrl(InvitationsController::ROUTE_NAME_DECLINE_INVITATION, ['invitation' => $invitation->getUuid()])
         );
 
         $response->assertStatus(400);
@@ -1581,7 +1600,7 @@ final class ProjectsApiCallsTest extends FeatureTestCase
 
         $response = $this->doApiCall(
             'DELETE',
-            $this->getUrl(ProjectsController::ROUTE_NAME_DECLINE_INVITATION, ['invitation' => $invitation->getUuid()])
+            $this->getUrl(InvitationsController::ROUTE_NAME_DECLINE_INVITATION, ['invitation' => $invitation->getUuid()])
         );
 
         $response->assertStatus(400);
@@ -1593,7 +1612,7 @@ final class ProjectsApiCallsTest extends FeatureTestCase
 
         $response = $this->doApiCall(
             'DELETE',
-            $this->getUrl(ProjectsController::ROUTE_NAME_DECLINE_INVITATION, ['invitation' => $invitation->getUuid()])
+            $this->getUrl(InvitationsController::ROUTE_NAME_DECLINE_INVITATION, ['invitation' => $invitation->getUuid()])
         );
 
         $response->assertNoContent();
@@ -1606,7 +1625,7 @@ final class ProjectsApiCallsTest extends FeatureTestCase
 
         $response = $this->doApiCall(
             'DELETE',
-            $this->getUrl(ProjectsController::ROUTE_NAME_DECLINE_INVITATION, ['invitation' => $invitation->getUuid()])
+            $this->getUrl(InvitationsController::ROUTE_NAME_DECLINE_INVITATION, ['invitation' => $invitation->getUuid()])
         );
 
         $response->assertStatus(403);
@@ -1618,31 +1637,166 @@ final class ProjectsApiCallsTest extends FeatureTestCase
 
         $response = $this->doApiCall(
             'DELETE',
-            $this->getUrl(ProjectsController::ROUTE_NAME_DECLINE_INVITATION, ['invitation' => $invitation->getUuid()])
+            $this->getUrl(InvitationsController::ROUTE_NAME_DECLINE_INVITATION, ['invitation' => $invitation->getUuid()])
         );
 
         $response->assertStatus(403);
     }
 
-    //endregion
+    private function setUpRemoveMemberTest(
+        bool $userIsMember = true,
+        bool $withAuthenticatedUser = true,
+        bool $withAuthorizedUser = true,
+        bool $memberIsOwner = false,
+        bool $userIsOwner = false
+    ): array {
+        if ($userIsOwner) {
+            $role = $this->createOwnerRole();
+        } elseif ($withAuthorizedUser) {
+            $role = $this->createRoleWithPermission($this->getConcretePermission(PermissionModel::PERMISSION_PROJECTS_MEMBER_MANAGEMENT));
+        } else {
+            $role = $this->createRoleEntities()->first();
+        }
+        $role->getProject()->addRole($role);
+        $user = $this->createUserWithRole($role);
+        if ($withAuthenticatedUser) {
+            $this->actingAs($user);
+        }
 
-    private function getConcreteProjectRepository(): ProjectRepository
-    {
-        return $this->app->get(ProjectRepository::class);
+        $memberRole = $this->createRoleEntities(
+            1,
+            [
+                RoleModel::PROPERTY_PROJECT => $userIsMember ? $role->getProject() : $this->createProjectEntities()->first(),
+                RoleModel::PROPERTY_OWNER   => $memberIsOwner
+            ]
+        )->first();
+        $memberRole->getProject()->addRole($memberRole);
+        $memberUser = $this->createUserEntities()->first();
+        $member = $this->createMemberEntities(1, [MemberModel::PROPERTY_USER => $memberUser, MemberModel::PROPERTY_ROLE => $memberRole])->first();
+        $memberUser->addMember($member);
+        $memberRole->addMember($member);
+
+        return [$role->getProject(), $memberUser, $member];
     }
 
-    private function getConcreteRoleRepository(): RoleRepository
+    public function testRemoveMember(): void
     {
-        return $this->app->get(RoleRepository::class);
+        [$project, $user, $member] = $this->setUpRemoveMemberTest();
+
+        $response = $this->doApiCall(
+            'DELETE',
+            $this->getUrl(
+                ProjectsController::ROUTE_NAME_REMOVE_MEMBER,
+                ['project' => $project->getUuid(), 'user' => $user->getUuid()]
+            )
+        );
+
+        $response->assertNoContent();
+        $this->assertNotEmpty($member->getDeletedAt());
     }
 
-    private function getInvitationRepository(): InvitationRepository
+    public function testRemoveMemberWithUserNotMember(): void
     {
-        return $this->app->get(InvitationRepository::class);
+        [$project, $user] = $this->setUpRemoveMemberTest(userIsMember: false);
+
+        $response = $this->doApiCall(
+            'DELETE',
+            $this->getUrl(
+                ProjectsController::ROUTE_NAME_REMOVE_MEMBER,
+                ['project' => $project->getUuid(), 'user' => $user->getUuid()]
+            )
+        );
+
+        $response->assertStatus(400);
     }
 
-    private function getMemberRepository(): MemberRepository
+    public function testRemoveMemberWithoutAuthenticatedUser(): void
     {
-        return $this->app->get(MemberRepository::class);
+        [$project, $user] = $this->setUpRemoveMemberTest(withAuthenticatedUser: false);
+
+        $response = $this->doApiCall(
+            'DELETE',
+            $this->getUrl(
+                ProjectsController::ROUTE_NAME_REMOVE_MEMBER,
+                ['project' => $project->getUuid(), 'user' => $user->getUuid()]
+            )
+        );
+
+        $response->assertStatus(401);
+    }
+
+    public function testRemoveMemberWithoutAuthorizedUser(): void
+    {
+        [$project, $user] = $this->setUpRemoveMemberTest(withAuthorizedUser: false);
+
+        $response = $this->doApiCall(
+            'DELETE',
+            $this->getUrl(
+                ProjectsController::ROUTE_NAME_REMOVE_MEMBER,
+                ['project' => $project->getUuid(), 'user' => $user->getUuid()]
+            )
+        );
+
+        $response->assertStatus(403);
+    }
+
+    public function testRemoveMemberWithMemberIsOwner(): void
+    {
+        [$project, $user] = $this->setUpRemoveMemberTest(memberIsOwner: true);
+
+        $response = $this->doApiCall(
+            'DELETE',
+            $this->getUrl(
+                ProjectsController::ROUTE_NAME_REMOVE_MEMBER,
+                ['project' => $project->getUuid(), 'user' => $user->getUuid()]
+            )
+        );
+
+        $response->assertStatus(403);
+    }
+
+    public function testRemoveMemberWithMemberIsOwnerAndAuthenticatedUserIsOwner(): void
+    {
+        [$project, $user] = $this->setUpRemoveMemberTest(memberIsOwner: true, userIsOwner: true);
+
+        $response = $this->doApiCall(
+            'DELETE',
+            $this->getUrl(
+                ProjectsController::ROUTE_NAME_REMOVE_MEMBER,
+                ['project' => $project->getUuid(), 'user' => $user->getUuid()]
+            )
+        );
+
+        $response->assertNoContent();
+    }
+
+    public function testRemoveMemberWithoutProject(): void
+    {
+        [$project, $user] = $this->setUpRemoveMemberTest();
+
+        $response = $this->doApiCall(
+            'DELETE',
+            $this->getUrl(
+                ProjectsController::ROUTE_NAME_REMOVE_MEMBER,
+                ['project' => $this->getFaker()->uuid, 'user' => $user->getUuid()]
+            )
+        );
+
+        $response->assertNotFound();
+    }
+
+    public function testRemoveMemberWithoutUser(): void
+    {
+        [$project] = $this->setUpRemoveMemberTest();
+
+        $response = $this->doApiCall(
+            'DELETE',
+            $this->getUrl(
+                ProjectsController::ROUTE_NAME_REMOVE_MEMBER,
+                ['project' => $project->getUuid(), 'user' => $this->getFaker()->uuid]
+            )
+        );
+
+        $response->assertNotFound();
     }
 }

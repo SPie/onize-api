@@ -11,17 +11,18 @@ use Tests\Helper\ModelHelper;
 use Tests\Helper\UsersHelper;
 use Tests\TestCase;
 
-/**
- * Class UserManagerTest
- *
- * @package Tests\Unit\Users
- */
 final class UserManagerTest extends TestCase
 {
     use ModelHelper;
     use UsersHelper;
 
-    //region Tests
+    private function getUserManager(UserRepository $userRepository = null, UserModelFactory $userModelFactory = null): UserManager
+    {
+        return new UserManager(
+            $userRepository ?: $this->createUserRepository(),
+            $userModelFactory ?: $this->createUserModelFactory()
+        );
+    }
 
     private function setUpCreateUserTest(): array
     {
@@ -37,9 +38,6 @@ final class UserManagerTest extends TestCase
         return [$userManager, $email, $password, $user, $userRepository];
     }
 
-    /**
-     * @return void
-     */
     public function testCreateUser(): void
     {
         /** @var UserManager $userManager */
@@ -49,11 +47,6 @@ final class UserManagerTest extends TestCase
         $this->assertRepositorySave($userRepository, $user);
     }
 
-    /**
-     * @param bool $withUser
-     *
-     * @return array
-     */
     private function setUpGetUserByIdTest(bool $withUser = true): array
     {
         $id = $this->getFaker()->numberBetween();
@@ -65,9 +58,6 @@ final class UserManagerTest extends TestCase
         return [$userManager, $id, $user];
     }
 
-    /**
-     * @return void
-     */
     public function testGetUserById(): void
     {
         /** @var UserManager $userManager */
@@ -76,9 +66,6 @@ final class UserManagerTest extends TestCase
         $this->assertEquals($user, $userManager->getUserById($id));
     }
 
-    /**
-     * @return void
-     */
     public function testGetUserByIdWithoutUser(): void
     {
         /** @var UserManager $userManager */
@@ -89,11 +76,6 @@ final class UserManagerTest extends TestCase
         $userManager->getUserById($id);
     }
 
-    /**
-     * @param bool $withUser
-     *
-     * @return array
-     */
     private function setUpGetUserByEmailTest(bool $withUser = true): array
     {
         $email = $this->getFaker()->safeEmail;
@@ -105,9 +87,6 @@ final class UserManagerTest extends TestCase
         return [$userManager, $email, $user];
     }
 
-    /**
-     * @return void
-     */
     public function testGetUserByEmail(): void
     {
         /** @var UserManager $userManager */
@@ -116,9 +95,6 @@ final class UserManagerTest extends TestCase
         $this->assertEquals($user, $userManager->getUserByEmail($email));
     }
 
-    /**
-     * @return void
-     */
     public function testGetUserByEmailWithoutUser(): void
     {
         /** @var UserManager $userManager */
@@ -129,9 +105,6 @@ final class UserManagerTest extends TestCase
         $userManager->getUserByEmail($email);
     }
 
-    /**
-     * @return array
-     */
     private function setUpUpdateUserDataTest(bool $withChange = true): array
     {
         $email = $this->getFaker()->safeEmail;
@@ -146,9 +119,6 @@ final class UserManagerTest extends TestCase
         return [$userManager, $user, $email, $userRepository];
     }
 
-    /**
-     * @return void
-     */
     public function testUpdateUserDataWithChange(): void
     {
         /** @var UserManager $userManager */
@@ -159,9 +129,6 @@ final class UserManagerTest extends TestCase
         $this->assertUserModelSetEmail($user, $email);
     }
 
-    /**
-     * @return void
-     */
     public function testUpdateUserDataWithoutChange(): void
     {
         /**
@@ -174,9 +141,6 @@ final class UserManagerTest extends TestCase
         $userRepository->shouldNotHaveReceived('save');
     }
 
-    /**
-     * @return array
-     */
     private function setUpUpdatePasswordTest(bool $withChange = true): array
     {
         $user = $this->createUserModel();
@@ -193,9 +157,6 @@ final class UserManagerTest extends TestCase
         return [$userManager, $user, $password, $updatedUser, $userRepository];
     }
 
-    /**
-     * @return void
-     */
     public function testUpdatePassword(): void
     {
         /** @var UserManager $userManager */
@@ -205,9 +166,6 @@ final class UserManagerTest extends TestCase
         $this->assertRepositorySave($userRepository, $updatedUser);
     }
 
-    /**
-     * @return void
-     */
     public function testUpdatePasswordWithoutPasswordChange(): void
     {
         /**
@@ -220,19 +178,32 @@ final class UserManagerTest extends TestCase
         $userRepository->shouldNotHaveReceived('save');
     }
 
-    //endregion
-
-    /**
-     * @param UserRepository|null   $userRepository
-     * @param UserModelFactory|null $userModelFactory
-     *
-     * @return UserManager
-     */
-    private function getUserManager(UserRepository $userRepository = null, UserModelFactory $userModelFactory = null): UserManager
+    private function setUpGetUserByUuidTest(bool $withUser = true): array
     {
-        return new UserManager(
-            $userRepository ?: $this->createUserRepository(),
-            $userModelFactory ?: $this->createUserModelFactory()
-        );
+        $uuid = $this->getFaker()->uuid;
+        $user = $this->createUserModel();
+        $userRepository = $this->createUserRepository();
+        $this->mockUserRepositoryFindOneByUuid($userRepository, $withUser ? $user : null, $uuid);
+        $userManager = $this->getUserManager($userRepository);
+
+        return [$userManager, $uuid, $user];
+    }
+
+    public function testGetUserByUuid(): void
+    {
+        /** @var UserManager $userManager */
+        [$userManager, $uuid, $user] = $this->setUpGetUserByUuidTest();
+
+        $this->assertEquals($user, $userManager->getUserByUuid($uuid));
+    }
+
+    public function testGetUserByUuidWithoutUser(): void
+    {
+        /** @var UserManager $userManager */
+        [$userManager, $uuid] = $this->setUpGetUserByUuidTest(withUser: false);
+
+        $this->expectException(ModelNotFoundException::class);
+
+        $userManager->getUserByUuid($uuid);
     }
 }

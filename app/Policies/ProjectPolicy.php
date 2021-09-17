@@ -26,4 +26,18 @@ final class ProjectPolicy
             PermissionModel::PERMISSION_PROJECTS_MEMBERS_SHOW
         );
     }
+
+    public function removeMember(UserModel $user, ProjectModel $project, UserModel $member): bool
+    {
+        return (
+                !$member->getRoleForProject($project)
+                || !$member->getRoleForProject($project)->isOwner()
+                || $user->getRoleForProject($project)->isOwner()
+            )
+            && $this->roleManager->hasPermissionForAction(
+                $project,
+                $user,
+                PermissionModel::PERMISSION_PROJECTS_MEMBER_MANAGEMENT
+            );
+    }
 }

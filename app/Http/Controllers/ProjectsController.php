@@ -8,6 +8,7 @@ use App\Projects\MemberModel;
 use App\Projects\ProjectManager;
 use App\Projects\ProjectModel;
 use App\Projects\RoleManager;
+use App\Users\UserModel;
 use Illuminate\Contracts\Routing\ResponseFactory;
 use Illuminate\Http\JsonResponse;
 
@@ -17,9 +18,7 @@ final class ProjectsController extends Controller
     public const ROUTE_NAME_USERS_PROJECTS     = 'projects.usersProjects';
     public const ROUTE_NAME_SHOW               = 'projects.show';
     public const ROUTE_NAME_MEMBERS            = 'projects.members';
-    public const ROUTE_NAME_INVITE             = 'projects.invitations.invite';
-    public const ROUTE_NAME_ACCEPT_INVITATION  = 'projects.invitations.accept';
-    public const ROUTE_NAME_DECLINE_INVITATION = 'projects.invitations.decline';
+    public const ROUTE_NAME_REMOVE_MEMBER      = 'projects.members.remove';
 
     private const RESPONSE_PARAMETER_PROJECT    = 'project';
     private const RESPONSE_PARAMETER_PROJECTS   = 'projects';
@@ -76,6 +75,13 @@ final class ProjectsController extends Controller
                 )
                 ->getValues()
         ]);
+    }
+
+    public function removeMember(ProjectModel $project, UserModel $user): JsonResponse
+    {
+        $this->projectManager->removeMember($project, $user);
+
+        return $this->getResponseFactory()->json([], JsonResponse::HTTP_NO_CONTENT);
     }
 
     //endregion

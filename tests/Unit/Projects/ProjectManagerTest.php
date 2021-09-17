@@ -3,36 +3,38 @@
 namespace Tests\Unit\Projects;
 
 use App\Models\Exceptions\ModelNotFoundException;
+use App\Projects\Invites\Exceptions\UserNotMemberException;
+use App\Projects\MemberRepository;
 use App\Projects\MetaDataElementModelFactory;
-use App\Projects\MetaDataElementRepository;
 use App\Projects\ProjectManager;
 use App\Projects\ProjectModelFactory;
 use App\Projects\ProjectRepository;
 use Doctrine\Common\Collections\ArrayCollection;
-use Illuminate\Support\Arr;
 use Tests\Helper\ModelHelper;
 use Tests\Helper\ProjectHelper;
 use Tests\Helper\UsersHelper;
 use Tests\TestCase;
 
-/**
- * Class ProjectManagerTest
- *
- * @package Tests\Unit\Projects
- */
 final class ProjectManagerTest extends TestCase
 {
     use ModelHelper;
     use ProjectHelper;
     use UsersHelper;
 
-    //region Tests
+    private function getProjectManager(
+        ProjectRepository $projectRepository = null,
+        ProjectModelFactory $projectModelFactory = null,
+        MetaDataElementModelFactory $metaDataElementModelFactory = null,
+        MemberRepository $memberRepository = null
+    ): ProjectManager {
+        return new ProjectManager(
+            $projectRepository ?: $this->createProjectRepository(),
+            $projectModelFactory ?: $this->createProjectModelFactory(),
+            $metaDataElementModelFactory ?: $this->createMetaDataElementModelFactory(),
+            $memberRepository ?: $this->createMemberRepository()
+        );
+    }
 
-    /**
-     * @param bool $withOptionalMetaDataElementProperties
-     *
-     * @return array
-     */
     private function setUpCreateProjectTest(bool $withOptionalMetaDataElementProperties = true): array
     {
         $name = $this->getFaker()->word;
@@ -81,9 +83,6 @@ final class ProjectManagerTest extends TestCase
         ];
     }
 
-    /**
-     * @return void
-     */
     public function testCreateProject(): void
     {
         /** @var ProjectManager $projectManager */
@@ -92,9 +91,6 @@ final class ProjectManagerTest extends TestCase
         $this->assertEquals($project, $projectManager->createProject($name, $description, $metaDataElements));
     }
 
-    /**
-     * @return void
-     */
     public function testCreateProjectWithoutOptionalMetaDataElementProperties(): void
     {
         /** @var ProjectManager $projectManager */
@@ -103,11 +99,6 @@ final class ProjectManagerTest extends TestCase
         $this->assertEquals($project, $projectManager->createProject($name, $description, $metaDataElements));
     }
 
-    /**
-     * @param bool $withProject
-     *
-     * @return array
-     */
     private function setUpGetProjectTest(bool $withProject = true): array
     {
         $uuid = $this->getFaker()->uuid;
@@ -119,9 +110,6 @@ final class ProjectManagerTest extends TestCase
         return [$projectManager, $uuid, $project];
     }
 
-    /**
-     * @return void
-     */
     public function testGetProject(): void
     {
         /** @var ProjectManager $projectManager */
@@ -130,9 +118,6 @@ final class ProjectManagerTest extends TestCase
         $this->assertEquals($project, $projectManager->getProject($uuid));
     }
 
-    /**
-     * @return void
-     */
     public function testGetProjectWithoutProject(): void
     {
         /** @var ProjectManager $projectManager */
@@ -143,24 +128,44 @@ final class ProjectManagerTest extends TestCase
         $projectManager->getProject($uuid);
     }
 
-    //endregion
+    private function setUpRemoveMemberTest(bool $userIsMember = true): array
+    {
+        $user = $this->createUserModel();
+        $this->mockModelGetId($user, $this->getFaker()->numberBetween(1));
+        $otherUser = $this->createUserModel();
+        $this->mockModelGetId($otherUser, $user->getId() + 1);
+        $member = $this->createMemberModel();
+        $this->mockMemberModelGetUser($member, $user);
+        $otherMember = $this->createMemberModel();
+        $this->mockMemberModelGetUser($otherMember, $otherUser);
+        $members = [$otherMember];
+        if ($userIsMember) {
+            $members[] = $member;
+        }
+        $project = $this->createProjectModel();
+        $this->mockProjectModelGetMembers($project, new ArrayCollection($members));
+        $memberRepository = $this->createMemberRepository();
+        $projectManager = $this->getProjectManager(null, null, null, $memberRepository);
 
-    /**
-     * @param ProjectRepository|null           $projectRepository
-     * @param ProjectModelFactory|null         $projectModelFactory
-     * @param MetaDataElementModelFactory|null $metaDataElementModelFactory
-     *
-     * @return ProjectManager
-     */
-    private function getProjectManager(
-        ProjectRepository $projectRepository = null,
-        ProjectModelFactory $projectModelFactory = null,
-        MetaDataElementModelFactory $metaDataElementModelFactory = null
-    ): ProjectManager {
-        return new ProjectManager(
-            $projectRepository ?: $this->createProjectRepository(),
-            $projectModelFactory ?: $this->createProjectModelFactory(),
-            $metaDataElementModelFactory ?: $this->createMetaDataElementModelFactory()
-        );
+        return [$projectManager, $project, $user, $memberRepository, $member];
+    }
+
+    public function testRemoveMember(): void
+    {
+        /** @var ProjectManager $projectManager */
+        [$projectManager, $project, $user, $memberRepository, $member] = $this->setUpRemoveMemberTest();
+
+        $this->assertEquals($project, $projectManager->removeMember($project, $user));
+        $this->assertRepositoryDelete($memberRepository, $member);
+    }
+
+    public function testRemoveMemberWithoutMemberFound(): void
+    {
+        /** @var ProjectManager $projectManager */
+        [$projectManager, $project, $user] = $this->setUpRemoveMemberTest(false);
+
+        $this->expectException(UserNotMemberException::class);
+
+        $projectManager->removeMember($project, $user);
     }
 }

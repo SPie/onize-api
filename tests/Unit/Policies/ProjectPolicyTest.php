@@ -9,21 +9,16 @@ use Tests\Helper\ProjectHelper;
 use Tests\Helper\UsersHelper;
 use Tests\TestCase;
 
-/**
- * Class ProjectPolicyTest
- *
- * @package Tests\Unit\Policies
- */
 final class ProjectPolicyTest extends TestCase
 {
     use ProjectHelper;
     use UsersHelper;
 
-    //region Tests
+    private function getProjectPolicy(RoleManager $roleManager = null): ProjectPolicy
+    {
+        return new ProjectPolicy($roleManager ?: $this->createRoleManager());
+    }
 
-    /**
-     * @return array
-     */
     private function setUpShowTest(bool $allowed = true): array
     {
         $project = $this->createProjectModel();
@@ -34,9 +29,6 @@ final class ProjectPolicyTest extends TestCase
         return [$projectPolicy, $user, $project];
     }
 
-    /**
-     * @return void
-     */
     public function testShowForMember(): void
     {
         /** @var ProjectPolicy $projectPolicy */
@@ -45,9 +37,6 @@ final class ProjectPolicyTest extends TestCase
         $this->assertTrue($projectPolicy->show($user, $project));
     }
 
-    /**
-     * @return void
-     */
     public function testShowForGuest(): void
     {
         /** @var ProjectPolicy $projectPolicy */
@@ -56,11 +45,6 @@ final class ProjectPolicyTest extends TestCase
         $this->assertFalse($projectPolicy->show($user, $project));
     }
 
-    /**
-     * @param bool $allowed
-     *
-     * @return array
-     */
     private function setUpMembersTest(bool $allowed = true): array
     {
         $user = $this->createUserModel();
@@ -78,9 +62,6 @@ final class ProjectPolicyTest extends TestCase
         return [$projectPolicy, $user, $project];
     }
 
-    /**
-     * @return void
-     */
     public function testMembers(): void
     {
         /** @var ProjectPolicy $projectPolicy */
@@ -89,9 +70,6 @@ final class ProjectPolicyTest extends TestCase
         $this->assertTrue($projectPolicy->members($user, $project));
     }
 
-    /**
-     * @return void
-     */
     public function testMembersWithoutPermission(): void
     {
         /** @var ProjectPolicy $projectPolicy */
@@ -100,15 +78,71 @@ final class ProjectPolicyTest extends TestCase
         $this->assertFalse($projectPolicy->members($user, $project));
     }
 
-    //endregion
+    private function setUpRemoveMemberTest(
+        bool $allowed = true,
+        bool $memberIsOwner = false,
+        bool $authenticatedUserIsOwner = false,
+        bool $userIsMember = true
+    ): array {
+        $role = $this->createRoleModel();
+        $this->mockRoleModelIsOwner($role, $authenticatedUserIsOwner);
+        $project = $this->createProjectModel();
+        $user = $this->createUserModel();
+        $this->mockUserModelGetRoleForProject($user, $role, $project);
+        $memberRole = $this->createRoleModel();
+        $this->mockRoleModelIsOwner($memberRole, $memberIsOwner);
+        $memberUser = $this->createUserModel();
+        $this->mockUserModelGetRoleForProject($memberUser, $userIsMember ? $memberRole : null, $project);
+        $roleManager = $this->createRoleManager();
+        $this->mockRoleManagerHasPermissionForAction(
+            $roleManager,
+            $allowed,
+            $project,
+            $user,
+            PermissionModel::PERMISSION_PROJECTS_MEMBER_MANAGEMENT
+        );
+        $projectPolicy = $this->getProjectPolicy($roleManager);
 
-    /**
-     * @param RoleManager|null $roleManager
-     *
-     * @return ProjectPolicy
-     */
-    private function getProjectPolicy(RoleManager $roleManager = null): ProjectPolicy
+        return [$projectPolicy, $user, $project, $memberUser];
+    }
+
+    public function testRemoveMember(): void
     {
-        return new ProjectPolicy($roleManager ?: $this->createRoleManager());
+        /** @var ProjectPolicy $projectPolicy */
+        [$projectPolicy, $user, $project, $member] = $this->setUpRemoveMemberTest();
+
+        $this->assertTrue($projectPolicy->removeMember($user, $project, $member));
+    }
+
+    public function testRemoveMembersWithoutPermission(): void
+    {
+        /** @var ProjectPolicy $projectPolicy */
+        [$projectPolicy, $user, $project, $member] = $this->setUpRemoveMemberTest(allowed: false);
+
+        $this->assertFalse($projectPolicy->removeMember($user, $project, $member));
+    }
+
+    public function testRemoveMemberWithRemovingOwner(): void
+    {
+        /** @var ProjectPolicy $projectPolicy */
+        [$projectPolicy, $user, $project, $member] = $this->setUpRemoveMemberTest(memberIsOwner: true);
+
+        $this->assertFalse($projectPolicy->removeMember($user, $project, $member));
+    }
+
+    public function testRemoveMemberWithRemovingOwnerAndAuthenticatedUserIsOwner(): void
+    {
+        /** @var ProjectPolicy $projectPolicy */
+        [$projectPolicy, $user, $project, $member] = $this->setUpRemoveMemberTest(memberIsOwner: true, authenticatedUserIsOwner: true);
+
+        $this->assertTrue($projectPolicy->removeMember($user, $project, $member));
+    }
+
+    public function testRemoveMemberWithUserNotMemberOfProject(): void
+    {
+        /** @var ProjectPolicy $projectPolicy */
+        [$projectPolicy, $user, $project, $member] = $this->setUpRemoveMemberTest(userIsMember: false);
+
+        $this->assertTrue($projectPolicy->removeMember($user, $project, $member));
     }
 }

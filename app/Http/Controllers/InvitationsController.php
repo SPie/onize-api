@@ -13,6 +13,10 @@ use Illuminate\Http\JsonResponse;
 
 final class InvitationsController extends Controller
 {
+    public const ROUTE_NAME_INVITE             = 'projects.invitations.invite';
+    public const ROUTE_NAME_ACCEPT_INVITATION  = 'projects.invitations.accept';
+    public const ROUTE_NAME_DECLINE_INVITATION = 'projects.invitations.decline';
+
     private const RESPONSE_PARAMETER_INVITATION = 'invitation';
 
     public function __construct(private InvitationManager $invitationManager, ResponseFactory $responseFactory)

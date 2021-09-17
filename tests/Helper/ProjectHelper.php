@@ -37,11 +37,6 @@ use Doctrine\Common\Collections\Collection;
 use Mockery as m;
 use Mockery\MockInterface;
 
-/**
- * Trait ProjectHelper
- *
- * @package Tests\Helper
- */
 trait ProjectHelper
 {
     /**
@@ -52,12 +47,6 @@ trait ProjectHelper
         return m::spy(ProjectModel::class);
     }
 
-    /**
-     * @param ProjectModel|MockInterface $projectModel
-     * @param RoleModel                  $role
-     *
-     * @return $this
-     */
     private function mockProjectModelAddRole(MockInterface $projectModel, RoleModel $role): self
     {
         $projectModel
@@ -69,12 +58,6 @@ trait ProjectHelper
         return $this;
     }
 
-    /**
-     * @param ProjectModel|MockInterface $projectModel
-     * @param MetaDataElementModel       $metaDataElement
-     *
-     * @return $this
-     */
     private function mockProjectModelAddMetaDataElement(
         MockInterface $projectModel,
         MetaDataElementModel $metaDataElement
@@ -88,12 +71,6 @@ trait ProjectHelper
         return $this;
     }
 
-    /**
-     * @param ProjectModel|MockInterface $projectModel
-     * @param array                      $data
-     *
-     * @return $this
-     */
     private function mockProjectModelToArray(MockInterface $projectModel, array $data): self
     {
         $projectModel
@@ -103,12 +80,6 @@ trait ProjectHelper
         return $this;
     }
 
-    /**
-     * @param ProjectModel|MockInterface $projectModel
-     * @param MemberModel[]|Collection     $members
-     *
-     * @return $this
-     */
     private function mockProjectModelGetMembers(MockInterface $projectModel, Collection $members): self
     {
         $projectModel
@@ -118,12 +89,6 @@ trait ProjectHelper
         return $this;
     }
 
-    /**
-     * @param ProjectModel|MockInterface $projectModel
-     * @param MetaDataModel[]|Collection $metaData
-     *
-     * @return $this
-     */
     private function mockProjectModelGetMetaData(MockInterface $projectModel, Collection $metaData): self
     {
         $projectModel
@@ -133,13 +98,6 @@ trait ProjectHelper
         return $this;
     }
 
-    /**
-     * @param ProjectModel|MockInterface $projectModel
-     * @param bool                       $isMember
-     * @param string                     $email
-     *
-     * @return $this
-     */
     private function mockProjectModelHasMemberWithEmail(MockInterface $projectModel, bool $isMember, string $email): self
     {
         $projectModel
@@ -150,12 +108,6 @@ trait ProjectHelper
         return $this;
     }
 
-    /**
-     * @param ProjectModel|MockInterface        $projectModel
-     * @param MetaDataElementModel[]|Collection $metaDataElements
-     *
-     * @return $this
-     */
     private function mockProjectModelGetMetaDataElements(MockInterface $projectModel, Collection $metaDataElements): self
     {
         $projectModel
@@ -166,9 +118,6 @@ trait ProjectHelper
     }
 
     /**
-     * @param int   $times
-     * @param array $attributes
-     *
      * @return ProjectDoctrineModel[]|Collection
      */
     private function createProjectEntities(int $times = 1, array $attributes = []): Collection
@@ -184,15 +133,6 @@ trait ProjectHelper
         return m::spy(ProjectManager::class);
     }
 
-    /**
-     * @param ProjectManager|MockInterface $projectManager
-     * @param ProjectModel                 $project
-     * @param string                       $name
-     * @param string                       $description
-     * @param array                        $metaDataElements
-     *
-     * @return $this
-     */
     private function mockProjectManagerCreateProject(
         MockInterface $projectManager,
         ProjectModel $project,
@@ -208,13 +148,6 @@ trait ProjectHelper
         return $this;
     }
 
-    /**
-     * @param ProjectManager|MockInterface $projectManager
-     * @param ProjectModel|\Exception      $project
-     * @param string                       $uuid
-     *
-     * @return $this
-     */
     private function mockProjectManagerGetProject(MockInterface $projectManager, $project, string $uuid): self
     {
         $projectManager
@@ -225,22 +158,15 @@ trait ProjectHelper
         return $this;
     }
 
-    /**
-     * @param ProjectManager|MockInterface $projectManager
-     * @param UserModel[]|Collection       $members
-     * @param ProjectModel                 $project
-     *
-     * @return $this
-     */
-    private function mockProjectManagerGetProjectMembers(
+    private function assertProjectManagerRemoveMember(
         MockInterface $projectManager,
-        Collection $members,
-        ProjectModel $project
+        ProjectModel $project,
+        UserModel $user
     ): self {
         $projectManager
-            ->shouldReceive('getProjectMembers')
-            ->with($project)
-            ->andReturn($members);
+            ->shouldHaveReceived('removeMember')
+            ->with($project, $user)
+            ->once();
 
         return $this;
     }
@@ -253,13 +179,6 @@ trait ProjectHelper
         return m::spy(ProjectRepository::class);
     }
 
-    /**
-     * @param ProjectRepository|MockInterface $projectRepository
-     * @param ProjectModel|null               $project
-     * @param string                          $uuid
-     *
-     * @return $this
-     */
     private function mockProjectRepositoryFindOneByUuid(
         MockInterface $projectRepository,
         ?ProjectModel $project,
@@ -281,14 +200,6 @@ trait ProjectHelper
         return m::spy(ProjectModelFactory::class);
     }
 
-    /**
-     * @param ProjectModelFactory|MockInterface $projectModelFactory
-     * @param ProjectModel                      $projectModel
-     * @param string                            $name
-     * @param string                            $description
-     *
-     * @return $this
-     */
     private function mockProjectModelFactoryCreate(
         MockInterface $projectModelFactory,
         ProjectModel $projectModel,
@@ -311,45 +222,6 @@ trait ProjectHelper
         return m::spy(RoleModel::class);
     }
 
-    /**
-     * @param RoleModel|MockInterface $roleModel
-     * @param UserModel               $userModel
-     *
-     * @return $this
-     */
-    private function mockRoleModelAddUser(MockInterface $roleModel, UserModel $userModel): self
-    {
-        $roleModel
-            ->shouldReceive('addUser')
-            ->with($userModel)
-            ->andReturn($roleModel);
-
-        return $this;
-    }
-
-    /**
-     * @param RoleModel|MockInterface $roleModel
-     * @param UserModel               $userModel
-     *
-     * @return $this
-     */
-    private function assertRoleModelAddUser(MockInterface $roleModel, UserModel $userModel): self
-    {
-        $roleModel
-            ->shouldHaveReceived('addUser')
-            ->with($userModel)
-            ->once();
-
-        return $this;
-    }
-
-    /**
-     * @param RoleModel|MockInterface $roleModel
-     * @param array                   $data
-     * @param bool|null               $withProject
-     *
-     * @return $this
-     */
     private function mockRoleModelToArray(MockInterface $roleModel, array $data, bool $withProject = null): self
     {
         $arguments = [];
@@ -365,12 +237,6 @@ trait ProjectHelper
         return $this;
     }
 
-    /**
-     * @param RoleModel|MockInterface $roleModel
-     * @param ProjectModel            $project
-     *
-     * @return $this
-     */
     private function mockRoleModelGetProject(MockInterface $roleModel, ProjectModel $project): self
     {
         $roleModel
@@ -380,13 +246,6 @@ trait ProjectHelper
         return $this;
     }
 
-    /**
-     * @param RoleModel|MockInterface $roleModel
-     * @param bool                    $hasPermission
-     * @param string                  $permissionName
-     *
-     * @return $this
-     */
     private function mockRoleModelHasPermission(MockInterface $roleModel, bool $hasPermission, string $permissionName): self
     {
         $roleModel
@@ -397,12 +256,6 @@ trait ProjectHelper
         return $this;
     }
 
-    /**
-     * @param RoleModel|MockInterface $roleModel
-     * @param bool                    $owner
-     *
-     * @return $this
-     */
     private function mockRoleModelIsOwner(MockInterface $roleModel, bool $owner): self
     {
         $roleModel
@@ -412,12 +265,6 @@ trait ProjectHelper
         return $this;
     }
 
-    /**
-     * @param RoleModel|MockInterface  $roleModel
-     * @param MemberModel[]|Collection $members
-     *
-     * @return $this
-     */
     private function mockRoleModelGetMembers(MockInterface $roleModel, Collection $members): self
     {
         $roleModel
@@ -427,12 +274,6 @@ trait ProjectHelper
         return $this;
     }
 
-    /**
-     * @param RoleModel|MockInterface $roleModel
-     * @param MemberModel             $member
-     *
-     * @return $this
-     */
     private function mockRoleModelAddMember(MockInterface $roleModel, MemberModel $member): self
     {
         $roleModel
@@ -443,12 +284,6 @@ trait ProjectHelper
         return $this;
     }
 
-    /**
-     * @param RoleModel|MockInterface $roleModel
-     * @param MemberModel             $member
-     *
-     * @return $this
-     */
     private function assertRoleModelAddMember(MockInterface $roleModel, MemberModel $member): self
     {
         $roleModel
@@ -460,9 +295,6 @@ trait ProjectHelper
     }
 
     /**
-     * @param int   $times
-     * @param array $attributes
-     *
      * @return RoleDoctrineModel[]|Collection
      */
     private function createRoleEntities(int $times = 1, array $attributes = []): Collection
@@ -471,8 +303,6 @@ trait ProjectHelper
     }
 
     /**
-     * @param PermissionModel $permission
-     *
      * @return RoleModel
      */
     private function createRoleWithPermission(PermissionModel $permission): RoleModel
@@ -496,15 +326,6 @@ trait ProjectHelper
         return m::spy(RoleManager::class);
     }
 
-    /**
-     * @param RoleManager|MockInterface $roleManager
-     * @param RoleModel                 $role
-     * @param ProjectModel              $project
-     * @param UserModel                 $user
-     * @param array                     $metaData
-     *
-     * @return $this
-     */
     private function mockRoleManagerCreateOwnerRole(
         MockInterface $roleManager,
         RoleModel $role,
@@ -520,14 +341,6 @@ trait ProjectHelper
         return $this;
     }
 
-    /**
-     * @param RoleManager|MockInterface $roleManager
-     * @param ProjectModel              $project
-     * @param UserModel                 $user
-     * @param array                     $metaData
-     *
-     * @return $this
-     */
     private function assertRoleManagerCreateOwnerRole(
         MockInterface $roleManager,
         ProjectModel $project,
@@ -542,15 +355,6 @@ trait ProjectHelper
         return $this;
     }
 
-    /**
-     * @param RoleManager|MockInterface $roleManager
-     * @param bool                      $allowed
-     * @param ProjectModel              $project
-     * @param UserModel                 $user
-     * @param string                    $permission
-     *
-     * @return $this
-     */
     private function mockRoleManagerHasPermissionForAction(
         MockInterface $roleManager,
         bool $allowed,
@@ -566,13 +370,6 @@ trait ProjectHelper
         return $this;
     }
 
-    /**
-     * @param RoleManager|MockInterface $roleManager
-     * @param RoleModel|\Exception      $role
-     * @param string                    $uuid
-     *
-     * @return $this
-     */
     private function mockRoleManagerGetRole(MockInterface $roleManager, $role, string $uuid): self
     {
         $roleManager
@@ -591,12 +388,6 @@ trait ProjectHelper
         return m::spy(MetaDataElementModel::class);
     }
 
-    /**
-     * @param MetaDataElementModel|MockInterface $metaDataElementModel
-     * @param array                              $data
-     *
-     * @return $this
-     */
     private function mockMetaDataElementModelToArray(MockInterface $metaDataElementModel, array $data): self
     {
         $metaDataElementModel
@@ -606,12 +397,6 @@ trait ProjectHelper
         return $this;
     }
 
-    /**
-     * @param MetaDataElementModel|MockInterface $metaDataElementModel
-     * @param string                             $name
-     *
-     * @return $this
-     */
     private function mockMetaDataElementModelGetName(MockInterface $metaDataElementModel, string $name): self
     {
         $metaDataElementModel
@@ -621,12 +406,6 @@ trait ProjectHelper
         return $this;
     }
 
-    /**
-     * @param MetaDataElementModel|MockInterface $metaDataElementModel
-     * @param bool                               $required
-     *
-     * @return $this
-     */
     private function mockMetaDataElementModelIsRequired(MockInterface $metaDataElementModel, bool $required): self
     {
         $metaDataElementModel
@@ -636,12 +415,6 @@ trait ProjectHelper
         return $this;
     }
 
-    /**
-     * @param MetaDataElementModel|MockInterface $metaDataElementModel
-     * @param string                             $type
-     *
-     * @return $this
-     */
     private function mockMetaDataElementModelGetType(MockInterface $metaDataElementModel, string $type): self
     {
         $metaDataElementModel
@@ -652,14 +425,6 @@ trait ProjectHelper
     }
 
     /**
-     * @return MetaDataElementRepository|MockInterface
-     */
-    private function createMetaDataElementRepository(): MetaDataElementRepository
-    {
-        return m::spy(MetaDataElementRepository::class);
-    }
-
-    /**
      * @return MetaDataElementModelFactory|MockInterface
      */
     private function createMetaDataElementModelFactory(): MetaDataElementModelFactory
@@ -667,18 +432,6 @@ trait ProjectHelper
         return m::spy(MetaDataElementModelFactory::class);
     }
 
-    /**
-     * @param MetaDataElementModelFactory|MockInterface $metaDataElementModelFactory
-     * @param MetaDataElementModel                      $metaDataElementModel
-     * @param ProjectModel                              $project
-     * @param string                                    $name
-     * @param string                                    $label
-     * @param string                                    $type
-     * @param bool                                      $required
-     * @param bool                                      $inList
-     *
-     * @return $this
-     */
     private function mockMetaDataElementModelFactoryCreate(
         MockInterface $metaDataElementModelFactory,
         MetaDataElementModel $metaDataElementModel,
@@ -697,9 +450,6 @@ trait ProjectHelper
         return $this;
     }
 
-    /**
-     * @return string
-     */
     private function createRandomMetaDataElementType(): string
     {
         $types = [
@@ -720,13 +470,6 @@ trait ProjectHelper
         return m::spy(RoleRepository::class);
     }
 
-    /**
-     * @param RoleRepository|MockInterface $roleRepository
-     * @param RoleModel|null               $role
-     * @param string                       $uuid
-     *
-     * @return $this
-     */
     private function mockRoleRepositoryFindOneByUuid(MockInterface $roleRepository, ?RoleModel $role, string $uuid): self
     {
         $roleRepository
@@ -745,15 +488,6 @@ trait ProjectHelper
         return m::spy(RoleModelFactory::class);
     }
 
-    /**
-     * @param RoleModelFactory|MockInterface $roleModelFactory
-     * @param RoleModel                      $role
-     * @param ProjectModel                   $project
-     * @param string                         $label
-     * @param bool|null                      $owner
-     *
-     * @return $this
-     */
     private function mockRoleModelFactoryCreate(
         MockInterface $roleModelFactory,
         RoleModel $role,
@@ -775,59 +509,6 @@ trait ProjectHelper
     }
 
     /**
-     * @return MetaDataModel|MockInterface
-     */
-    private function createMetaDataModel(): MetaDataModel
-    {
-        return m::spy(MetaDataModel::class);
-    }
-
-    /**
-     * @param MetaDataModel|MockInterface $metaDataModel
-     * @param UserModel                   $user
-     *
-     * @return $this
-     */
-    private function mockMetaDataModelGetUser(MockInterface $metaDataModel, UserModel $user): self
-    {
-        $metaDataModel
-            ->shouldReceive('getUser')
-            ->andReturn($user);
-
-        return $this;
-    }
-
-    /**
-     * @param MetaDataModel|MockInterface $metaDataModel
-     * @param string                      $name
-     *
-     * @return $this
-     */
-    private function mockMetaDataModelGetName(MockInterface $metaDataModel, string $name): self
-    {
-        $metaDataModel
-            ->shouldReceive('getName')
-            ->andReturn($name);
-
-        return $this;
-    }
-
-    /**
-     * @param MetaDataModel|MockInterface $metaDataModel
-     * @param string                      $value
-     *
-     * @return $this
-     */
-    private function mockMetaDataModelGetValue(MockInterface $metaDataModel, string $value): self
-    {
-        $metaDataModel
-            ->shouldReceive('getValue')
-            ->andReturn($value);
-
-        return $this;
-    }
-
-    /**
      * @return PermissionModel|MockInterface
      */
     private function createPermissionModel(): PermissionModel
@@ -835,12 +516,6 @@ trait ProjectHelper
         return m::spy(PermissionModel::class);
     }
 
-    /**
-     * @param PermissionModel|MockInterface $permissionModel
-     * @param string                        $name
-     *
-     * @return $this
-     */
     private function mockPermissionModelGetName(MockInterface $permissionModel, string $name): self
     {
         $permissionModel
@@ -849,39 +524,16 @@ trait ProjectHelper
 
         return $this;
     }
-
-    /**
-     * @param int   $times
-     * @param array $attributes
-     *
-     * @return Collection
-     */
-    private function createPermissionEntities(int $times, array $attributes = []): Collection
-    {
-        return $this->createModelEntities(PermissionDoctrineModel::class, $times, $attributes);
-    }
-
-    /**
-     * @param string $name
-     *
-     * @return PermissionModel
-     */
     private function getConcretePermission(string $name): PermissionModel
     {
         return $this->app->get(PermissionRepository::class)->findOneBy([PermissionModel::PROPERTY_NAME => $name]);
     }
 
-    /**
-     * @return PermissionModel
-     */
     private function getProjectsMembersShowPermission(): PermissionModel
     {
         return $this->getConcretePermission(PermissionModel::PERMISSION_PROJECTS_MEMBERS_SHOW);
     }
 
-    /**
-     * @return PermissionModel
-     */
     private function getInvitationsManagementPermission(): PermissionModel
     {
         return $this->getConcretePermission(PermissionModel::PERMISSION_PROJECTS_INVITATIONS_MANAGEMENT);
@@ -895,12 +547,6 @@ trait ProjectHelper
         return m::spy(InvitationModel::class);
     }
 
-    /**
-     * @param InvitationModel|MockInterface $invitationModel
-     * @param array                         $data
-     *
-     * @return $this
-     */
     private function mockInvitationModelToArray(MockInterface $invitationModel, array $data): self
     {
         $invitationModel
@@ -910,12 +556,6 @@ trait ProjectHelper
         return $this;
     }
 
-    /**
-     * @param InvitationModel|MockInterface $invitationModel
-     * @param RoleModel                     $role
-     *
-     * @return $this
-     */
     private function mockInvitationModelGetRole(MockInterface $invitationModel, RoleModel $role): self
     {
         $invitationModel
@@ -925,12 +565,6 @@ trait ProjectHelper
         return $this;
     }
 
-    /**
-     * @param InvitationModel|MockInterface $invitationModel
-     * @param bool                          $expired
-     *
-     * @return $this
-     */
     private function mockInvitationModelIsExpired(MockInterface $invitationModel, bool $expired): self
     {
         $invitationModel
@@ -940,12 +574,6 @@ trait ProjectHelper
         return $this;
     }
 
-    /**
-     * @param InvitationModel|MockInterface $invitationModel
-     * @param \DateTimeImmutable|null       $acceptedAt
-     *
-     * @return $this
-     */
     private function mockInvitationModelGetAcceptedAt(MockInterface $invitationModel, ?\DateTimeImmutable $acceptedAt): self
     {
         $invitationModel
@@ -955,12 +583,6 @@ trait ProjectHelper
         return $this;
     }
 
-    /**
-     * @param InvitationModel|MockInterface $invitationModel
-     * @param \DateTimeImmutable|null       $declinedAt
-     *
-     * @return $this
-     */
     private function mockInvitationModelGetDeclinedAt(MockInterface $invitationModel, ?\DateTimeImmutable $declinedAt): self
     {
         $invitationModel
@@ -970,12 +592,6 @@ trait ProjectHelper
         return $this;
     }
 
-    /**
-     * @param InvitationModel|MockInterface $invitationModel
-     * @param string                        $email
-     *
-     * @return $this
-     */
     private function mockInvitationModelGetEmail(MockInterface $invitationModel, string $email): self
     {
         $invitationModel
@@ -1023,15 +639,6 @@ trait ProjectHelper
         return m::spy(InvitationModelFactory::class);
     }
 
-    /**
-     * @param InvitationModelFactory|MockInterface $invitationModelFactory
-     * @param InvitationModel                      $invitationModel
-     * @param RoleModel                            $role
-     * @param string                               $email
-     * @param array                                $metaData
-     *
-     * @return $this
-     */
     private function mockInvitationModelFactoryCreate(
         MockInterface $invitationModelFactory,
         InvitationModel $invitationModel,
@@ -1055,13 +662,6 @@ trait ProjectHelper
         return m::spy(InvitationRepository::class);
     }
 
-    /**
-     * @param InvitationRepository|MockInterface $invitationRepository
-     * @param InvitationModel|null               $invitation
-     * @param string                             $uuid
-     *
-     * @return $this
-     */
     private function mockInvitationRepositoryFindOneByUuid(
         MockInterface $invitationRepository,
         ?InvitationModel $invitation,
@@ -1083,15 +683,6 @@ trait ProjectHelper
         return m::spy(InvitationManager::class);
     }
 
-    /**
-     * @param InvitationManager|MockInterface $invitationManager
-     * @param InvitationModel|\Exception      $invitation
-     * @param RoleModel                       $role
-     * @param string                          $email
-     * @param array                           $metaData
-     *
-     * @return $this
-     */
     private function mockInvitationManagerInviteMember(
         MockInterface $invitationManager,
         $invitation,
@@ -1107,14 +698,6 @@ trait ProjectHelper
         return $this;
     }
 
-    /**
-     * @param InvitationManager|MockInterface $invitationManager
-     * @param InvitationModel                 $invitation
-     * @param UserModel                       $user
-     * @param array                           $metaData
-     *
-     * @return $this
-     */
     private function assertInvitationManagerAcceptInvitation(
         MockInterface $invitationManager,
         InvitationModel $invitation,
@@ -1129,13 +712,6 @@ trait ProjectHelper
         return $this;
     }
 
-    /**
-     * @param InvitationManager|MockInterface $invitationManager
-     * @param InvitationModel|\Exception      $invitation
-     * @param string                          $uuid
-     *
-     * @return $this
-     */
     private function mockInvitationManagerGetInvitation(MockInterface $invitationManager, $invitation, string $uuid): self
     {
         $invitationManager
@@ -1159,9 +735,6 @@ trait ProjectHelper
     }
 
     /**
-     * @param int   $times
-     * @param array $attributes
-     *
      * @return InvitationModel[]|Collection
      */
     private function createInvitationEntities(int $times = 1, array $attributes = []): Collection
@@ -1177,14 +750,6 @@ trait ProjectHelper
         return m::spy(MetaDataManager::class);
     }
 
-    /**
-     * @param MetaDataManager|MockInterface $metaDataManager
-     * @param array                         $validationErrors
-     * @param ProjectModel                  $project
-     * @param array                         $metaData
-     *
-     * @return $this
-     */
     private function mockMetaDataManagerValidateMetaData(
         MockInterface $metaDataManager,
         array $validationErrors,
@@ -1207,13 +772,6 @@ trait ProjectHelper
         return m::spy(MetaDataValidator::class);
     }
 
-    /**
-     * @param MetaDataValidator|MockInterface $metaDataValidator
-     * @param bool                            $valid
-     * @param mixed                           $value
-     *
-     * @return $this
-     */
     private function mockMetaDataValidatorIsValidString(MockInterface $metaDataValidator, bool $valid, $value): self
     {
         $metaDataValidator
@@ -1224,13 +782,6 @@ trait ProjectHelper
         return $this;
     }
 
-    /**
-     * @param MetaDataValidator|MockInterface $metaDataValidator
-     * @param bool                            $valid
-     * @param mixed                           $value
-     *
-     * @return $this
-     */
     private function mockMetaDataValidatorIsValidEmail(MockInterface $metaDataValidator, bool $valid, $value): self
     {
         $metaDataValidator
@@ -1241,13 +792,6 @@ trait ProjectHelper
         return $this;
     }
 
-    /**
-     * @param MetaDataValidator|MockInterface $metaDataValidator
-     * @param bool                            $valid
-     * @param mixed                           $value
-     *
-     * @return $this
-     */
     private function mockMetaDataValidatorIsValidNumeric(MockInterface $metaDataValidator, bool $valid, $value): self
     {
         $metaDataValidator
@@ -1258,13 +802,6 @@ trait ProjectHelper
         return $this;
     }
 
-    /**
-     * @param MetaDataValidator|MockInterface $metaDataValidator
-     * @param bool                            $valid
-     * @param mixed                           $value
-     *
-     * @return $this
-     */
     private function mockMetaDataValidatorIsValidDateTime(MockInterface $metaDataValidator, bool $valid, $value): self
     {
         $metaDataValidator
@@ -1276,9 +813,6 @@ trait ProjectHelper
     }
 
     /**
-     * @param int   $times
-     * @param array $attributes
-     *
      * @return MetaDataElementModel[]|Collection
      */
     private function createMetaDataElementEntities(int $times = 1, array $attributes = []): Collection
@@ -1294,12 +828,6 @@ trait ProjectHelper
         return m::spy(MemberModel::class);
     }
 
-    /**
-     * @param UserModel|MockInterface $memberModel
-     * @param RoleModel               $role
-     *
-     * @return $this
-     */
     private function mockMemberModelGetRole(MockInterface $memberModel, RoleModel $role): self
     {
         $memberModel
@@ -1309,12 +837,6 @@ trait ProjectHelper
         return $this;
     }
 
-    /**
-     * @param MemberModel|MockInterface $memberModel
-     * @param array                     $metaData
-     *
-     * @return $this
-     */
     private function mockMemberModelGetMetaData(MockInterface $memberModel, array $metaData): self
     {
         $memberModel
@@ -1324,12 +846,6 @@ trait ProjectHelper
         return $this;
     }
 
-    /**
-     * @param MemberModel|MockInterface $memberModel
-     * @param UserModel                 $user
-     *
-     * @return $this
-     */
     private function mockMemberModelGetUser(MockInterface $memberModel, UserModel $user): self
     {
         $memberModel
@@ -1340,9 +856,6 @@ trait ProjectHelper
     }
 
     /**
-     * @param int   $times
-     * @param array $attributes
-     *
      * @return MemberModel[]|Collection
      */
     private function createMemberEntities(int $times = 1, array $attributes = []): Collection
@@ -1358,15 +871,6 @@ trait ProjectHelper
         return m::spy(MemberModelFactory::class);
     }
 
-    /**
-     * @param MemberModelFactory|MockInterface $memberModelFactory
-     * @param MemberModel                      $member
-     * @param UserModel                        $user
-     * @param RoleModel                        $role
-     * @param array                            $metaData
-     *
-     * @return $this
-     */
     private function mockMemberModelFactoryCreate(
         MockInterface $memberModelFactory,
         MemberModel $member,

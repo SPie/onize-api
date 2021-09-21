@@ -145,4 +145,37 @@ final class ProjectPolicyTest extends TestCase
 
         $this->assertTrue($projectPolicy->removeMember($user, $project, $member));
     }
+
+    private function setUpInviteTest(bool $allowed = true): array
+    {
+        $user = $this->createUserModel();
+        $project = $this->createProjectModel();
+        $roleManager = $this->createRoleManager();
+        $this->mockRoleManagerHasPermissionForAction(
+            $roleManager,
+            $allowed,
+            $project,
+            $user,
+            PermissionModel::PERMISSION_PROJECTS_INVITATIONS_MANAGEMENT
+        );
+        $projectPolicy = $this->getProjectPolicy($roleManager);
+
+        return [$projectPolicy, $user, $project];
+    }
+
+    public function testInvite(): void
+    {
+        /** @var ProjectPolicy $projectPolicy */
+        [$projectPolicy, $user, $project] = $this->setUpInviteTest();
+
+        $this->assertTrue($projectPolicy->invite($user, $project));
+    }
+
+    public function testInviteWithoutPermission(): void
+    {
+        /** @var ProjectPolicy $projectPolicy */
+        [$projectPolicy, $user, $project] = $this->setUpInviteTest(allowed: false);
+
+        $this->assertFalse($projectPolicy->invite($user, $project));
+    }
 }

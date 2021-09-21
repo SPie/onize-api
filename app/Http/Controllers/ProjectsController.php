@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Auth\AuthManager;
+use App\Http\Requests\Projects\ChangeRole;
 use App\Http\Requests\Projects\Create;
 use App\Projects\MemberModel;
 use App\Projects\ProjectManager;
@@ -28,8 +29,6 @@ final class ProjectsController extends Controller
     {
         parent::__construct($responseFactory);
     }
-
-    //region Controller actions
 
     public function create(Create $request, AuthManager $authManager, RoleManager $roleManager): JsonResponse
     {
@@ -84,5 +83,8 @@ final class ProjectsController extends Controller
         return $this->getResponseFactory()->json([], JsonResponse::HTTP_NO_CONTENT);
     }
 
-    //endregion
+    public function changeRole(UserModel $user, ChangeRole $request): JsonResponse
+    {
+        // TODO
+    }
 }

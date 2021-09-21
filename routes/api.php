@@ -48,8 +48,8 @@ $router->group(['middleware' => 'auth'], function (Router $router) {
 
         $router->get('{project}')->name(ProjectsController::ROUTE_NAME_SHOW)->middleware('can:show,project')->uses('ProjectsController@show');
 
-        $router->post('{role}/invitations')->name(InvitationsController::ROUTE_NAME_INVITE)
-            ->middleware('can:invite,role')
+        $router->post('{project}/invitations')->name(InvitationsController::ROUTE_NAME_INVITE)
+            ->middleware('can:invite,project')
             ->uses('InvitationsController@invite');
         $router->post('invitations/{invitation}')->name(InvitationsController::ROUTE_NAME_ACCEPT_INVITATION)
             ->middleware('can:accept,invitation')

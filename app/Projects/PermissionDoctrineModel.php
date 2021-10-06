@@ -42,13 +42,6 @@ final class PermissionDoctrineModel extends AbstractDoctrineModel implements Per
      */
     private Collection $roles;
 
-    /**
-     * PermissionDoctrineModel constructor.
-     *
-     * @param string $name
-     * @param string $description
-     * @param array  $roles
-     */
     public function __construct(string $name, string $description, array $roles = [])
     {
         $this->name = $name;
@@ -56,27 +49,16 @@ final class PermissionDoctrineModel extends AbstractDoctrineModel implements Per
         $this->roles = new ArrayCollection($roles);
     }
 
-    /**
-     * @return string
-     */
     public function getName(): string
     {
         return $this->name;
     }
 
-    /**
-     * @return string
-     */
     public function getDescription(): string
     {
         return $this->description;
     }
 
-    /**
-     * @param array $roles
-     *
-     * @return PermissionModel
-     */
     public function setRoles(array $roles): PermissionModel
     {
         $this->roles = new ArrayCollection($roles);
@@ -84,11 +66,6 @@ final class PermissionDoctrineModel extends AbstractDoctrineModel implements Per
         return $this;
     }
 
-    /**
-     * @param RoleModel $role
-     *
-     * @return PermissionModel
-     */
     public function addRole(RoleModel $role): PermissionModel
     {
         if (!$this->roles->contains($role)) {
@@ -98,9 +75,6 @@ final class PermissionDoctrineModel extends AbstractDoctrineModel implements Per
         return $this;
     }
 
-    /**
-     * @return Collection
-     */
     public function getRoles(): Collection
     {
         return $this->roles;

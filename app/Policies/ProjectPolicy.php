@@ -49,4 +49,13 @@ final class ProjectPolicy
             PermissionModel::PERMISSION_PROJECTS_INVITATIONS_MANAGEMENT
         );
     }
+
+    public function createRole(UserModel $user, ProjectModel $project): bool
+    {
+        return $this->roleManager->hasPermissionForAction(
+            $project,
+            $user,
+            PermissionModel::PERMISSION_PROJECTS_ROLES_MANAGEMENT
+        );
+    }
 }

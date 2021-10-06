@@ -4,8 +4,11 @@ namespace Tests\Unit\Http\Controllers;
 
 use App\Http\Controllers\ProjectsController;
 use App\Http\Requests\Projects\Create;
+use App\Http\Requests\Projects\CreateRole;
 use App\Projects\ProjectManager;
+use App\Projects\ProjectModel;
 use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
 use Illuminate\Contracts\Routing\ResponseFactory;
 use Mockery as m;
 use Mockery\MockInterface;
@@ -53,6 +56,22 @@ final class ProjectsControllerTest extends TestCase
             ->getMock()
             ->shouldReceive('getMetaData')
             ->andReturn($metaData)
+            ->getMock();
+    }
+
+    /**
+     * @return CreateRole|MockInterface
+     */
+    private function createCreateRoleRequest(
+        string $label = null,
+        Collection $permissions = null
+    ): CreateRole {
+        return m::spy(CreateRole::class)
+            ->shouldReceive('getLabel')
+            ->andReturn($label ?: $this->getFaker()->word)
+            ->getMock()
+            ->shouldReceive('getPermissions')
+            ->andReturn($permissions ?: new ArrayCollection([]))
             ->getMock();
     }
 
@@ -207,5 +226,26 @@ final class ProjectsControllerTest extends TestCase
 
         $this->assertEquals($jsonResponse, $this->getProjectsController($projectManager, $responseFactory)->removeMember($project, $user));
         $this->assertProjectManagerRemoveMember($projectManager, $project, $user);
+    }
+
+    public function testCreateRole(): void
+    {
+        $project = $this->createProjectModel();
+        $label = $this->getFaker()->word;
+        $permissions = new ArrayCollection([$this->createPermissionModel()]);
+        $request = $this->createCreateRoleRequest($label, $permissions);
+        $roleData = [$this->getFaker()->word => $this->getFaker()->word];
+        $role = $this->createRoleModel();
+        $this->mockRoleModelToArray($role, $roleData);
+        $roleManager = $this->createRoleManager();
+        $this->mockRoleManagerCreateRole($roleManager, $role, $project, $label, $permissions);
+        $response = $this->createJsonResponse();
+        $responseFactory = $this->createResponseFactory();
+        $this->mockResponseFactoryJson($responseFactory, $response, ['role' => $roleData], 201);
+
+        $this->assertEquals(
+            $response,
+            $this->getProjectsController(null, $responseFactory)->createRole($project, $request, $roleManager)
+        );
     }
 }

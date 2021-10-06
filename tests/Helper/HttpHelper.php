@@ -4,11 +4,15 @@ namespace Tests\Helper;
 
 use App\Http\Requests\Auth\Authenticate;
 use App\Http\Requests\Users\UpdatePassword;
+use App\Http\Rules\PermissionsExist;
+use App\Http\Rules\ProjectExists;
 use App\Http\Rules\RoleExists;
 use App\Http\Rules\UniqueUser;
 use App\Http\Rules\ValidMetaData;
 use App\Projects\ProjectModel;
 use App\Projects\RoleModel;
+use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
 use Illuminate\Contracts\Routing\Registrar;
 use Illuminate\Contracts\Routing\ResponseFactory;
 use Illuminate\Contracts\Support\MessageBag;
@@ -372,5 +376,27 @@ trait HttpHelper
             ->once();
 
         return $this;
+    }
+
+    /**
+     * @return ProjectExists|MockInterface
+     */
+    private function createProjectExistsRule(ProjectModel $project = null): ProjectExists
+    {
+        return m::spy(ProjectExists::class)
+            ->shouldReceive('getProject')
+            ->andReturn($project ?: $this->createProjectModel())
+            ->getMock();
+    }
+
+    /**
+     * @return PermissionsExist|MockInterface
+     */
+    private function createPermissionsExistRule(Collection $permissions = null): PermissionsExist
+    {
+        return m::spy(PermissionsExist::class)
+            ->shouldReceive('getPermissions')
+            ->andReturn($permissions ?: new ArrayCollection([]))
+            ->getMock();
     }
 }

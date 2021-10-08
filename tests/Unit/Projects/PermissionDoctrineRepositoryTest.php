@@ -26,7 +26,8 @@ final class PermissionDoctrineRepositoryTest extends TestCase
         $databaseHandler = $this->createDatabaseHandler();
         $this->mockDatabaseHandlerLoadAll(
             $databaseHandler,
-            new ArrayCollection([$permission]), ['name' => [$name]],
+            new ArrayCollection([$permission]),
+            ['name' => [$name]],
             null,
             null,
             null

@@ -3,36 +3,29 @@
 namespace App\Http\Rules;
 
 use App\Models\Exceptions\ModelNotFoundException;
+use App\Projects\ProjectModel;
 use App\Projects\RoleManager;
 use App\Projects\RoleModel;
 use Illuminate\Contracts\Validation\Rule;
 
-/**
- * Class RoleExists
- *
- * @package App\Http\Rules
- */
 class RoleExists implements Rule
 {
-    /**
-     * @var RoleManager
-     */
-    private RoleManager $roleManager;
 
-    /**
-     * @var RoleModel|null
-     */
     private ?RoleModel $role;
 
-    /**
-     * RoleExists constructor.
-     *
-     * @param RoleManager $roleManager
-     */
-    public function __construct(RoleManager $roleManager)
+    private ?ProjectModel $project;
+
+    public function __construct(private RoleManager $roleManager)
     {
-        $this->roleManager = $roleManager;
         $this->role = null;
+        $this->project = null;
+    }
+
+    public function setProject(ProjectModel $project): self
+    {
+        $this->project = $project;
+
+        return $this;
     }
 
     /**
@@ -44,10 +37,16 @@ class RoleExists implements Rule
     public function passes($attribute, $value)
     {
         try {
-            $this->role = $this->roleManager->getRole($value);
+            $role = $this->roleManager->getRole($value);
         } catch (ModelNotFoundException $e) {
             return false;
         }
+
+        if ($this->project && $this->project->getId() !== $role->getProject()->getId()) {
+            return false;
+        }
+
+        $this->role = $role;
 
         return true;
     }
@@ -60,9 +59,6 @@ class RoleExists implements Rule
         return 'validation.role-not-found';
     }
 
-    /**
-     * @return RoleModel|null
-     */
     public function getRole(): ?RoleModel
     {
         return $this->role;

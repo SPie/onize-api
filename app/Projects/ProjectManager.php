@@ -3,7 +3,7 @@
 namespace App\Projects;
 
 use App\Models\Exceptions\ModelNotFoundException;
-use App\Projects\Invites\Exceptions\UserNotMemberException;
+use App\Projects\Exceptions\UserIsNoMemberException;
 use App\Users\UserModel;
 
 class ProjectManager
@@ -12,7 +12,8 @@ class ProjectManager
         private ProjectRepository $projectRepository,
         private ProjectModelFactory $projectModelFactory,
         private MetaDataElementModelFactory $metaDataElementModelFactory,
-        private MemberRepository $memberRepository
+        private MemberRepository $memberRepository,
+        private MemberModelFactory $memberModelFactory
     ) {
     }
 
@@ -48,19 +49,28 @@ class ProjectManager
 
     public function removeMember(ProjectModel $project, UserModel $user): ProjectModel
     {
-        foreach ($project->getMembers() as $member) {
-            if ($member->getUser()->getId() === $user->getId()) {
-                $this->memberRepository->delete($member);
-
-                return $project;
-            }
+        $member = $user->getMemberOfProject($project);
+        if (!$member) {
+            throw new UserIsNoMemberException(\sprintf('User %s is no member of project %s', $user->getUuid(), $project->getUuid()));
         }
 
-        throw new UserNotMemberException(\sprintf('User %s is no member of project %s', $user->getUuid(), $project->getUuid()));
+        $this->memberRepository->delete($member);
+
+        return $project;
     }
 
     public function changeRole(UserModel $user, RoleModel $role): UserModel
     {
-        // TODO
+        $member = $user->getMemberOfProject($role->getProject());
+        if (!$member) {
+            throw new UserIsNoMemberException(\sprintf('User %s is no member of project %s', $user->getUuid(), $role->getProject()->getUuid()));
+        }
+
+        $newMember = $this->memberModelFactory->create($user, $role, $member->getMetaData());
+
+        $this->memberRepository->delete($member);
+        $this->memberRepository->save($newMember);
+
+        return $user->addMember($newMember);
     }
 }

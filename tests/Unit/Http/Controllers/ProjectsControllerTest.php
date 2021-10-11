@@ -208,4 +208,18 @@ final class ProjectsControllerTest extends TestCase
         $this->assertEquals($jsonResponse, $this->getProjectsController($projectManager, $responseFactory)->removeMember($project, $user));
         $this->assertProjectManagerRemoveMember($projectManager, $project, $user);
     }
+
+    public function testChangeRole(): void
+    {
+        $user = $this->createUserModel();
+        $role = $this->createRoleModel();
+        $request = $this->createChangeRoleRequest($user, $role);
+        $projectManager = $this->createProjectManager();
+        $response = $this->createJsonResponse();
+        $responseFactory = $this->createResponseFactory();
+        $this->mockResponseFactoryJson($responseFactory, $response, [], 204);
+
+        $this->assertEquals($response, $this->getProjectsController($projectManager, $responseFactory)->changeRole($request));
+        $this->assertProjectManagerChangeRole($projectManager, $user, $role);
+    }
 }

@@ -46,7 +46,8 @@ $router->group(['middleware' => 'auth'], function (Router $router) {
             ->middleware('can:removeMember,project,user')
             ->uses('ProjectsController@removeMember');
 
-        $router->get('{project}')->name(ProjectsController::ROUTE_NAME_SHOW)->middleware('can:show,project')->uses('ProjectsController@show');
+        $router->put('{project}/roles')->name(ProjectsController::ROUTE_NAME_CHANGE_ROLE)
+            ->uses('ProjectsController@changeRole');
 
         $router->post('{project}/invitations')->name(InvitationsController::ROUTE_NAME_INVITE)
             ->middleware('can:invite,project')
@@ -57,5 +58,7 @@ $router->group(['middleware' => 'auth'], function (Router $router) {
         $router->delete('invitations/{invitation}')->name(InvitationsController::ROUTE_NAME_DECLINE_INVITATION)
             ->middleware('can:decline,invitation')
             ->uses('InvitationsController@declineInvitation');
+
+        $router->get('{project}')->name(ProjectsController::ROUTE_NAME_SHOW)->middleware('can:show,project')->uses('ProjectsController@show');
     });
 });

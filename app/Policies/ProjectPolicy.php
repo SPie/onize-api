@@ -49,4 +49,9 @@ final class ProjectPolicy
             PermissionModel::PERMISSION_PROJECTS_INVITATIONS_MANAGEMENT
         );
     }
+
+    public function changeRole(UserModel $user, ProjectModel $project): bool
+    {
+        // TODO
+    }
 }

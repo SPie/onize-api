@@ -3,12 +3,15 @@
 namespace Tests\Helper;
 
 use App\Http\Requests\Auth\Authenticate;
+use App\Http\Requests\Projects\ChangeRole;
 use App\Http\Requests\Users\UpdatePassword;
 use App\Http\Rules\RoleExists;
 use App\Http\Rules\UniqueUser;
+use App\Http\Rules\UserExistsAndIsMember;
 use App\Http\Rules\ValidMetaData;
 use App\Projects\ProjectModel;
 use App\Projects\RoleModel;
+use App\Users\UserModel;
 use Illuminate\Contracts\Routing\Registrar;
 use Illuminate\Contracts\Routing\ResponseFactory;
 use Illuminate\Contracts\Support\MessageBag;
@@ -341,17 +344,21 @@ trait HttpHelper
         return m::spy(RoleExists::class);
     }
 
-    /**
-     * @param RoleExists|MockInterface $roleExists
-     * @param RoleModel                $role
-     *
-     * @return $this
-     */
     private function mockRoleExistsRuleGetRole(MockInterface $roleExists, RoleModel $role): self
     {
         $roleExists
             ->shouldReceive('getRole')
             ->andReturn($role);
+
+        return $this;
+    }
+
+    private function assertRoleExistsRuleSetProject(MockInterface $roleExists, ProjectModel $project): self
+    {
+        $roleExists
+            ->shouldHaveReceived('setProject')
+            ->with($project)
+            ->once();
 
         return $this;
     }
@@ -364,12 +371,53 @@ trait HttpHelper
         return m::spy(ValidMetaData::class);
     }
 
-    private function mockValidMetaDataRuleSetProject(MockInterface $validMetaDataRule, ProjectModel $project): self
+    private function assertValidMetaDataRuleSetProject(MockInterface $validMetaDataRule, ProjectModel $project): self
     {
         $validMetaDataRule
-            ->shouldReceive('setProject')
+            ->shouldHaveReceived('setProject')
             ->with($project)
             ->once();
+
+        return $this;
+    }
+
+    /**
+     * @return ChangeRole|MockInterface
+     */
+    private function createChangeRoleRequest(UserModel $user, RoleModel $role): ChangeRole
+    {
+        return m::spy(ChangeRole::class)
+            ->shouldReceive('getUser')
+            ->andReturn($user)
+            ->getMock()
+            ->shouldReceive('getRole')
+            ->andReturn($role)
+            ->getMock();
+    }
+
+    /**
+     * @return UserExistsAndIsMember|MockInterface
+     */
+    private function createUserExistsAndIsMemberRule(): UserExistsAndIsMember
+    {
+        return m::spy(UserExistsAndIsMember::class);
+    }
+
+    private function assertUserExistsAndIsMemberRuleSetProject(MockInterface $rule, ProjectModel $project): self
+    {
+        $rule
+            ->shouldHaveReceived('setProject')
+            ->with($project)
+            ->once();
+
+        return $this;
+    }
+
+    private function mockUserExistsAndIsMemberRuleGetUser(MockInterface $rule, UserModel $user): self
+    {
+        $rule
+            ->shouldReceive('getUser')
+            ->andReturn($user);
 
         return $this;
     }

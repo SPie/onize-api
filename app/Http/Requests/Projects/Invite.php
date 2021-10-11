@@ -35,7 +35,9 @@ class Invite extends FormRequest
 
     public function rules(): array
     {
-        $this->validMetaDataRule->setProject($this->getProject());
+        $project = $this->getProject();
+        $this->validMetaDataRule->setProject($project);
+        $this->roleExistsRule->setProject($project);
 
         return [
             self::PARAMETER_ROLE      => ['required', $this->roleExistsRule],

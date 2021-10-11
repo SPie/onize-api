@@ -29,7 +29,6 @@ final class InviteTest extends TestCase
         $project = $this->createProjectModel();
         $roleExistsRule = $this->createRoleExistsRule();
         $rule = $this->createValidMetaDataRule();
-        $this->mockValidMetaDataRuleSetProject($rule, $project);
         $route = $this->createRoute();
         $this->mockRouteParameter($route, $project, 'project', null);
         $request  = $this->getInvite($rule, $roleExistsRule);
@@ -43,6 +42,8 @@ final class InviteTest extends TestCase
             ],
             $request->rules()
         );
+        $this->assertValidMetaDataRuleSetProject($rule, $project);
+        $this->assertRoleExistsRuleSetProject($roleExistsRule, $project);
     }
 
     public function testGetEmail(): void

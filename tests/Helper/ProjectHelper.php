@@ -171,6 +171,16 @@ trait ProjectHelper
         return $this;
     }
 
+    private function assertProjectManagerChangeRole(MockInterface $projectManager, UserModel $user, RoleModel $role): self
+    {
+        $projectManager
+            ->shouldHaveReceived('changeRole')
+            ->with($user, $role)
+            ->once();
+
+        return $this;
+    }
+
     /**
      * @return ProjectRepository|MockInterface
      */

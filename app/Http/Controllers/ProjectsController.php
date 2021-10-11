@@ -15,11 +15,12 @@ use Illuminate\Http\JsonResponse;
 
 final class ProjectsController extends Controller
 {
-    public const ROUTE_NAME_CREATE             = 'projects.create';
-    public const ROUTE_NAME_USERS_PROJECTS     = 'projects.usersProjects';
-    public const ROUTE_NAME_SHOW               = 'projects.show';
-    public const ROUTE_NAME_MEMBERS            = 'projects.members';
-    public const ROUTE_NAME_REMOVE_MEMBER      = 'projects.members.remove';
+    public const ROUTE_NAME_CREATE         = 'projects.create';
+    public const ROUTE_NAME_USERS_PROJECTS = 'projects.usersProjects';
+    public const ROUTE_NAME_SHOW           = 'projects.show';
+    public const ROUTE_NAME_MEMBERS        = 'projects.members';
+    public const ROUTE_NAME_REMOVE_MEMBER  = 'projects.members.remove';
+    public const ROUTE_NAME_CHANGE_ROLE    = 'projects.roles.change';
 
     private const RESPONSE_PARAMETER_PROJECT    = 'project';
     private const RESPONSE_PARAMETER_PROJECTS   = 'projects';
@@ -83,8 +84,10 @@ final class ProjectsController extends Controller
         return $this->getResponseFactory()->json([], JsonResponse::HTTP_NO_CONTENT);
     }
 
-    public function changeRole(UserModel $user, ChangeRole $request): JsonResponse
+    public function changeRole(ChangeRole $request): JsonResponse
     {
-        // TODO
+        $this->projectManager->changeRole($request->getUser(), $request->getRole());
+
+        return $this->getResponseFactory()->json([], JsonResponse::HTTP_NO_CONTENT);
     }
 }

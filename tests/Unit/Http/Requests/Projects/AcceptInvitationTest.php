@@ -25,11 +25,11 @@ final class AcceptInvitationTest extends TestCase
         $route = $this->createRoute();
         $this->mockRouteParameter($route, $invitation, 'invitation', null);
         $validMetaDataRule = $this->createValidMetaDataRule();
-        $this->mockValidMetaDataRuleSetProject($validMetaDataRule, $project);
         $request = $this->getAcceptInvitation($validMetaDataRule);
         $request->setRouteResolver(fn () => $route);
 
         $this->assertEquals(['metaData' => [$validMetaDataRule]], $request->rules());
+        $this->assertValidMetaDataRuleSetProject($validMetaDataRule, $project);
     }
 
     public function testGetMetaData(): void

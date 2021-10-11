@@ -1286,7 +1286,8 @@ final class ProjectsApiCallsTest extends FeatureTestCase
             ]
         );
 
-        $response->assertStatus(400);
+        $response->assertStatus(422);
+        $response->assertJsonFragment(['role' => ['validation.role-not-found']]);
     }
 
     private function setUpAcceptInvitationTest(

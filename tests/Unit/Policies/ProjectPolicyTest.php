@@ -178,4 +178,14 @@ final class ProjectPolicyTest extends TestCase
 
         $this->assertFalse($projectPolicy->invite($user, $project));
     }
+
+    private function setUpChangeRoleTest(): array
+    {
+        $user = $this->createUserModel();
+        $project = $this->createProjectModel();
+        $roleManager = $this->createRoleManager();
+        // TODO
+
+        return [];
+    }
 }

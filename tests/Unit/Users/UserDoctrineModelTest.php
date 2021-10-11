@@ -7,19 +7,20 @@ use Tests\Helper\ModelHelper;
 use Tests\Helper\ProjectHelper;
 use Tests\TestCase;
 
-/**
- * Class UserDoctrineModelTest
- *
- * @package Tests\Unit\Users
- */
 final class UserDoctrineModelTest extends TestCase
 {
     use ModelHelper;
     use ProjectHelper;
 
-    //region Tests
+    private function getUserDoctrineModel(string $email = null, string $password = null): UserDoctrineModel
+    {
+        return new UserDoctrineModel(
+            $email ?: $this->getFaker()->safeEmail,
+            $password ?: $this->getFaker()->password
+        );
+    }
 
-    public function testToarray(): void
+    public function testToArray(): void
     {
         $uuid = $this->getFaker()->uuid;
         $email = $this->getFaker()->safeEmail;
@@ -133,13 +134,45 @@ final class UserDoctrineModelTest extends TestCase
         $this->assertNull($user->getRoleForProject($project));
     }
 
-    //endregion
-
-    private function getUserDoctrineModel(string $email = null, string $password = null): UserDoctrineModel
+    private function setUpGetMemberOfProjectTest(bool $withMembers = true, bool $withMemberForProject = true): array
     {
-        return new UserDoctrineModel(
-            $email ?: $this->getFaker()->safeEmail,
-            $password ?: $this->getFaker()->password
-        );
+        $memberProject = $this->createProjectModel();
+        $this->mockModelGetId($memberProject, $this->getFaker()->numberBetween(1));
+        $role = $this->createRoleModel();
+        $this->mockRoleModelGetProject($role, $memberProject);
+        $member = $this->createMemberModel();
+        $this->mockMemberModelGetRole($member, $role);
+        $project = $this->createProjectModel();
+        $this->mockModelGetId($project, $memberProject->getId() + ($withMemberForProject ? 0 : 1));
+        $user = $this->getUserDoctrineModel();
+        if ($withMembers) {
+            $user->addMember($member);
+        }
+
+        return [$user, $project, $member];
+    }
+
+    public function testGetMemberOfProject(): void
+    {
+        /** @var UserDoctrineModel $user */
+        [$user, $project, $member] = $this->setUpGetMemberOfProjectTest();
+
+        $this->assertEquals($member, $user->getMemberOfProject($project));
+    }
+
+    public function testGetMemberOfProjectWithoutMembers(): void
+    {
+        /** @var UserDoctrineModel $user */
+        [$user, $project] = $this->setUpGetMemberOfProjectTest(withMembers: false);
+
+        $this->assertNull($user->getMemberOfProject($project));
+    }
+
+    public function testGetMemberOfProjectWithoutMemberForProject(): void
+    {
+        /** @var UserDoctrineModel $user */
+        [$user, $project] = $this->setUpGetMemberOfProjectTest(withMemberForProject: false);
+
+        $this->assertNull($user->getMemberOfProject($project));
     }
 }

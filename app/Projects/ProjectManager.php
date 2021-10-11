@@ -58,4 +58,9 @@ class ProjectManager
 
         throw new UserNotMemberException(\sprintf('User %s is no member of project %s', $user->getUuid(), $project->getUuid()));
     }
+
+    public function changeRole(UserModel $user, RoleModel $role): UserModel
+    {
+        // TODO
+    }
 }

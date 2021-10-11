@@ -9,11 +9,6 @@ use App\Models\UuidModel;
 use App\Projects\Invites\InvitationModel;
 use Doctrine\Common\Collections\Collection;
 
-/**
- * Interface RoleModel
- *
- * @package App\Projects
- */
 interface RoleModel extends Model, SoftDeletable, Timestampable, UuidModel
 {
     public const PROPERTY_LABEL       = 'label';
@@ -25,47 +20,18 @@ interface RoleModel extends Model, SoftDeletable, Timestampable, UuidModel
 
     public const LABEL_OWNER = 'Owner';
 
-    /**
-     * @param string $label
-     *
-     * @return $this
-     */
     public function setLabel(string $label): self;
 
-    /**
-     * @return string
-     */
     public function getLabel(): string;
 
-    /**
-     * @param bool $owner
-     *
-     * @return $this
-     */
     public function setOwner(bool $owner): self;
 
-    /**
-     * @return bool
-     */
     public function isOwner(): bool;
 
-    /**
-     * @return ProjectModel
-     */
     public function getProject(): ProjectModel;
 
-    /**
-     * @param PermissionModel[] $permissions
-     *
-     * @return $this
-     */
     public function setPermissions(array $permissions): self;
 
-    /**
-     * @param PermissionModel $permission
-     *
-     * @return $this
-     */
     public function addPermission(PermissionModel $permission): self;
 
     /**
@@ -73,25 +39,10 @@ interface RoleModel extends Model, SoftDeletable, Timestampable, UuidModel
      */
     public function getPermissions(): Collection;
 
-    /**
-     * @param string $permissionName
-     *
-     * @return bool
-     */
     public function hasPermission(string $permissionName): bool;
 
-    /**
-     * @param MemberModel[] $members
-     *
-     * @return $this
-     */
     public function setMembers(array $members): self;
 
-    /**
-     * @param MemberModel $member
-     *
-     * @return $this
-     */
     public function addMember(MemberModel $member): self;
 
     /**
@@ -99,18 +50,8 @@ interface RoleModel extends Model, SoftDeletable, Timestampable, UuidModel
      */
     public function getMembers(): Collection;
 
-    /**
-     * @param InvitationModel[] $invitations
-     *
-     * @return $this
-     */
     public function setInvitations(array $invitations): self;
 
-    /**
-     * @param InvitationModel $invitation
-     *
-     * @return $this
-     */
     public function addInvitation(InvitationModel $invitation): self;
 
     /**
@@ -118,10 +59,5 @@ interface RoleModel extends Model, SoftDeletable, Timestampable, UuidModel
      */
     public function getInvitations(): Collection;
 
-    /**
-     * @param bool $withProject
-     *
-     * @return array
-     */
     public function toArray(bool $withProject = false): array;
 }

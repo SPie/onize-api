@@ -4,104 +4,47 @@ namespace App\Models;
 
 use Doctrine\Common\Collections\Collection;
 
-/**
- * Class AbstractDoctrineRepository
- *
- * @package App\Models
- */
 abstract class AbstractDoctrineRepository implements Repository
 {
-    private DatabaseHandler $databaseHandler;
-
-    /**
-     * AbstractDoctrineRepository constructor.
-     *
-     * @param DatabaseHandler $databaseHandler
-     */
-    public function __construct(DatabaseHandler $databaseHandler)
+    public function __construct(private DatabaseHandler $databaseHandler)
     {
-        $this->databaseHandler = $databaseHandler;
     }
 
-    /**
-     * @return DatabaseHandler
-     */
-    protected function getDatabaseHandler(): DatabaseHandler
-    {
-        return $this->databaseHandler;
-    }
-
-    /**
-     * @param int $id
-     *
-     * @return Model|null
-     */
     public function find(int $id): ?Model
     {
-        return $this->getDatabaseHandler()->find($id);
+        return $this->databaseHandler->find($id);
     }
 
-    /**
-     * @return Collection
-     */
     public function findAll(): Collection
     {
-        return $this->getDatabaseHandler()->loadAll();
+        return $this->databaseHandler->loadAll();
     }
 
-    /**
-     * @param array      $criteria
-     * @param array|null $orderBy
-     * @param int|null   $limit
-     * @param int|null   $offset
-     *
-     * @return Collection
-     */
-    public function findBy(array $criteria = [], array $orderBy = null, int $limit = null, int $offset = null): Collection
+    public function findBy(array $criteria = [], ?array $orderBy = null, int $limit = null, int $offset = null): Collection
     {
-        return $this->getDatabaseHandler()->loadAll($criteria, $orderBy, $limit, $offset);
+        return $this->databaseHandler->loadAll($criteria, $orderBy, $limit, $offset);
     }
 
-    /**
-     * @param array $criteria
-     *
-     * @return Model|null
-     */
     public function findOneBy(array $criteria): ?Model
     {
-        return $this->getDatabaseHandler()->load($criteria);
+        return $this->databaseHandler->load($criteria);
     }
 
-    /**
-     * @param Model $model
-     * @param bool  $flush
-     *
-     * @return Model
-     */
     public function save(Model $model, bool $flush = true): Model
     {
-        return $this->getDatabaseHandler()->save($model, $flush);
+        return $this->databaseHandler->save($model, $flush);
     }
 
-    /**
-     * @param Model $model
-     * @param bool  $flush
-     *
-     * @return Repository
-     */
     public function delete(Model $model, bool $flush = true): Repository
     {
-        $this->getDatabaseHandler()->delete($model, $flush);
+        $this->databaseHandler->delete($model, $flush);
 
         return $this;
     }
 
-    /**
-     * @return Repository
-     */
     public function flush(): Repository
     {
-        $this->getDatabaseHandler()->flush();
+        $this->databaseHandler->flush();
 
         return $this;
     }

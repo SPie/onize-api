@@ -38,7 +38,7 @@ interface Repository
      *
      * @return Collection
      */
-    public function findBy(array $criteria = [], array $orderBy = null, int $limit = null, int $offset = null): Collection;
+    public function findBy(array $criteria = [], ?array $orderBy = null, int $limit = null, int $offset = null): Collection;
 
     /**
      * @param Model $model

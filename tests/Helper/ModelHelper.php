@@ -59,23 +59,9 @@ trait ModelHelper
         int $limit = null,
         int $offset = null
     ): self {
-        $arguments = [];
-        if ($criteria !== null || $orderBy !== null || $limit !== null || $offset !== null) {
-            $arguments[] = $criteria;
-        }
-        if ($orderBy !== null || $limit !== null || $offset !== null) {
-            $arguments[] = $orderBy;
-        }
-        if ($limit !== null || $offset !== null) {
-            $arguments[] = $limit;
-        }
-        if ($offset !== null) {
-            $arguments[] = $offset;
-        }
-
         $databaseHandler
             ->shouldReceive('loadAll')
-            ->withArgs($arguments)
+            ->with($criteria, $orderBy, $limit, $offset)
             ->andReturn($models);
 
         return $this;

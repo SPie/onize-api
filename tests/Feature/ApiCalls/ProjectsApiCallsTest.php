@@ -886,7 +886,8 @@ final class ProjectsApiCallsTest extends FeatureTestCase
         string $type = 'string',
         bool $withAuthenticatedUser = true,
         bool $withAuthorizedUser = true,
-        bool $withOwner = false
+        bool $withOwner = false,
+        bool $roleProjectAllowed = true
     ): array {
         if ($withAuthorizedUser) {
             $role = $this->createRoleWithPermission($this->getInvitationsManagementPermission());
@@ -895,15 +896,17 @@ final class ProjectsApiCallsTest extends FeatureTestCase
         } else {
             $role = $this->createRoleEntities()->first();
         }
+        $otherRole = $this->createRoleEntities()->first();
         $metaDataElement = $this->createMetaDataElementEntities(
             1,
             [
-                MetaDataElementModel::PROPERTY_PROJECT  => $role->getProject(),
+                MetaDataElementModel::PROPERTY_PROJECT  => $roleProjectAllowed ? $role->getProject() : $otherRole->getProject(),
                 MetaDataElementModel::PROPERTY_REQUIRED => !$withRequiredMetaData,
                 MetaDataElementModel::PROPERTY_TYPE     => $type,
             ]
         )->first();
         $role->getProject()->addMetaDataElement($metaDataElement);
+        $otherRole->getProject()->addMetaDataElement($metaDataElement);
         $user = $this->createUserWithRole($role);
         if ($withAuthenticatedUser) {
             $this->actingAs($user);
@@ -917,7 +920,7 @@ final class ProjectsApiCallsTest extends FeatureTestCase
         $this->setCarbonMock($now);
         $validUntil = $now->addDays(3);
 
-        return [$email, $role, $metaData, $validUntil, $metaDataName];
+        return [$email, $role->getProject(), $roleProjectAllowed ? $role : $otherRole, $metaData, $validUntil, $metaDataName];
     }
 
     /**
@@ -960,11 +963,11 @@ final class ProjectsApiCallsTest extends FeatureTestCase
          * @var RoleModel       $role
          * @var CarbonImmutable $validUntil
          */
-        [$email, $role, $metaData, $validUntil] = $this->setUpInviteTest();
+        [$email, $project, $role, $metaData, $validUntil] = $this->setUpInviteTest();
 
         $response = $this->doApiCall(
             'POST',
-            $this->getUrl(InvitationsController::ROUTE_NAME_INVITE, ['role' => $role->getUuid()]),
+            $this->getUrl(InvitationsController::ROUTE_NAME_INVITE, ['project' => $project->getUuid()]),
             [
                 'email'    => $email,
                 'role'     => $role->getUuid(),
@@ -987,15 +990,53 @@ final class ProjectsApiCallsTest extends FeatureTestCase
         ]);
     }
 
-    public function testInviteWithoutEmail(): void
+    public function testInviteWithoutExistingRole(): void
     {
         /** @var RoleModel $role */
-        [$email, $role, $metaData] = $this->setUpInviteTest();
+        [$email, $project, $role, $metaData] = $this->setUpInviteTest();
 
         $response = $this->doApiCall(
             'POST',
-            $this->getUrl(InvitationsController::ROUTE_NAME_INVITE, ['role' => $role->getUuid()]),
+            $this->getUrl(InvitationsController::ROUTE_NAME_INVITE, ['project' => $project->getUuid()]),
             [
+                'role'     => $this->getFaker()->uuid,
+                'email'    => $email,
+                'metaData' => $metaData,
+            ]
+        );
+
+        $response->assertStatus(422);
+        $response->assertJsonFragment(['role' => ['validation.role-not-found']]);
+    }
+
+    public function testInviteWithoutRole(): void
+    {
+        /** @var RoleModel $role */
+        [$email, $project, $role, $metaData] = $this->setUpInviteTest();
+
+        $response = $this->doApiCall(
+            'POST',
+            $this->getUrl(InvitationsController::ROUTE_NAME_INVITE, ['project' => $project->getUuid()]),
+            [
+                'email'    => $email,
+                'metaData' => $metaData,
+            ]
+        );
+
+        $response->assertStatus(422);
+        $response->assertJsonFragment(['role' => ['validation.required']]);
+    }
+
+    public function testInviteWithoutEmail(): void
+    {
+        /** @var RoleModel $role */
+        [$email, $project, $role, $metaData] = $this->setUpInviteTest();
+
+        $response = $this->doApiCall(
+            'POST',
+            $this->getUrl(InvitationsController::ROUTE_NAME_INVITE, ['project' => $project->getUuid()]),
+            [
+                'role'     => $role->getUuid(),
                 'metaData' => $metaData,
             ]
         );
@@ -1004,15 +1045,16 @@ final class ProjectsApiCallsTest extends FeatureTestCase
         $response->assertJsonFragment(['email' => ['validation.required']]);
     }
 
-    public function testInviteWithoutExistingRole(): void
+    public function testInviteWithoutExistingProject(): void
     {
         /** @var RoleModel $role */
-        [$email, $role, $metaData] = $this->setUpInviteTest();
+        [$email, $project, $role, $metaData] = $this->setUpInviteTest();
 
         $response = $this->doApiCall(
             'POST',
-            $this->getUrl(InvitationsController::ROUTE_NAME_INVITE, ['role' => $this->getFaker()->uuid]),
+            $this->getUrl(InvitationsController::ROUTE_NAME_INVITE, ['project' => $this->getFaker()->uuid]),
             [
+                'role'     => $role->getUuid(),
                 'email'    => $email,
                 'metaData' => $metaData,
             ]
@@ -1024,12 +1066,13 @@ final class ProjectsApiCallsTest extends FeatureTestCase
     public function testInviteWithInvalidMetaData(): void
     {
         /** @var RoleModel $role */
-        [$email, $role] = $this->setUpInviteTest();
+        [$email, $project, $role] = $this->setUpInviteTest();
 
         $response = $this->doApiCall(
             'POST',
-            $this->getUrl(InvitationsController::ROUTE_NAME_INVITE, ['role' => $role->getUuid()]),
+            $this->getUrl(InvitationsController::ROUTE_NAME_INVITE, ['project' => $project->getUuid()]),
             [
+                'role'     => $role->getUuid(),
                 'email'    => $email,
                 'metaData' => $this->getFaker()->word,
             ]
@@ -1042,12 +1085,13 @@ final class ProjectsApiCallsTest extends FeatureTestCase
     public function testInviteWithoutExistingMetaData(): void
     {
         /** @var RoleModel $role */
-        [$email, $role, $metaData, $validUntil, $metaDataName] = $this->setUpInviteTest(false);
+        [$email, $project, $role, $metaData, $validUntil, $metaDataName] = $this->setUpInviteTest(false);
 
         $response = $this->doApiCall(
             'POST',
-            $this->getUrl(InvitationsController::ROUTE_NAME_INVITE, ['role' => $role->getUuid()]),
+            $this->getUrl(InvitationsController::ROUTE_NAME_INVITE, ['project' => $project->getUuid()]),
             [
+                'role'     => $role->getUuid(),
                 'email'    => $email,
                 'metaData' => $metaData,
             ]
@@ -1060,12 +1104,13 @@ final class ProjectsApiCallsTest extends FeatureTestCase
     public function testInviteWithoutRequiredMetaData(): void
     {
         /** @var RoleModel $role */
-        [$email, $role, $metaData, $validUntil, $metaDataName] = $this->setUpInviteTest(true, false);
+        [$email, $project, $role, $metaData, $validUntil, $metaDataName] = $this->setUpInviteTest(true, false);
 
         $response = $this->doApiCall(
             'POST',
-            $this->getUrl(InvitationsController::ROUTE_NAME_INVITE, ['role' => $role->getUuid()]),
+            $this->getUrl(InvitationsController::ROUTE_NAME_INVITE, ['project' => $project->getUuid()]),
             [
+                'role'     => $role->getUuid(),
                 'email'    => $email,
                 'metaData' => $metaData,
             ]
@@ -1078,12 +1123,13 @@ final class ProjectsApiCallsTest extends FeatureTestCase
     public function testInviteWithInvalidStringMetaData(): void
     {
         /** @var RoleModel $role */
-        [$email, $role, $metaData, $validUntil, $metaDataName] = $this->setUpInviteTest(true, true, false);
+        [$email, $project, $role, $metaData, $validUntil, $metaDataName] = $this->setUpInviteTest(true, true, false);
 
         $response = $this->doApiCall(
             'POST',
-            $this->getUrl(InvitationsController::ROUTE_NAME_INVITE, ['role' => $role->getUuid()]),
+            $this->getUrl(InvitationsController::ROUTE_NAME_INVITE, ['project' => $project->getUuid()]),
             [
+                'role'     => $role->getUuid(),
                 'email'    => $email,
                 'metaData' => $metaData,
             ]
@@ -1096,12 +1142,13 @@ final class ProjectsApiCallsTest extends FeatureTestCase
     public function testInviteWithInvalidEmailMetaData(): void
     {
         /** @var RoleModel $role */
-        [$email, $role, $metaData, $validUntil, $metaDataName] = $this->setUpInviteTest(true, true, false, 'email');
+        [$email, $project, $role, $metaData, $validUntil, $metaDataName] = $this->setUpInviteTest(true, true, false, 'email');
 
         $response = $this->doApiCall(
             'POST',
-            $this->getUrl(InvitationsController::ROUTE_NAME_INVITE, ['role' => $role->getUuid()]),
+            $this->getUrl(InvitationsController::ROUTE_NAME_INVITE, ['project' => $project->getUuid()]),
             [
+                'role'     => $role->getUuid(),
                 'email'    => $email,
                 'metaData' => $metaData,
             ]
@@ -1114,12 +1161,13 @@ final class ProjectsApiCallsTest extends FeatureTestCase
     public function testInviteWithInvalidNumericMetaData(): void
     {
         /** @var RoleModel $role */
-        [$email, $role, $metaData, $validUntil, $metaDataName] = $this->setUpInviteTest(true, true, false, 'numeric');
+        [$email, $project, $role, $metaData, $validUntil, $metaDataName] = $this->setUpInviteTest(true, true, false, 'numeric');
 
         $response = $this->doApiCall(
             'POST',
-            $this->getUrl(InvitationsController::ROUTE_NAME_INVITE, ['role' => $role->getUuid()]),
+            $this->getUrl(InvitationsController::ROUTE_NAME_INVITE, ['project' => $project->getUuid()]),
             [
+                'role'     => $role->getUuid(),
                 'email'    => $email,
                 'metaData' => $metaData,
             ]
@@ -1132,12 +1180,13 @@ final class ProjectsApiCallsTest extends FeatureTestCase
     public function testInviteWithInvalidDateMetaData(): void
     {
         /** @var RoleModel $role */
-        [$email, $role, $metaData, $validUntil, $metaDataName] = $this->setUpInviteTest(true, true, false, 'date');
+        [$email, $project, $role, $metaData, $validUntil, $metaDataName] = $this->setUpInviteTest(true, true, false, 'date');
 
         $response = $this->doApiCall(
             'POST',
-            $this->getUrl(InvitationsController::ROUTE_NAME_INVITE, ['role' => $role->getUuid()]),
+            $this->getUrl(InvitationsController::ROUTE_NAME_INVITE, ['project' => $project->getUuid()]),
             [
+                'role'     => $role->getUuid(),
                 'email'    => $email,
                 'metaData' => $metaData,
             ]
@@ -1150,7 +1199,7 @@ final class ProjectsApiCallsTest extends FeatureTestCase
     public function testInviteWithoutAuthenticatedUser(): void
     {
         /** @var RoleModel $role */
-        [$email, $role, $metaData] = $this->setUpInviteTest(
+        [$email, $project, $role, $metaData] = $this->setUpInviteTest(
             true,
             true,
             true,
@@ -1160,8 +1209,9 @@ final class ProjectsApiCallsTest extends FeatureTestCase
 
         $response = $this->doApiCall(
             'POST',
-            $this->getUrl(InvitationsController::ROUTE_NAME_INVITE, ['role' => $role->getUuid()]),
+            $this->getUrl(InvitationsController::ROUTE_NAME_INVITE, ['project' => $project->getUuid()]),
             [
+                'role'     => $role->getUuid(),
                 'email'    => $email,
                 'metaData' => $metaData,
             ]
@@ -1173,7 +1223,7 @@ final class ProjectsApiCallsTest extends FeatureTestCase
     public function testInviteWithoutAuthorizedUser(): void
     {
         /** @var RoleModel $role */
-        [$email, $role, $metaData] = $this->setUpInviteTest(
+        [$email, $project, $role, $metaData] = $this->setUpInviteTest(
             true,
             true,
             true,
@@ -1184,8 +1234,9 @@ final class ProjectsApiCallsTest extends FeatureTestCase
 
         $response = $this->doApiCall(
             'POST',
-            $this->getUrl(InvitationsController::ROUTE_NAME_INVITE, ['role' => $role->getUuid()]),
+            $this->getUrl(InvitationsController::ROUTE_NAME_INVITE, ['project' => $project->getUuid()]),
             [
+                'role'     => $role->getUuid(),
                 'email'    => $email,
                 'metaData' => $metaData,
             ]
@@ -1197,7 +1248,7 @@ final class ProjectsApiCallsTest extends FeatureTestCase
     public function testInviteWithOwnerRole(): void
     {
         /** @var RoleModel $role */
-        [$email, $role, $metaData] = $this->setUpInviteTest(
+        [$email, $project, $role, $metaData] = $this->setUpInviteTest(
             true,
             true,
             true,
@@ -1209,14 +1260,33 @@ final class ProjectsApiCallsTest extends FeatureTestCase
 
         $response = $this->doApiCall(
             'POST',
-            $this->getUrl(InvitationsController::ROUTE_NAME_INVITE, ['role' => $role->getUuid()]),
+            $this->getUrl(InvitationsController::ROUTE_NAME_INVITE, ['project' => $project->getUuid()]),
             [
+                'role'     => $role->getUuid(),
                 'email'    => $email,
                 'metaData' => $metaData,
             ]
         );
 
         $response->assertCreated();
+    }
+
+    public function testInviteWithRoleProjectNotAllowed(): void
+    {
+        /** @var RoleModel $role */
+        [$email, $project, $role, $metaData] = $this->setUpInviteTest(roleProjectAllowed: false);
+
+        $response = $this->doApiCall(
+            'POST',
+            $this->getUrl(InvitationsController::ROUTE_NAME_INVITE, ['project' => $project->getUuid()]),
+            [
+                'role'     => $role->getUuid(),
+                'email'    => $email,
+                'metaData' => $metaData,
+            ]
+        );
+
+        $response->assertStatus(400);
     }
 
     private function setUpAcceptInvitationTest(
@@ -1798,5 +1868,194 @@ final class ProjectsApiCallsTest extends FeatureTestCase
         );
 
         $response->assertNotFound();
+    }
+
+    private function setUpCreateRoleTest(
+        bool $withAuthenticatedUser = true,
+        bool $withAuthorizedUser = true,
+        bool $withOwner = false
+    ): array {
+        if ($withAuthorizedUser) {
+            $role = $this->createRoleWithPermission($this->getConcretePermission(PermissionModel::PERMISSION_PROJECTS_ROLES_MANAGEMENT));
+        } elseif ($withOwner) {
+            $role = $this->createOwnerRole();
+        } else {
+            $role = $this->createRoleEntities()->first();
+        }
+        $user = $this->createUserWithRole($role);
+        if ($withAuthenticatedUser) {
+            $this->actingAs($user);
+        }
+
+        $label = $this->getFaker()->word;
+
+        $permissionPool = [
+            PermissionModel::PERMISSION_PROJECTS_INVITATIONS_MANAGEMENT,
+            PermissionModel::PERMISSION_PROJECTS_ROLES_MANAGEMENT,
+            PermissionModel::PERMISSION_PROJECTS_MEMBERS_SHOW,
+        ];
+
+        return [$role->getProject(), $label, $permissionPool[\mt_rand(0, 2)]];
+    }
+
+    public function testCreateRole(): void
+    {
+        [$project, $label, $permission] = $this->setUpCreateRoleTest();
+
+        $response = $this->doApiCall(
+            'POST',
+            $this->getUrl(ProjectsController::ROUTE_NAME_CREATE_ROLE, ['project' => $project->getUuid()]),
+            [
+                'label' => $label,
+                'permissions' => [$permission],
+            ]
+        );
+
+        $response->assertCreated();
+        $role = $this->getConcreteRoleRepository()->findAll()->get(1);
+        $this->assertEquals($label, $role->getLabel());
+        $this->assertEquals($project, $role->getProject());
+        $this->assertEquals($this->getConcretePermission($permission), $role->getPermissions()->first());
+        $response->assertJsonFragment([
+            'role' => [
+                'uuid'  => $role->getUuid(),
+                'label' => $label,
+                'owner' => false,
+            ]
+        ]);
+    }
+
+    public function testCreateRoleWithoutFoundProject(): void
+    {
+        [$project, $label, $permission] = $this->setUpCreateRoleTest();
+
+        $response = $this->doApiCall(
+            'POST',
+            $this->getUrl(ProjectsController::ROUTE_NAME_CREATE_ROLE, ['project' => $this->getFaker()->uuid]),
+            [
+                'label' => $label,
+                'permissions' => [$permission],
+            ]
+        );
+
+        $response->assertNotFound();
+    }
+
+    public function testCreateRoleWithoutLabel(): void
+    {
+        [$project, $label, $permission] = $this->setUpCreateRoleTest();
+
+        $response = $this->doApiCall(
+            'POST',
+            $this->getUrl(ProjectsController::ROUTE_NAME_CREATE_ROLE, ['project' => $project->getUuid()]),
+            [
+                'permissions' => [$permission],
+            ]
+        );
+
+        $response->assertStatus(422);
+        $response->assertJsonFragment([
+            'label' => ['validation.required']
+        ]);
+    }
+
+    public function testCreateRoleWithInvalidLabel(): void
+    {
+        [$project, $label, $permission] = $this->setUpCreateRoleTest();
+
+        $response = $this->doApiCall(
+            'POST',
+            $this->getUrl(ProjectsController::ROUTE_NAME_CREATE_ROLE, ['project' => $project->getUuid()]),
+            [
+                'label' => $this->getFaker()->numberBetween(1),
+                'permissions' => [$permission],
+            ]
+        );
+
+        $response->assertStatus(422);
+        $response->assertJsonFragment(['label' => ['validation.string']]);
+    }
+
+    public function testCreateRoleWithoutPermissions(): void
+    {
+        [$project, $label, $permission] = $this->setUpCreateRoleTest();
+
+        $response = $this->doApiCall(
+            'POST',
+            $this->getUrl(ProjectsController::ROUTE_NAME_CREATE_ROLE, ['project' => $project->getUuid()]),
+            [
+                'label' => $label,
+            ]
+        );
+
+        $response->assertCreated();
+        $role = $this->getConcreteRoleRepository()->findAll()->get(1);
+        $this->assertTrue($role->getPermissions()->isEmpty());
+    }
+
+    public function testCreateRoleWithoutFoundRole(): void
+    {
+        [$project, $label] = $this->setUpCreateRoleTest();
+        $permission = $this->getFaker()->word;
+
+        $response = $this->doApiCall(
+            'POST',
+            $this->getUrl(ProjectsController::ROUTE_NAME_CREATE_ROLE, ['project' => $project->getUuid()]),
+            [
+                'label' => $label,
+                'permissions' => [$permission],
+            ]
+        );
+
+        $response->assertStatus(422);
+        $response->assertJsonFragment(['permissions' => ['validation.permissions-not-found:' . $permission]]);
+    }
+
+    public function testCreateRoleWithoutAuthenticatedUser(): void
+    {
+        [$project, $label, $permission] = $this->setUpCreateRoleTest(withAuthenticatedUser: false);
+
+        $response = $this->doApiCall(
+            'POST',
+            $this->getUrl(ProjectsController::ROUTE_NAME_CREATE_ROLE, ['project' => $project->getUuid()]),
+            [
+                'label' => $label,
+                'permissions' => [$permission],
+            ]
+        );
+
+        $response->assertStatus(401);
+    }
+
+    public function testCreateRoleWithoutAuthorizedUser(): void
+    {
+        [$project, $label, $permission] = $this->setUpCreateRoleTest(withAuthorizedUser: false);
+
+        $response = $this->doApiCall(
+            'POST',
+            $this->getUrl(ProjectsController::ROUTE_NAME_CREATE_ROLE, ['project' => $project->getUuid()]),
+            [
+                'label' => $label,
+                'permissions' => [$permission],
+            ]
+        );
+
+        $response->assertStatus(403);
+    }
+
+    public function testCreateRoleWithOwner(): void
+    {
+        [$project, $label, $permission] = $this->setUpCreateRoleTest(withAuthorizedUser: false, withOwner: true);
+
+        $response = $this->doApiCall(
+            'POST',
+            $this->getUrl(ProjectsController::ROUTE_NAME_CREATE_ROLE, ['project' => $project->getUuid()]),
+            [
+                'label' => $label,
+                'permissions' => [$permission],
+            ]
+        );
+
+        $response->assertCreated();
     }
 }

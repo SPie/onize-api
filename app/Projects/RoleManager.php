@@ -3,7 +3,9 @@
 namespace App\Projects;
 
 use App\Models\Exceptions\ModelNotFoundException;
+use App\Models\Exceptions\ModelsNotFoundException;
 use App\Users\UserModel;
+use Doctrine\Common\Collections\Collection;
 
 class RoleManager
 {
@@ -11,7 +13,8 @@ class RoleManager
         private RoleRepository $roleRepository,
         private RoleModelFactory $roleModelFactory,
         private MemberRepository $memberRepository,
-        private MemberModelFactory $memberModelFactory
+        private MemberModelFactory $memberModelFactory,
+        private PermissionRepository $permissionRepository
     ) {
     }
 
@@ -40,5 +43,26 @@ class RoleManager
         $role = $user->getRoleForProject($project);
 
         return $role && ($role->isOwner() || $role->hasPermission($permission));
+    }
+
+    public function getPermissions(array $names): Collection
+    {
+        $permissions = $this->permissionRepository->findByNames($names);
+        if (\count($names) != $permissions->count()) {
+            throw new ModelsNotFoundException(
+                'PermissionModel',
+                \array_diff($names, $permissions->map(fn (PermissionModel $permission) => $permission->getName())->getValues())
+            );
+        }
+
+        return $permissions;
+    }
+
+    public function createRole(ProjectModel $project, string $label, Collection $permissions): RoleModel
+    {
+        $role = $this->roleModelFactory->create($project, $label)
+            ->setPermissions($permissions->getValues());
+
+        return $this->roleRepository->save($role);
     }
 }

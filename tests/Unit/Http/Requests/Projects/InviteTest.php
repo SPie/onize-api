@@ -3,6 +3,7 @@
 namespace Tests\Unit\Http\Requests\Projects;
 
 use App\Http\Requests\Projects\Invite;
+use App\Http\Rules\RoleExists;
 use App\Http\Rules\ValidMetaData;
 use Tests\Helper\HttpHelper;
 use Tests\Helper\ProjectHelper;
@@ -15,22 +16,28 @@ final class InviteTest extends TestCase
     use ProjectHelper;
     use ReflectionHelper;
 
-    //region Tests
+    private function getInvite(ValidMetaData $rule = null, RoleExists $roleExists = null): Invite
+    {
+        return new Invite(
+            $rule ?: $this->createValidMetaDataRule(),
+            $roleExists ?: $this->createRoleExistsRule()
+        );
+    }
 
     public function testRules(): void
     {
         $project = $this->createProjectModel();
-        $role = $this->createRoleModel();
-        $this->mockRoleModelGetProject($role, $project);
+        $roleExistsRule = $this->createRoleExistsRule();
         $rule = $this->createValidMetaDataRule();
         $this->mockValidMetaDataRuleSetProject($rule, $project);
         $route = $this->createRoute();
-        $this->mockRouteParameter($route, $role, 'role', null);
-        $request  = $this->getInvite($rule);
+        $this->mockRouteParameter($route, $project, 'project', null);
+        $request  = $this->getInvite($rule, $roleExistsRule);
         $request->setRouteResolver(fn () => $route);
 
         $this->assertEquals(
             [
+                'role'     => ['required', $roleExistsRule],
                 'email'    => ['required', 'email'],
                 'metaData' => [$rule],
             ],
@@ -61,10 +68,12 @@ final class InviteTest extends TestCase
         $this->assertEquals([], $this->getInvite()->getMetaData());
     }
 
-    //endregion
-
-    private function getInvite(ValidMetaData $rule = null): Invite
+    public function testGetRole(): void
     {
-        return new Invite($rule ?: $this->createValidMetaDataRule());
+        $role = $this->createRoleModel();
+        $roleExistsRule = $this->createRoleExistsRule();
+        $this->mockRoleExistsRuleGetRole($roleExistsRule, $role);
+
+        $this->assertEquals($role, $this->getInvite(null, $roleExistsRule)->getRole());
     }
 }

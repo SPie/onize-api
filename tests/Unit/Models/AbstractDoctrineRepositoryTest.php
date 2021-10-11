@@ -56,7 +56,9 @@ final class AbstractDoctrineRepositoryTest extends TestCase
     {
         $models = new ArrayCollection([$this->createModel()]);
         $databaseHandler = $this->createDatabaseHandler();
-        $this->mockDatabaseHandlerLoadAll($databaseHandler, $withModel ? $models : new ArrayCollection());
+        $databaseHandler
+            ->shouldReceive('loadAll')
+            ->andReturn($withModel ? $models : new ArrayCollection());
         $doctrineRepository = $this->getAbstractDoctrineRepository($databaseHandler);
 
         return [$doctrineRepository, $models];

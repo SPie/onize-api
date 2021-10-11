@@ -5,9 +5,10 @@ namespace App\Http\Controllers;
 use App\Auth\AuthManager;
 use App\Http\Requests\Projects\AcceptInvitation;
 use App\Http\Requests\Projects\Invite;
+use App\Projects\Invites\Exceptions\RoleProjectNotAllowedException;
 use App\Projects\Invites\InvitationManager;
 use App\Projects\Invites\InvitationModel;
-use App\Projects\RoleModel;
+use App\Projects\ProjectModel;
 use Illuminate\Contracts\Routing\ResponseFactory;
 use Illuminate\Http\JsonResponse;
 
@@ -24,12 +25,16 @@ final class InvitationsController extends Controller
         parent::__construct($responseFactory);
     }
 
-    public function invite(RoleModel $role, Invite $invite): JsonResponse
+    public function invite(ProjectModel $project, Invite $invite): JsonResponse
     {
+        if ($project->getId() !== $invite->getRole()->getProject()->getId()) {
+            throw new RoleProjectNotAllowedException('Invite for the roles project not allowed.');
+        }
+
         return $this->getResponseFactory()->json(
             [
                 self::RESPONSE_PARAMETER_INVITATION => $this->invitationManager->inviteMember(
-                    $role,
+                    $invite->getRole(),
                     $invite->getEmail(),
                     $invite->getMetaData()
                 )->toArray()

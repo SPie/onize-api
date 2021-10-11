@@ -3,32 +3,41 @@
 namespace Tests\Unit\Projects;
 
 use App\Models\Exceptions\ModelNotFoundException;
+use App\Models\Exceptions\ModelsNotFoundException;
 use App\Projects\MemberModelFactory;
 use App\Projects\MemberRepository;
+use App\Projects\PermissionRepository;
 use App\Projects\RoleManager;
 use App\Projects\RoleModelFactory;
 use App\Projects\RoleRepository;
+use Doctrine\Common\Collections\ArrayCollection;
 use Tests\Helper\ModelHelper;
 use Tests\Helper\ProjectHelper;
 use Tests\Helper\UsersHelper;
 use Tests\TestCase;
 
-/**
- * Class RoleManagerTest
- *
- * @package Tests\Unit\Projects
- */
 final class RoleManagerTest extends TestCase
 {
     use ModelHelper;
     use ProjectHelper;
     use UsersHelper;
 
-    //region Tests
+    private function getRoleManager(
+        RoleRepository $roleRepository = null,
+        RoleModelFactory $roleModelFactory = null,
+        MemberRepository $memberRepository = null,
+        MemberModelFactory $memberModelFactory = null,
+        PermissionRepository $permissionRepository = null
+    ): RoleManager {
+        return new RoleManager(
+            $roleRepository ?: $this->createRoleRepository(),
+            $roleModelFactory ?: $this->createRoleModelFactory(),
+            $memberRepository ?: $this->createMemberRepository(),
+            $memberModelFactory ?: $this->createMemberModelFactory(),
+            $permissionRepository ?: $this->createPermissionRepository()
+        );
+    }
 
-    /**
-     * @return array
-     */
     private function setUpCreateOwnerRoleTest(): array
     {
         $project = $this->createProjectModel();
@@ -63,9 +72,6 @@ final class RoleManagerTest extends TestCase
         ];
     }
 
-    /**
-     * @return void
-     */
     public function testCreateOwnerRole(): void
     {
         /** @var RoleManager $roleManager */
@@ -85,13 +91,6 @@ final class RoleManagerTest extends TestCase
             ->assertRepositorySave($roleRepository, $role);
     }
 
-    /**
-     * @param bool $withPermission
-     * @param bool $withRole
-     * @param bool $withOwner
-     *
-     * @return array
-     */
     private function setUpHasPermissionForActionTest(
         bool $withPermission = true,
         bool $withRole = true,
@@ -110,9 +109,6 @@ final class RoleManagerTest extends TestCase
         return [$roleManager, $project, $user, $permissionName];
     }
 
-    /**
-     * @return void
-     */
     public function testHasPermissionForAction(): void
     {
         /** @var RoleManager $roleManager */
@@ -121,9 +117,6 @@ final class RoleManagerTest extends TestCase
         $this->assertTrue($roleManager->hasPermissionForAction($project, $user, $permissionName));
     }
 
-    /**
-     * @return void
-     */
     public function testHasPermissionForActionWithoutPermission(): void
     {
         /** @var RoleManager $roleManager */
@@ -132,9 +125,6 @@ final class RoleManagerTest extends TestCase
         $this->assertFalse($roleManager->hasPermissionForAction($project, $user, $permissionName));
     }
 
-    /**
-     * @return void
-     */
     public function testHasPermissionForActionWithoutRole(): void
     {
         /** @var RoleManager $roleManager */
@@ -143,9 +133,6 @@ final class RoleManagerTest extends TestCase
         $this->assertFalse($roleManager->hasPermissionForAction($project, $user, $permissionName));
     }
 
-    /**
-     * @return void
-     */
     public function testHasPermissionForActionWithOwner(): void
     {
         /** @var RoleManager $roleManager */
@@ -154,9 +141,6 @@ final class RoleManagerTest extends TestCase
         $this->assertTrue($roleManager->hasPermissionForAction($project, $user, $permissionName));
     }
 
-    /**
-     * @return array
-     */
     private function setUpGetRoleTest(bool $withRole = true): array
     {
         $uuid = $this->getFaker()->uuid;
@@ -168,9 +152,6 @@ final class RoleManagerTest extends TestCase
         return [$roleManager, $uuid, $role];
     }
 
-    /**
-     * @return void
-     */
     public function testGetRole(): void
     {
         /** @var RoleManager $roleManager */
@@ -179,9 +160,6 @@ final class RoleManagerTest extends TestCase
         $this->assertEquals($role, $roleManager->getRole($uuid));
     }
 
-    /**
-     * @return void
-     */
     public function testGetRoleWithoutRole(): void
     {
         /** @var RoleManager $roleManager */
@@ -192,27 +170,62 @@ final class RoleManagerTest extends TestCase
         $roleManager->getRole($uuid);
     }
 
-    //endregion
+    private function setUpGetPermissionsTest(bool $withPermissions = true): array
+    {
+        $permissionName = $this->getFaker()->word;
+        $permission = $this->createPermissionModel();
+        $permissionRepository = $this->createPermissionRepository();
+        $this->mockPermissionRepositoryFindByNames($permissionRepository, new ArrayCollection($withPermissions ? [$permission] : []), [$permissionName]);
+        $roleManager = $this->getRoleManager(permissionRepository: $permissionRepository);
 
-    /**
-     * @param RoleRepository|null       $roleRepository
-     * @param RoleModelFactory|null     $roleModelFactory
-     * @param MemberRepository|null     $memberRepository
-     * @param MemberModelFactory|null   $memberModelFactory
-     *
-     * @return RoleManager
-     */
-    private function getRoleManager(
-        RoleRepository $roleRepository = null,
-        RoleModelFactory $roleModelFactory = null,
-        MemberRepository $memberRepository = null,
-        MemberModelFactory $memberModelFactory = null
-    ): RoleManager {
-        return new RoleManager(
-            $roleRepository ?: $this->createRoleRepository(),
-            $roleModelFactory ?: $this->createRoleModelFactory(),
-            $memberRepository ?: $this->createMemberRepository(),
-            $memberModelFactory ?: $this->createMemberModelFactory()
-        );
+        return [$roleManager, $permissionName, $permission];
+    }
+
+    public function testGetPermissions(): void
+    {
+        /** @var RoleManager $roleManager */
+        [$roleManager, $permissionName, $permission] = $this->setUpGetPermissionsTest();
+
+        $this->assertEquals(new ArrayCollection([$permission]), $roleManager->getPermissions([$permissionName]));
+    }
+
+    public function testGetPermissionsWithoutFoundPermissions(): void
+    {
+        /** @var RoleManager $roleManager */
+        [$roleManager, $permissionName] = $this->setUpGetPermissionsTest(false);
+
+        try {
+            $roleManager->getPermissions([$permissionName]);
+
+            $this->assertTrue(false);
+        } catch (ModelsNotFoundException $e) {
+            $this->assertEquals([$permissionName], $e->getIdentifiers());
+        }
+    }
+
+    private function setUpCreateRoleTest(): array
+    {
+        $project = $this->createProjectModel();
+        $label = $this->getFaker()->word;
+        $permission = $this->createPermissionModel();
+        $role = $this->createRoleModel();
+        $this->mockRoleModelSetPermissions($role, [$permission]);
+        $roleModelFactory = $this->createRoleModelFactory();
+        $this->mockRoleModelFactoryCreate($roleModelFactory, $role, $project, $label);
+        $roleRepository = $this->createRoleRepository();
+        $this->mockRepositorySave($roleRepository, $role);
+        $roleManager = $this->getRoleManager($roleRepository, $roleModelFactory);
+
+        return [$roleManager, $project, $label, $permission, $role, $roleRepository];
+    }
+
+    public function testCreateRole(): void
+    {
+        /** @var RoleManager $roleManager */
+        [$roleManager, $project, $label, $permission, $role, $roleRepository] = $this->setUpCreateRoleTest();
+
+        $this->assertEquals($role, $roleManager->createRole($project, $label, new ArrayCollection([$permission])));
+        $this->assertRepositorySave($roleRepository, $role);
+        $this->assertRoleModelSetPermissions($role, [$permission]);
     }
 }

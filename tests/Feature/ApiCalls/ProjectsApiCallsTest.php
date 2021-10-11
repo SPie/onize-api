@@ -1870,4 +1870,193 @@ final class ProjectsApiCallsTest extends FeatureTestCase
 
         $response->assertNotFound();
     }
+
+    private function setUpCreateRoleTest(
+        bool $withAuthenticatedUser = true,
+        bool $withAuthorizedUser = true,
+        bool $withOwner = false
+    ): array {
+        if ($withAuthorizedUser) {
+            $role = $this->createRoleWithPermission($this->getConcretePermission(PermissionModel::PERMISSION_PROJECTS_ROLES_MANAGEMENT));
+        } elseif ($withOwner) {
+            $role = $this->createOwnerRole();
+        } else {
+            $role = $this->createRoleEntities()->first();
+        }
+        $user = $this->createUserWithRole($role);
+        if ($withAuthenticatedUser) {
+            $this->actingAs($user);
+        }
+
+        $label = $this->getFaker()->word;
+
+        $permissionPool = [
+            PermissionModel::PERMISSION_PROJECTS_INVITATIONS_MANAGEMENT,
+            PermissionModel::PERMISSION_PROJECTS_ROLES_MANAGEMENT,
+            PermissionModel::PERMISSION_PROJECTS_MEMBERS_SHOW,
+        ];
+
+        return [$role->getProject(), $label, $permissionPool[\mt_rand(0, 2)]];
+    }
+
+    public function testCreateRole(): void
+    {
+        [$project, $label, $permission] = $this->setUpCreateRoleTest();
+
+        $response = $this->doApiCall(
+            'POST',
+            $this->getUrl(ProjectsController::ROUTE_NAME_CREATE_ROLE, ['project' => $project->getUuid()]),
+            [
+                'label' => $label,
+                'permissions' => [$permission],
+            ]
+        );
+
+        $response->assertCreated();
+        $role = $this->getConcreteRoleRepository()->findAll()->get(1);
+        $this->assertEquals($label, $role->getLabel());
+        $this->assertEquals($project, $role->getProject());
+        $this->assertEquals($this->getConcretePermission($permission), $role->getPermissions()->first());
+        $response->assertJsonFragment([
+            'role' => [
+                'uuid'  => $role->getUuid(),
+                'label' => $label,
+                'owner' => false,
+            ]
+        ]);
+    }
+
+    public function testCreateRoleWithoutFoundProject(): void
+    {
+        [$project, $label, $permission] = $this->setUpCreateRoleTest();
+
+        $response = $this->doApiCall(
+            'POST',
+            $this->getUrl(ProjectsController::ROUTE_NAME_CREATE_ROLE, ['project' => $this->getFaker()->uuid]),
+            [
+                'label' => $label,
+                'permissions' => [$permission],
+            ]
+        );
+
+        $response->assertNotFound();
+    }
+
+    public function testCreateRoleWithoutLabel(): void
+    {
+        [$project, $label, $permission] = $this->setUpCreateRoleTest();
+
+        $response = $this->doApiCall(
+            'POST',
+            $this->getUrl(ProjectsController::ROUTE_NAME_CREATE_ROLE, ['project' => $project->getUuid()]),
+            [
+                'permissions' => [$permission],
+            ]
+        );
+
+        $response->assertStatus(422);
+        $response->assertJsonFragment([
+            'label' => ['validation.required']
+        ]);
+    }
+
+    public function testCreateRoleWithInvalidLabel(): void
+    {
+        [$project, $label, $permission] = $this->setUpCreateRoleTest();
+
+        $response = $this->doApiCall(
+            'POST',
+            $this->getUrl(ProjectsController::ROUTE_NAME_CREATE_ROLE, ['project' => $project->getUuid()]),
+            [
+                'label' => $this->getFaker()->numberBetween(1),
+                'permissions' => [$permission],
+            ]
+        );
+
+        $response->assertStatus(422);
+        $response->assertJsonFragment(['label' => ['validation.string']]);
+    }
+
+    public function testCreateRoleWithoutPermissions(): void
+    {
+        [$project, $label, $permission] = $this->setUpCreateRoleTest();
+
+        $response = $this->doApiCall(
+            'POST',
+            $this->getUrl(ProjectsController::ROUTE_NAME_CREATE_ROLE, ['project' => $project->getUuid()]),
+            [
+                'label' => $label,
+            ]
+        );
+
+        $response->assertCreated();
+        $role = $this->getConcreteRoleRepository()->findAll()->get(1);
+        $this->assertTrue($role->getPermissions()->isEmpty());
+    }
+
+    public function testCreateRoleWithoutFoundRole(): void
+    {
+        [$project, $label] = $this->setUpCreateRoleTest();
+        $permission = $this->getFaker()->word;
+
+        $response = $this->doApiCall(
+            'POST',
+            $this->getUrl(ProjectsController::ROUTE_NAME_CREATE_ROLE, ['project' => $project->getUuid()]),
+            [
+                'label' => $label,
+                'permissions' => [$permission],
+            ]
+        );
+
+        $response->assertStatus(422);
+        $response->assertJsonFragment(['permissions' => ['validation.permissions-not-found:' . $permission]]);
+    }
+
+    public function testCreateRoleWithoutAuthenticatedUser(): void
+    {
+        [$project, $label, $permission] = $this->setUpCreateRoleTest(withAuthenticatedUser: false);
+
+        $response = $this->doApiCall(
+            'POST',
+            $this->getUrl(ProjectsController::ROUTE_NAME_CREATE_ROLE, ['project' => $project->getUuid()]),
+            [
+                'label' => $label,
+                'permissions' => [$permission],
+            ]
+        );
+
+        $response->assertStatus(401);
+    }
+
+    public function testCreateRoleWithoutAuthorizedUser(): void
+    {
+        [$project, $label, $permission] = $this->setUpCreateRoleTest(withAuthorizedUser: false);
+
+        $response = $this->doApiCall(
+            'POST',
+            $this->getUrl(ProjectsController::ROUTE_NAME_CREATE_ROLE, ['project' => $project->getUuid()]),
+            [
+                'label' => $label,
+                'permissions' => [$permission],
+            ]
+        );
+
+        $response->assertStatus(403);
+    }
+
+    public function testCreateRoleWithOwner(): void
+    {
+        [$project, $label, $permission] = $this->setUpCreateRoleTest(withAuthorizedUser: false, withOwner: true);
+
+        $response = $this->doApiCall(
+            'POST',
+            $this->getUrl(ProjectsController::ROUTE_NAME_CREATE_ROLE, ['project' => $project->getUuid()]),
+            [
+                'label' => $label,
+                'permissions' => [$permission],
+            ]
+        );
+
+        $response->assertCreated();
+    }
 }

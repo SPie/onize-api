@@ -47,4 +47,13 @@ trait ReflectionHelper
 
         return $property->getValue($object);
     }
+
+    private function setPrivateProperty($object, string $propertyName, $value)
+    {
+        $property = $this->getReflectionObject($object)->getProperty($propertyName);
+        $property->setAccessible(true);
+        $property->setValue($object, $value);
+
+        return $object;
+    }
 }

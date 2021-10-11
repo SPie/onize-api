@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Auth\AuthManager;
 use App\Http\Requests\Projects\ChangeRole;
 use App\Http\Requests\Projects\Create;
+use App\Http\Requests\Projects\CreateRole;
 use App\Projects\MemberModel;
 use App\Projects\ProjectManager;
 use App\Projects\ProjectModel;
@@ -15,16 +16,18 @@ use Illuminate\Http\JsonResponse;
 
 final class ProjectsController extends Controller
 {
-    public const ROUTE_NAME_CREATE         = 'projects.create';
-    public const ROUTE_NAME_USERS_PROJECTS = 'projects.usersProjects';
-    public const ROUTE_NAME_SHOW           = 'projects.show';
-    public const ROUTE_NAME_MEMBERS        = 'projects.members';
-    public const ROUTE_NAME_REMOVE_MEMBER  = 'projects.members.remove';
-    public const ROUTE_NAME_CHANGE_ROLE    = 'projects.roles.change';
+    public const ROUTE_NAME_CREATE             = 'projects.create';
+    public const ROUTE_NAME_USERS_PROJECTS     = 'projects.usersProjects';
+    public const ROUTE_NAME_SHOW               = 'projects.show';
+    public const ROUTE_NAME_MEMBERS            = 'projects.members';
+    public const ROUTE_NAME_REMOVE_MEMBER      = 'projects.members.remove';
+    public const ROUTE_NAME_CREATE_ROLE        = 'projects.roles.create';
+    public const ROUTE_NAME_CHANGE_ROLE        = 'projects.roles.change';
 
     private const RESPONSE_PARAMETER_PROJECT    = 'project';
     private const RESPONSE_PARAMETER_PROJECTS   = 'projects';
     private const RESPONSE_PARAMETER_MEMBERS    = 'members';
+    private const RESPONSE_PARAMETER_ROLE       = 'role';
 
     public function __construct(private ProjectManager $projectManager, ResponseFactory $responseFactory)
     {
@@ -82,6 +85,20 @@ final class ProjectsController extends Controller
         $this->projectManager->removeMember($project, $user);
 
         return $this->getResponseFactory()->json([], JsonResponse::HTTP_NO_CONTENT);
+    }
+
+    public function createRole(ProjectModel $project, CreateRole $request, RoleManager $roleManager): JsonResponse
+    {
+        $role = $roleManager->createRole(
+            $project,
+            $request->getLabel(),
+            $request->getPermissions()
+        );
+
+        return $this->getResponseFactory()->json(
+            [self::RESPONSE_PARAMETER_ROLE => $role->toArray()],
+            JsonResponse::HTTP_CREATED
+        );
     }
 
     public function changeRole(ChangeRole $request): JsonResponse

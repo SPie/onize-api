@@ -304,6 +304,26 @@ trait ProjectHelper
         return $this;
     }
 
+    private function mockRoleModelSetPermissions(MockInterface $roleModel, array $permissions): self
+    {
+        $roleModel
+            ->shouldReceive('setPermissions')
+            ->with($permissions)
+            ->andReturn($roleModel);
+
+        return $this;
+    }
+
+    private function assertRoleModelSetPermissions(MockInterface $roleModel, array $permissions): self
+    {
+        $roleModel
+            ->shouldHaveReceived('setPermissions')
+            ->with($permissions)
+            ->once();
+
+        return $this;
+    }
+
     /**
      * @return RoleDoctrineModel[]|Collection
      */
@@ -386,6 +406,41 @@ trait ProjectHelper
             ->shouldReceive('getRole')
             ->with($uuid)
             ->andThrow($role);
+
+        return $this;
+    }
+
+    private function mockRoleManagerCreateRole(
+        MockInterface $roleManager,
+        RoleModel $role,
+        ProjectModel $project,
+        string $label,
+        Collection $permissions
+    ): self {
+        $roleManager
+            ->shouldReceive('createRole')
+            ->with($project, $label, $permissions)
+            ->andReturn($role);
+
+        return $this;
+    }
+
+    /**
+     * @param array|\Exception $permissions
+     */
+    private function mockRoleMangerGetPermissions(MockInterface $roleManager, $permissions, array $permissionNames): self
+    {
+        $expectation = $roleManager
+            ->shouldReceive('getPermissions')
+            ->with($permissionNames);
+
+        if ($permissions instanceof \Exception) {
+            $expectation->andThrow($permissions);
+
+            return $this;
+        }
+
+        $expectation->andReturn($permissions);
 
         return $this;
     }
@@ -902,5 +957,26 @@ trait ProjectHelper
     private function createMemberRepository(): MemberRepository
     {
         return m::spy(MemberRepository::class);
+    }
+
+    /**
+     * @return PermissionRepository|MockInterface
+     */
+    private function createPermissionRepository(): PermissionRepository
+    {
+        return m::spy(PermissionRepository::class);
+    }
+
+    private function mockPermissionRepositoryFindByNames(
+        MockInterface $permissionRepository,
+        Collection $permissions,
+        array $names
+    ): self {
+        $permissionRepository
+            ->shouldReceive('findByNames')
+            ->with($names)
+            ->andReturn($permissions);
+
+        return $this;
     }
 }

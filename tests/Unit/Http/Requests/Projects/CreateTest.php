@@ -10,21 +10,16 @@ use Tests\Helper\HttpHelper;
 use Tests\Helper\ReflectionHelper;
 use Tests\TestCase;
 
-/**
- * Class CreateTest
- *
- * @package Tests\Unit\Http\Requests\Projects
- */
 final class CreateTest extends TestCase
 {
     use HttpHelper;
     use ReflectionHelper;
 
-    //region Tests
+    private function getCreate(): Create
+    {
+        return new Create();
+    }
 
-    /**
-     * @return void
-     */
     public function testRules(): void
     {
         $this->assertEquals(
@@ -47,9 +42,6 @@ final class CreateTest extends TestCase
         );
     }
 
-    /**
-     * @return void
-     */
     public function testGetLabel(): void
     {
         $label = $this->getFaker()->word;
@@ -59,9 +51,6 @@ final class CreateTest extends TestCase
         $this->assertEquals($label, $request->getLabel());
     }
 
-    /**
-     * @return void
-     */
     public function testGetDescription(): void
     {
         $description = $this->getFaker()->word;
@@ -71,9 +60,6 @@ final class CreateTest extends TestCase
         $this->assertEquals($description, $request->getDescription());
     }
 
-    /**
-     * @return void
-     */
     public function testGetMetaDataElements(): void
     {
         $metaDataElements = [$this->getFaker()->word => $this->getFaker()->word];
@@ -83,17 +69,11 @@ final class CreateTest extends TestCase
         $this->assertEquals($metaDataElements, $request->getMetaDataElements());
     }
 
-    /**
-     * @return void
-     */
     public function testGetMetaDataElementsWithoutElements(): void
     {
         $this->assertEquals([], $this->getCreate()->getMetaDataElements());
     }
 
-    /**
-     * @return void
-     */
     public function testGetMetaData(): void
     {
         $metaData = [$this->getFaker()->word => $this->getFaker()->word];
@@ -103,21 +83,11 @@ final class CreateTest extends TestCase
         $this->assertEquals($metaData, $request->getMetaData());
     }
 
-    /**
-     * @return void
-     */
     public function testGetMetaDataWithoutMetaData(): void
     {
         $this->assertEquals([], $this->getCreate()->getMetaData());
     }
 
-    /**
-     * @param bool $withOptionalMetaData
-     * @param bool $withRequiredMetaData
-     * @param bool $withValidMetaData
-     *
-     * @return array
-     */
     private function setUpTestValidateMetaDataRuleTest(
         bool $withOptionalMetaData = true,
         bool $withRequiredMetaData = true,
@@ -174,9 +144,6 @@ final class CreateTest extends TestCase
         return [$rule, $metaDataElements, $metaData, $messageBag];
     }
 
-    /**
-     * @return void
-     */
     public function testValidateMetaDataRule(): void
     {
         [$rule, $metaDataElements, $metaData] = $this->setUpTestValidateMetaDataRuleTest();
@@ -185,9 +152,6 @@ final class CreateTest extends TestCase
         }));
     }
 
-    /**
-     * @return void
-     */
     public function testValidateMetaDataRuleWithoutMetaDataArray(): void
     {
         [$rule] = $this->setUpTestValidateMetaDataRuleTest();
@@ -199,9 +163,6 @@ final class CreateTest extends TestCase
         $this->assertEquals('validation.array', $validationError);
     }
 
-    /**
-     * @return void
-     */
     public function testValidateMetaDataRuleWithoutNonRequiredMetadataField(): void
     {
         [$rule, $metaDataElements, $metaData] = $this->setUpTestValidateMetaDataRuleTest(false);
@@ -210,9 +171,6 @@ final class CreateTest extends TestCase
         }));
     }
 
-    /**
-     * @return void
-     */
     public function testValidateMetaDataRuleWithoutRequiredMetadataField(): void
     {
         /** @var MessageBag|MockInterface $messageBag */
@@ -226,9 +184,6 @@ final class CreateTest extends TestCase
             ->once();
     }
 
-    /**
-     * @return void
-     */
     public function testValidateMetaDataRuleWithoutExistingMetaDataElement(): void
     {
         /** @var MessageBag|MockInterface $messageBag */
@@ -243,9 +198,6 @@ final class CreateTest extends TestCase
             ->once();
     }
 
-    /**
-     * @return void
-     */
     public function testValidateMetaDataRuleWithInvalidMetaData(): void
     {
         /** @var MessageBag|MockInterface $messageBag */
@@ -266,15 +218,5 @@ final class CreateTest extends TestCase
                 'birthday' => ['validation.date'],
             ]])
             ->once();
-    }
-
-    //endregion
-
-    /**
-     * @return Create
-     */
-    private function getCreate(): Create
-    {
-        return new Create();
     }
 }

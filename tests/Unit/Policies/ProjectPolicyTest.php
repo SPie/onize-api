@@ -179,6 +179,39 @@ final class ProjectPolicyTest extends TestCase
         $this->assertFalse($projectPolicy->invite($user, $project));
     }
 
+    private function setUpCreateRoleTest(bool $allowed = true): array
+    {
+        $user = $this->createUserModel();
+        $project = $this->createProjectModel();
+        $roleManager = $this->createRoleManager();
+        $this->mockRoleManagerHasPermissionForAction(
+            $roleManager,
+            $allowed,
+            $project,
+            $user,
+            PermissionModel::PERMISSION_PROJECTS_ROLES_MANAGEMENT
+        );
+        $projectPolicy = $this->getProjectPolicy($roleManager);
+
+        return [$projectPolicy, $user, $project];
+    }
+
+    public function testCreateRole(): void
+    {
+        /** @var ProjectPolicy $projectPolicy */
+        [$projectPolicy, $user, $project] = $this->setUpCreateRoleTest();
+
+        $this->assertTrue($projectPolicy->createRole($user, $project));
+    }
+
+    public function testCreateRoleWithoutPermission(): void
+    {
+        /** @var ProjectPolicy $projectPolicy */
+        [$projectPolicy, $user, $project] = $this->setUpCreateRoleTest(false);
+
+        $this->assertFalse($projectPolicy->createRole($user, $project));
+    }
+
     private function setUpChangeRoleTest(): array
     {
         $user = $this->createUserModel();

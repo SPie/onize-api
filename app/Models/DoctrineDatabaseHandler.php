@@ -7,88 +7,28 @@ use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\EntityManager;
 use Doctrine\ORM\Persisters\Entity\EntityPersister;
 
-/**
- * Class DoctrineDatabaseHandler
- *
- * @package App\Models
- */
 final class DoctrineDatabaseHandler implements DatabaseHandler
 {
-    /**
-     * @var EntityManager
-     */
-    private EntityManager $entityManager;
-
-    /**
-     * @var string
-     */
-    private string $className;
-
-    /**
-     * DoctrineDatabaseHandler constructor.
-     *
-     * @param EntityManager $entityManager
-     * @param string        $className
-     */
-    public function __construct(EntityManager $entityManager, string $className)
+    public function __construct(private EntityManager $entityManager, private string $className)
     {
-        $this->entityManager = $entityManager;
-        $this->className = $className;
     }
 
-    /**
-     * @return EntityManager
-     */
-    private function getEntityManager(): EntityManager
-    {
-        return $this->entityManager;
-    }
-
-    /**
-     * @return string
-     */
-    private function getClassName(): string
-    {
-        return $this->className;
-    }
-
-    /**
-     * @return EntityPersister
-     */
     private function getEntityPersister(): EntityPersister
     {
-        return $this->getEntityManager()->getUnitOfWork()->getEntityPersister($this->getClassName());
+        return $this->entityManager->getUnitOfWork()->getEntityPersister($this->className);
     }
 
-    /**
-     * @param int $id
-     *
-     * @return Model|object|null
-     */
     public function find(int $id): ?Model
     {
-        return $this->getEntityManager()->find($this->getClassName(), $id);
+        return $this->entityManager->find($this->className, $id);
     }
 
-    /**
-     * @param array $criteria
-     *
-     * @return Model|object|null
-     */
     public function load(array $criteria): ?Model
     {
         return $this->getEntityPersister()->load($criteria);
     }
 
-    /**
-     * @param array    $criteria
-     * @param array    $orderBy
-     * @param int|null $limit
-     * @param int|null $offset
-     *
-     * @return Collection
-     */
-    public function loadAll(array $criteria = [], array $orderBy = [], int $limit = null, int $offset = null): Collection
+    public function loadAll(array $criteria = [], ?array $orderBy = null, int $limit = null, int $offset = null): Collection
     {
         return new ArrayCollection($this->getEntityPersister()->loadAll(
             $criteria,
@@ -98,15 +38,9 @@ final class DoctrineDatabaseHandler implements DatabaseHandler
         ));
     }
 
-    /**
-     * @param Model $model
-     * @param bool  $flush
-     *
-     * @return Model
-     */
     public function save(Model $model, bool $flush = true): Model
     {
-        $this->getEntityManager()->persist($model);
+        $this->entityManager->persist($model);
 
         if ($flush) {
             $this->flush();
@@ -115,15 +49,9 @@ final class DoctrineDatabaseHandler implements DatabaseHandler
         return $model;
     }
 
-    /**
-     * @param Model $model
-     * @param bool  $flush
-     *
-     * @return DatabaseHandler
-     */
     public function delete(Model $model, bool $flush = true): DatabaseHandler
     {
-        $this->getEntityManager()->remove($model);
+        $this->entityManager->remove($model);
 
         if ($flush) {
             $this->flush();
@@ -132,12 +60,9 @@ final class DoctrineDatabaseHandler implements DatabaseHandler
         return $this;
     }
 
-    /**
-     * @return DatabaseHandler
-     */
     public function flush(): DatabaseHandler
     {
-        $this->getEntityManager()->flush();
+        $this->entityManager->flush();
 
         return $this;
     }

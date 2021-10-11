@@ -50,6 +50,15 @@ final class ProjectPolicy
         );
     }
 
+    public function createRole(UserModel $user, ProjectModel $project): bool
+    {
+        return $this->roleManager->hasPermissionForAction(
+            $project,
+            $user,
+            PermissionModel::PERMISSION_PROJECTS_ROLES_MANAGEMENT
+        );
+    }
+
     public function changeRole(UserModel $user, ProjectModel $project): bool
     {
         // TODO

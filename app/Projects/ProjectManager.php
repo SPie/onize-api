@@ -73,4 +73,9 @@ class ProjectManager
 
         return $user->addMember($newMember);
     }
+
+    public function changeRole(UserModel $user, RoleModel $role): UserModel
+    {
+        // TODO
+    }
 }

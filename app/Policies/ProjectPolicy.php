@@ -58,4 +58,21 @@ final class ProjectPolicy
             PermissionModel::PERMISSION_PROJECTS_ROLES_MANAGEMENT
         );
     }
+
+    public function changeRole(UserModel $user, ProjectModel $project, UserModel $memberUser): bool
+    {
+        if ($user->getMemberOfProject($project)->getRole()->isOwner()) {
+            return true;
+        }
+
+        if ($memberUser->getMemberOfProject($project)->getRole()->isOwner()) {
+            return false;
+        }
+
+        return $this->roleManager->hasPermissionForAction(
+            $project,
+            $user,
+            PermissionModel::PERMISSION_PROJECTS_ROLES_MANAGEMENT
+        );
+    }
 }

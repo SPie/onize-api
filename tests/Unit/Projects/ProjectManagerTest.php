@@ -3,7 +3,8 @@
 namespace Tests\Unit\Projects;
 
 use App\Models\Exceptions\ModelNotFoundException;
-use App\Projects\Invites\Exceptions\UserNotMemberException;
+use App\Projects\Exceptions\UserIsNoMemberException;
+use App\Projects\MemberModelFactory;
 use App\Projects\MemberRepository;
 use App\Projects\MetaDataElementModelFactory;
 use App\Projects\ProjectManager;
@@ -25,13 +26,15 @@ final class ProjectManagerTest extends TestCase
         ProjectRepository $projectRepository = null,
         ProjectModelFactory $projectModelFactory = null,
         MetaDataElementModelFactory $metaDataElementModelFactory = null,
-        MemberRepository $memberRepository = null
+        MemberRepository $memberRepository = null,
+        MemberModelFactory $memberModelFactory = null
     ): ProjectManager {
         return new ProjectManager(
             $projectRepository ?: $this->createProjectRepository(),
             $projectModelFactory ?: $this->createProjectModelFactory(),
             $metaDataElementModelFactory ?: $this->createMetaDataElementModelFactory(),
-            $memberRepository ?: $this->createMemberRepository()
+            $memberRepository ?: $this->createMemberRepository(),
+            $memberModelFactory ?: $this->createMemberModelFactory()
         );
     }
 
@@ -130,21 +133,11 @@ final class ProjectManagerTest extends TestCase
 
     private function setUpRemoveMemberTest(bool $userIsMember = true): array
     {
-        $user = $this->createUserModel();
-        $this->mockModelGetId($user, $this->getFaker()->numberBetween(1));
-        $otherUser = $this->createUserModel();
-        $this->mockModelGetId($otherUser, $user->getId() + 1);
         $member = $this->createMemberModel();
-        $this->mockMemberModelGetUser($member, $user);
-        $otherMember = $this->createMemberModel();
-        $this->mockMemberModelGetUser($otherMember, $otherUser);
-        $members = [$otherMember];
-        if ($userIsMember) {
-            $members[] = $member;
-        }
         $project = $this->createProjectModel();
-        $this->mockProjectModelGetMembers($project, new ArrayCollection($members));
         $memberRepository = $this->createMemberRepository();
+        $user = $this->createUserModel();
+        $this->mockUserModelGetMemberOfProject($user, $userIsMember ? $member : null, $project);
         $projectManager = $this->getProjectManager(null, null, null, $memberRepository);
 
         return [$projectManager, $project, $user, $memberRepository, $member];
@@ -164,8 +157,56 @@ final class ProjectManagerTest extends TestCase
         /** @var ProjectManager $projectManager */
         [$projectManager, $project, $user] = $this->setUpRemoveMemberTest(false);
 
-        $this->expectException(UserNotMemberException::class);
+        $this->expectException(UserIsNoMemberException::class);
 
         $projectManager->removeMember($project, $user);
+    }
+
+    private function setUpChangeRoleTest(bool $userIsMember = true): array
+    {
+        $project = $this->createProjectModel();
+        $role = $this->createRoleModel();
+        $this->mockRoleModelGetProject($role, $project);
+        $metaData = [$this->getFaker()->word => $this->getFaker()->word];
+        $member = $this->createMemberModel();
+        $this->mockMemberModelGetMetaData($member, $metaData);
+        $newMember = $this->createMemberModel();
+        $user = $this->createUserModel();
+        $this
+            ->mockUserModelGetMemberOfProject($user, $userIsMember ? $member : null, $project)
+            ->mockUserModelAddMember($user, $newMember);
+        $memberModelFactory = $this->createMemberModelFactory();
+        $this->mockMemberModelFactoryCreate($memberModelFactory, $newMember, $user, $role, $metaData);
+        $memberRepository = $this->createMemberRepository();
+        $projectManager = $this->getProjectManager(
+            null,
+            null,
+            null,
+            $memberRepository,
+            $memberModelFactory
+        );
+
+        return [$projectManager, $user, $role, $memberRepository, $member, $newMember];
+    }
+
+    public function testChangeRole(): void
+    {
+        /** @var ProjectManager $projectManager */
+        [$projectManager, $user, $role, $memberRepository, $member, $newMember] = $this->setUpChangeRoleTest();
+
+        $this->assertEquals($user, $projectManager->changeRole($user, $role));
+        $this->assertRepositoryDelete($memberRepository, $member);
+        $this->assertRepositorySave($memberRepository, $newMember);
+        $this->assertUserModelAddMember($user, $newMember);
+    }
+
+    public function testChangeRoleWithUserIsNoMemberOfProject(): void
+    {
+        /** @var ProjectManager $projectManager */
+        [$projectManager, $user, $role] = $this->setUpChangeRoleTest(false);
+
+        $this->expectException(UserIsNoMemberException::class);
+
+        $projectManager->changeRole($user, $role);
     }
 }

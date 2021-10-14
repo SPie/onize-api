@@ -9,6 +9,7 @@ use App\Projects\ProjectManager;
 use App\Projects\ProjectModel;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
+use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Contracts\Routing\ResponseFactory;
 use Mockery as m;
 use Mockery\MockInterface;
@@ -247,5 +248,44 @@ final class ProjectsControllerTest extends TestCase
             $response,
             $this->getProjectsController(null, $responseFactory)->createRole($project, $request, $roleManager)
         );
+    }
+
+    private function setUpChangeRoleTest(bool $withAuthorizedUser = true): array
+    {
+        $project = $this->createProjectModel();
+        $user = $this->createUserModel();
+        $role = $this->createRoleModel();
+        $request = $this->createChangeRoleRequest($user, $role);
+        $gate = $this->createGate();
+        $this->mockGateAuthorize(
+            $gate,
+            $withAuthorizedUser ? $this->createJsonResponse() : new AuthorizationException(),
+            'changeRole',
+            [$project, $user]
+        );
+        $projectManager = $this->createProjectManager();
+        $response = $this->createJsonResponse();
+        $responseFactory = $this->createResponseFactory();
+        $this->mockResponseFactoryJson($responseFactory, $response, [], 204);
+        $projectsController = $this->getProjectsController($projectManager, $responseFactory);
+
+        return [$projectsController, $project, $request, $gate, $response, $projectManager, $user, $role];
+    }
+
+    public function testChangeRole(): void
+    {
+        [$projectsController, $project, $request, $gate, $response, $projectManager, $user, $role] = $this->setUpChangeRoleTest();
+
+        $this->assertEquals($response, $projectsController->changeRole($project, $request, $gate));
+        $this->assertProjectManagerChangeRole($projectManager, $user, $role);
+    }
+
+    public function testChangeRoleWithoutAuthorizedUser(): void
+    {
+        [$projectsController, $project, $request, $gate] = $this->setUpChangeRoleTest(withAuthorizedUser: false);
+
+        $this->expectException(AuthorizationException::class);
+
+        $projectsController->changeRole($project, $request, $gate);
     }
 }

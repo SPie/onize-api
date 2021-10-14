@@ -222,4 +222,15 @@ class UserDoctrineModel extends AbstractDoctrineModel implements UserModel
             fn (int $i, MemberModel $member) => $member->getRole()->getProject()->getId() === $project->getId()
         );
     }
+
+    public function getMemberOfProject(ProjectModel $project): ?MemberModel
+    {
+        foreach ($this->getMembers() as $member) {
+            if ($member->getRole()->getProject()->getId() === $project->getId()) {
+                return $member;
+            }
+        }
+
+        return null;
+    }
 }

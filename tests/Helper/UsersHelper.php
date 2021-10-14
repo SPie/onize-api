@@ -203,6 +203,39 @@ trait UsersHelper
         return $this;
     }
 
+    private function mockUserModelGetMemberOfProject(
+        MockInterface $userModel,
+        ?MemberModel $member,
+        ProjectModel $project
+    ): self {
+        $userModel
+            ->shouldReceive('getMemberOfProject')
+            ->with($project)
+            ->andReturn($member);
+
+        return $this;
+    }
+
+    private function mockUserModelAddMember(MockInterface $userModel, MemberModel $member): self
+    {
+        $userModel
+            ->shouldReceive('addMember')
+            ->with($member)
+            ->andReturn($userModel);
+
+        return $this;
+    }
+
+    private function assertUserModelAddMember(MockInterface $userModel, MemberModel $member): self
+    {
+        $userModel
+            ->shouldHaveReceived('addMember')
+            ->with($member)
+            ->once();
+
+        return $this;
+    }
+
     /**
      * @return UserManager|MockInterface
      */

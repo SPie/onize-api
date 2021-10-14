@@ -43,15 +43,13 @@ $router->group(['middleware' => 'auth'], function (Router $router) {
         $router->post('{project}/roles')->name(ProjectsController::ROUTE_NAME_CREATE_ROLE)
             ->middleware('can:createRole,project')
             ->uses('ProjectsController@createRole');
+        $router->put('{project}/roles')->name(ProjectsController::ROUTE_NAME_CHANGE_ROLE)->uses('ProjectsController@changeRole');
 
         $router->get('{project}/members')->name(ProjectsController::ROUTE_NAME_MEMBERS)->middleware('can:members,project')
             ->uses('ProjectsController@members');
         $router->delete('{project}/members/{user}')->name(ProjectsController::ROUTE_NAME_REMOVE_MEMBER)
             ->middleware('can:removeMember,project,user')
             ->uses('ProjectsController@removeMember');
-
-        $router->put('{project}/roles')->name(ProjectsController::ROUTE_NAME_CHANGE_ROLE)
-            ->uses('ProjectsController@changeRole');
 
         $router->post('{project}/invitations')->name(InvitationsController::ROUTE_NAME_INVITE)
             ->middleware('can:invite,project')

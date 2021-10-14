@@ -11,6 +11,7 @@ use App\Projects\ProjectManager;
 use App\Projects\ProjectModel;
 use App\Projects\RoleManager;
 use App\Users\UserModel;
+use Illuminate\Contracts\Auth\Access\Gate;
 use Illuminate\Contracts\Routing\ResponseFactory;
 use Illuminate\Http\JsonResponse;
 
@@ -101,8 +102,10 @@ final class ProjectsController extends Controller
         );
     }
 
-    public function changeRole(ChangeRole $request): JsonResponse
+    public function changeRole(ProjectModel $project, ChangeRole $request, Gate $gate): JsonResponse
     {
+        $gate->authorize('changeRole', [$project, $request->getUser()]);
+
         $this->projectManager->changeRole($request->getUser(), $request->getRole());
 
         return $this->getResponseFactory()->json([], JsonResponse::HTTP_NO_CONTENT);

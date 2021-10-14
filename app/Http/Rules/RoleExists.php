@@ -10,7 +10,6 @@ use Illuminate\Contracts\Validation\Rule;
 
 class RoleExists implements Rule
 {
-
     private ?RoleModel $role;
 
     private ?ProjectModel $project;

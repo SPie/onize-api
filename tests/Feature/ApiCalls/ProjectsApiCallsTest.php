@@ -2059,4 +2059,259 @@ final class ProjectsApiCallsTest extends FeatureTestCase
 
         $response->assertCreated();
     }
+
+    private function setUpChangeRoleTest(
+        bool $roleInProject = true,
+        bool $userIsMember = true,
+        bool $withAuthenticatedUser = true,
+        bool $withAuthorizedUser = true,
+        bool $withOwner = false,
+        bool $memberIsOwner = false
+    ): array {
+        if ($withOwner) {
+            $role = $this->createOwnerRole();
+        } elseif ($withAuthorizedUser) {
+            $role = $this->createRoleWithPermission($this->getConcretePermission(PermissionModel::PERMISSION_PROJECTS_ROLES_MANAGEMENT));
+        } else {
+            $role = $this->createRoleEntities()->first();
+        }
+        $user = $this->createUserWithRole($role);
+        if ($withAuthenticatedUser) {
+            $this->actingAs($user);
+        }
+
+        $memberUser = $this->createUserEntities()->first();
+        $memberRole = $this->createRoleEntities(1, [
+            RoleModel::PROPERTY_PROJECT => $role->getProject(),
+            RoleModel::PROPERTY_OWNER   => $memberIsOwner,
+        ])->first();
+        if ($userIsMember) {
+            $member = $this->createMemberEntities(1, [
+                MemberModel::PROPERTY_ROLE => $memberRole,
+                MemberModel::PROPERTY_USER => $memberUser,
+            ])->first();
+            $memberRole->addMember($member);
+            $memberUser->addMember($member);
+        }
+
+        $newRole = $this->createRoleEntities(
+            1,
+            [RoleModel::PROPERTY_PROJECT => $roleInProject ? $role->getProject() : $this->createProjectEntities()->first()]
+        )->first();
+
+        return [$role->getProject(), $memberUser, $newRole];
+    }
+
+    public function testChangeRole(): void
+    {
+        [$project, $user, $role] = $this->setUpChangeRoleTest();
+
+        $response = $this->doApiCall(
+            'PUT',
+            $this->getUrl(ProjectsController::ROUTE_NAME_CHANGE_ROLE, ['project' => $project->getUuid()]),
+            [
+                'user' => $user->getUuid(),
+                'role' => $role->getUuid(),
+            ]
+        );
+
+        $response->assertNoContent();
+        $this->assertEquals($role, $user->getMembers()->first()->getRole());
+    }
+
+    public function testChangeRoleWithProjectNotFound(): void
+    {
+        [$project, $user, $role] = $this->setUpChangeRoleTest();
+
+        $response = $this->doApiCall(
+            'PUT',
+            $this->getUrl(ProjectsController::ROUTE_NAME_CHANGE_ROLE, ['project' => $this->getFaker()->uuid]),
+            [
+                'user' => $user->getUuid(),
+                'role' => $role->getUuid(),
+            ]
+        );
+
+        $response->assertNotFound();
+    }
+
+    public function testChangeRoleWithoutUser(): void
+    {
+        [$project, $user, $role] = $this->setUpChangeRoleTest();
+
+        $response = $this->doApiCall(
+            'PUT',
+            $this->getUrl(ProjectsController::ROUTE_NAME_CHANGE_ROLE, ['project' => $project->getUuid()]),
+            [
+                'role' => $role->getUuid(),
+            ]
+        );
+
+        $response->assertStatus(422);
+        $response->assertJsonFragment(['user' => ['validation.required']]);
+    }
+
+    public function testChangeRoleWithUserNotFound(): void
+    {
+        [$project, $user, $role] = $this->setUpChangeRoleTest();
+
+        $response = $this->doApiCall(
+            'PUT',
+            $this->getUrl(ProjectsController::ROUTE_NAME_CHANGE_ROLE, ['project' => $project->getUuid()]),
+            [
+                'user' => $this->getFaker()->uuid,
+                'role' => $role->getUuid(),
+            ]
+        );
+
+        $response->assertStatus(422);
+        $response->assertJsonFragment(['user' => ['validation.user-not-found']]);
+    }
+
+    public function testChangeRoleWithoutRole(): void
+    {
+        [$project, $user] = $this->setUpChangeRoleTest();
+
+        $response = $this->doApiCall(
+            'PUT',
+            $this->getUrl(ProjectsController::ROUTE_NAME_CHANGE_ROLE, ['project' => $project->getUuid()]),
+            [
+                'user' => $user->getUuid(),
+            ]
+        );
+
+        $response->assertStatus(422);
+        $response->assertJsonFragment(['role' => ['validation.required']]);
+    }
+
+    public function testChangeRoleWithRoleNotFound(): void
+    {
+        [$project, $user] = $this->setUpChangeRoleTest();
+
+        $response = $this->doApiCall(
+            'PUT',
+            $this->getUrl(ProjectsController::ROUTE_NAME_CHANGE_ROLE, ['project' => $project->getUuid()]),
+            [
+                'user' => $user->getUuid(),
+                'role' => $this->getFaker()->uuid,
+            ]
+        );
+
+        $response->assertStatus(422);
+        $response->assertJsonFragment(['role' => ['validation.role-not-found']]);
+    }
+
+    public function testChangeRoleWithRoleNotInProject(): void
+    {
+        [$project, $user, $role] = $this->setUpChangeRoleTest(roleInProject: false);
+
+        $response = $this->doApiCall(
+            'PUT',
+            $this->getUrl(ProjectsController::ROUTE_NAME_CHANGE_ROLE, ['project' => $project->getUuid()]),
+            [
+                'user' => $user->getUuid(),
+                'role' => $role->getUuid(),
+            ]
+        );
+
+        $response->assertStatus(422);
+        $response->assertJsonFragment(['role' => ['validation.role-not-found']]);
+    }
+
+    public function testChangeRoleWithUserIsNotMember(): void
+    {
+        [$project, $user, $role] = $this->setUpChangeRoleTest(userIsMember: false);
+
+        $response = $this->doApiCall(
+            'PUT',
+            $this->getUrl(ProjectsController::ROUTE_NAME_CHANGE_ROLE, ['project' => $project->getUuid()]),
+            [
+                'user' => $user->getUuid(),
+                'role' => $role->getUuid(),
+            ]
+        );
+
+        $response->assertStatus(422);
+        $response->assertJsonFragment(['user' => ['validation.user-not-found']]);
+    }
+
+    public function testChangeRoleWithoutAuthenticatedUser(): void
+    {
+        [$project, $user, $role] = $this->setUpChangeRoleTest(withAuthenticatedUser: false);
+
+        $response = $this->doApiCall(
+            'PUT',
+            $this->getUrl(ProjectsController::ROUTE_NAME_CHANGE_ROLE, ['project' => $project->getUuid()]),
+            [
+                'user' => $user->getUuid(),
+                'role' => $role->getUuid(),
+            ]
+        );
+
+        $response->assertStatus(401);
+    }
+
+    public function testChangeRoleWithoutAuthorizedUser(): void
+    {
+        [$project, $user, $role] = $this->setUpChangeRoleTest(withAuthorizedUser: false);
+
+        $response = $this->doApiCall(
+            'PUT',
+            $this->getUrl(ProjectsController::ROUTE_NAME_CHANGE_ROLE, ['project' => $project->getUuid()]),
+            [
+                'user' => $user->getUuid(),
+                'role' => $role->getUuid(),
+            ]
+        );
+
+        $response->assertStatus(403);
+    }
+
+    public function testChangeRoleWithOwnerRole(): void
+    {
+        [$project, $user, $role] = $this->setUpChangeRoleTest(withOwner: true);
+
+        $response = $this->doApiCall(
+            'PUT',
+            $this->getUrl(ProjectsController::ROUTE_NAME_CHANGE_ROLE, ['project' => $project->getUuid()]),
+            [
+                'user' => $user->getUuid(),
+                'role' => $role->getUuid(),
+            ]
+        );
+
+        $response->assertNoContent();
+    }
+
+    public function testChangeRoleWithMemberIsOwner(): void
+    {
+        [$project, $user, $role] = $this->setUpChangeRoleTest(memberIsOwner: true);
+
+        $response = $this->doApiCall(
+            'PUT',
+            $this->getUrl(ProjectsController::ROUTE_NAME_CHANGE_ROLE, ['project' => $project->getUuid()]),
+            [
+                'user' => $user->getUuid(),
+                'role' => $role->getUuid(),
+            ]
+        );
+
+        $response->assertStatus(403);
+    }
+
+    public function testChangeRoleWithUserAndMemberAreOwner(): void
+    {
+        [$project, $user, $role] = $this->setUpChangeRoleTest(withOwner: true, memberIsOwner: true);
+
+        $response = $this->doApiCall(
+            'PUT',
+            $this->getUrl(ProjectsController::ROUTE_NAME_CHANGE_ROLE, ['project' => $project->getUuid()]),
+            [
+                'user' => $user->getUuid(),
+                'role' => $role->getUuid(),
+            ]
+        );
+
+        $response->assertNoContent();
+    }
 }

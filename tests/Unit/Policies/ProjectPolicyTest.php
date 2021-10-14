@@ -212,13 +212,66 @@ final class ProjectPolicyTest extends TestCase
         $this->assertFalse($projectPolicy->createRole($user, $project));
     }
 
-    private function setUpChangeRoleTest(): array
-    {
-        $user = $this->createUserModel();
+    private function setUpChangeRoleTest(
+        bool $allowed = true,
+        bool $memberIsOwner = false,
+        bool $userIsOwner = false
+    ): array {
         $project = $this->createProjectModel();
+        $role = $this->createRoleModel();
+        $this->mockRoleModelIsOwner($role, $userIsOwner);
+        $userMember = $this->createMemberModel();
+        $this->mockMemberModelGetRole($userMember, $role);
+        $user = $this->createUserModel();
+        $this->mockUserModelGetMemberOfProject($user, $userMember, $project);
+        $memberRole = $this->createRoleModel();
+        $this->mockRoleModelIsOwner($memberRole, $memberIsOwner);
+        $member = $this->createMemberModel();
+        $this->mockMemberModelGetRole($member, $memberRole);
+        $memberUser = $this->createUserModel();
+        $this->mockUserModelGetMemberOfProject($memberUser, $member, $project);
         $roleManager = $this->createRoleManager();
-        // TODO
+        $this->mockRoleManagerHasPermissionForAction(
+            $roleManager,
+            $allowed,
+            $project,
+            $user,
+            PermissionModel::PERMISSION_PROJECTS_ROLES_MANAGEMENT
+        );
+        $projectPolicy = $this->getProjectPolicy($roleManager);
 
-        return [];
+        return [$projectPolicy, $user, $project, $memberUser];
+    }
+
+    public function testChangeRole(): void
+    {
+        /** @var ProjectPolicy $projectPolicy */
+        [$projectPolicy, $user, $project, $memberUser] = $this->setUpChangeRoleTest();
+
+        $this->assertTrue($projectPolicy->changeRole($user, $project, $memberUser));
+    }
+
+    public function testChangeRoleWithoutPermission(): void
+    {
+        /** @var ProjectPolicy $projectPolicy */
+        [$projectPolicy, $user, $project, $memberUser] = $this->setUpChangeRoleTest(allowed: false);
+
+        $this->assertFalse($projectPolicy->changeRole($user, $project, $memberUser));
+    }
+
+    public function testChangeRoleWithOwnerUser(): void
+    {
+        /** @var ProjectPolicy $projectPolicy */
+        [$projectPolicy, $user, $project, $memberUser] = $this->setUpChangeRoleTest(memberIsOwner: true);
+
+        $this->assertFalse($projectPolicy->changeRole($user, $project, $memberUser));
+    }
+
+    public function testChangeRoleWithOwnerUserAndAuthenticatedUserIsOwner(): void
+    {
+        /** @var ProjectPolicy $projectPolicy */
+        [$projectPolicy, $user, $project, $memberUser] = $this->setUpChangeRoleTest(memberIsOwner: true, userIsOwner: true);
+
+        $this->assertTrue($projectPolicy->changeRole($user, $project, $memberUser));
     }
 }

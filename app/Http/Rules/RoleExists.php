@@ -35,6 +35,10 @@ class RoleExists implements Rule
      */
     public function passes($attribute, $value)
     {
+        if (empty($value)) {
+            return true;
+        }
+
         try {
             $role = $this->roleManager->getRole($value);
         } catch (ModelNotFoundException $e) {

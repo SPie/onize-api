@@ -44,6 +44,9 @@ $router->group(['middleware' => 'auth'], function (Router $router) {
             ->middleware('can:createRole,project')
             ->uses('ProjectsController@createRole');
         $router->put('{project}/roles')->name(ProjectsController::ROUTE_NAME_CHANGE_ROLE)->uses('ProjectsController@changeRole');
+        $router->delete('roles/{role}')->name(ProjectsController::ROUTE_NAME_REMOVE_ROLE)
+            ->middleware(['can:removeRole,role'])
+            ->uses('ProjectsController@removeRole');
 
         $router->get('{project}/members')->name(ProjectsController::ROUTE_NAME_MEMBERS)->middleware('can:members,project')
             ->uses('ProjectsController@members');

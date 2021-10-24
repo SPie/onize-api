@@ -73,6 +73,15 @@ final class RoleExistsTest extends TestCase
         $this->assertNull($rule->getRole());
     }
 
+    public function testPassesWithEmptyValue(): void
+    {
+        /** @var RoleExists $rule */
+        [$rule] = $this->setUpPassesTest();
+
+        $this->assertTrue($rule->passes($this->getFaker()->word, null));
+        $this->assertNull($rule->getRole());
+    }
+
     public function testMessage(): void
     {
         $this->assertEquals('validation.role-not-found', $this->getRoleExists()->message());

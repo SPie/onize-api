@@ -65,4 +65,21 @@ class RoleManager
 
         return $this->roleRepository->save($role);
     }
+
+    public function removeRole(RoleModel $role, RoleModel $newRole = null): ?RoleModel
+    {
+        if ($newRole) {
+            foreach ($role->getMembers() as $member) {
+                $newRole->addMember($member->setRole($newRole));
+            }
+
+            $role->setMembers([]);
+
+            $this->roleRepository->save($newRole, false);
+        }
+
+        $this->roleRepository->delete($role);
+
+        return $newRole;
+    }
 }

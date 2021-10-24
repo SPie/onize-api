@@ -21,4 +21,13 @@ final class RolePolicy
             PermissionModel::PERMISSION_PROJECTS_INVITATIONS_MANAGEMENT
         );
     }
+
+    public function removeRole(UserModel $user, RoleModel $role): bool
+    {
+        return !$role->isOwner() && $this->roleManager->hasPermissionForAction(
+            $role->getProject(),
+            $user,
+            PermissionModel::PERMISSION_PROJECTS_ROLES_MANAGEMENT
+        );
+    }
 }

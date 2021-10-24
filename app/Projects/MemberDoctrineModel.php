@@ -10,13 +10,9 @@ use Doctrine\ORM\Mapping as ORM;
 use Gedmo\Mapping\Annotation as Gedmo;
 
 /**
- * Class MemberDoctrineModel
- *
  * @ORM\Table(name="members")
  * @ORM\Entity(repositoryClass="App\Projects\MemerDoctrineRepository")
  * @Gedmo\SoftDeleteable(fieldName="deletedAt", timeAware=false)
- *
- * @package App\Projects
  */
 final class MemberDoctrineModel extends AbstractDoctrineModel implements MemberModel
 {
@@ -25,32 +21,19 @@ final class MemberDoctrineModel extends AbstractDoctrineModel implements MemberM
 
     /**
      * @ORM\ManyToOne(targetEntity="App\Users\UserDoctrineModel", inversedBy="members", cascade={"persist"})
-     *
-     * @var UserModel
      */
     private UserModel $user;
 
     /**
      * @ORM\ManyToOne(targetEntity="App\Projects\RoleDoctrineModel", inversedBy="members", cascade={"persist"})
-     *
-     * @var RoleModel
      */
     private RoleModel $role;
 
     /**
      * @ORM\Column(name="meta_data", type="string", length=255, nullable=false)
-     *
-     * @var string
      */
     private string $metaData;
 
-    /**
-     * MemberDoctrineModel constructor.
-     *
-     * @param UserModel $user
-     * @param RoleModel $role
-     * @param array     $metaData
-     */
     public function __construct(UserModel $user, RoleModel $role, array $metaData = [])
     {
         $this->user = $user;
@@ -58,25 +41,23 @@ final class MemberDoctrineModel extends AbstractDoctrineModel implements MemberM
         $this->metaData = \json_encode($metaData);
     }
 
-    /**
-     * @return UserModel
-     */
     public function getUser(): UserModel
     {
         return $this->user;
     }
 
-    /**
-     * @return RoleModel
-     */
+    public function setRole(RoleModel $role): MemberModel
+    {
+        $this->role = $role;
+
+        return $this;
+    }
+
     public function getRole(): RoleModel
     {
         return $this->role;
     }
 
-    /**
-     * @return array
-     */
     public function getMetaData(): array
     {
         return \json_decode($this->metaData, true);

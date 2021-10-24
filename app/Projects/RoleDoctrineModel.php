@@ -13,13 +13,9 @@ use Doctrine\ORM\Mapping as ORM;
 use Gedmo\Mapping\Annotation as Gedmo;
 
 /**
- * Class RoleDoctrineModel
- *
  * @ORM\Table(name="roles")
  * @ORM\Entity(repositoryClass="App\Projects\RoleDoctrineRepository")
  * @Gedmo\SoftDeleteable(fieldName="deletedAt", timeAware=false)
- *
- * @package App\Projects
  */
 final class RoleDoctrineModel extends AbstractDoctrineModel implements RoleModel
 {
@@ -29,27 +25,21 @@ final class RoleDoctrineModel extends AbstractDoctrineModel implements RoleModel
 
     /**
      * @ORM\Column(name="label", type="string", length=255, nullable=false)
-     *
-     * @var string
      */
     private string $label;
 
     /**
      * @ORM\Column(name="owner", type="boolean")
-     *
-     * @var bool
      */
     private bool $owner;
 
     /**
      * @ORM\ManyToOne(targetEntity="App\Projects\ProjectDoctrineModel", inversedBy="roles", cascade={"persist"})
-     *
-     * @var ProjectModel
      */
     private ProjectModel $project;
 
     /**
-     * @ORM\OneToMany(targetEntity="App\Projects\MemberDoctrineModel", mappedBy="role", cascade={"persist"})
+     * @ORM\OneToMany(targetEntity="App\Projects\MemberDoctrineModel", mappedBy="role", cascade={"persist","remove"})
      *
      * @var MemberModel[]|Collection
      */
@@ -73,14 +63,6 @@ final class RoleDoctrineModel extends AbstractDoctrineModel implements RoleModel
      */
     private Collection $invitations;
 
-    /**
-     * RoleDoctrineModel constructor.
-     *
-     * @param string       $uuid
-     * @param ProjectModel $project
-     * @param string       $label
-     * @param bool         $owner
-     */
     public function __construct(ProjectModel $project, string $label, bool $owner = false)
     {
         $this->project = $project;
@@ -91,11 +73,6 @@ final class RoleDoctrineModel extends AbstractDoctrineModel implements RoleModel
         $this->invitations = new ArrayCollection();
     }
 
-    /**
-     * @param string $label
-     *
-     * @return $this|RoleModel
-     */
     public function setLabel(string $label): RoleModel
     {
         $this->label = $label;
@@ -103,19 +80,11 @@ final class RoleDoctrineModel extends AbstractDoctrineModel implements RoleModel
         return $this;
     }
 
-    /**
-     * @return string
-     */
     public function getLabel(): string
     {
         return $this->label;
     }
 
-    /**
-     * @param bool $owner
-     *
-     * @return $this|RoleModel
-     */
     public function setOwner(bool $owner): RoleModel
     {
         $this->owner = $owner;
@@ -123,27 +92,16 @@ final class RoleDoctrineModel extends AbstractDoctrineModel implements RoleModel
         return $this;
     }
 
-    /**
-     * @return bool
-     */
     public function isOwner(): bool
     {
         return $this->owner;
     }
 
-    /**
-     * @return ProjectModel
-     */
     public function getProject(): ProjectModel
     {
         return $this->project;
     }
 
-    /**
-     * @param MemberModel[] $members
-     *
-     * @return RoleModel
-     */
     public function setMembers(array $members): RoleModel
     {
         $this->members = new ArrayCollection($members);
@@ -151,11 +109,6 @@ final class RoleDoctrineModel extends AbstractDoctrineModel implements RoleModel
         return $this;
     }
 
-    /**
-     * @param MemberModel $member
-     *
-     * @return RoleModel
-     */
     public function addMember(MemberModel $member): RoleModel
     {
         if (!$this->members->contains($member)) {
@@ -173,11 +126,6 @@ final class RoleDoctrineModel extends AbstractDoctrineModel implements RoleModel
         return $this->members;
     }
 
-    /**
-     * @param PermissionModel[] $permissions
-     *
-     * @return $this
-     */
     public function setPermissions(array $permissions): self
     {
         $this->permissions = new ArrayCollection($permissions);
@@ -185,11 +133,6 @@ final class RoleDoctrineModel extends AbstractDoctrineModel implements RoleModel
         return $this;
     }
 
-    /**
-     * @param PermissionModel $permission
-     *
-     * @return RoleModel
-     */
     public function addPermission(PermissionModel $permission): RoleModel
     {
         if (!$this->permissions->contains($permission)) {
@@ -207,11 +150,6 @@ final class RoleDoctrineModel extends AbstractDoctrineModel implements RoleModel
         return $this->permissions;
     }
 
-    /**
-     * @param string $permissionName
-     *
-     * @return bool
-     */
     public function hasPermission(string $permissionName): bool
     {
         return $this->getPermissions()->exists(
@@ -219,11 +157,6 @@ final class RoleDoctrineModel extends AbstractDoctrineModel implements RoleModel
         );
     }
 
-    /**
-     * @param InvitationModel[] $invitations
-     *
-     * @return RoleModel
-     */
     public function setInvitations(array $invitations): RoleModel
     {
         $this->invitations = new ArrayCollection($invitations);
@@ -231,11 +164,6 @@ final class RoleDoctrineModel extends AbstractDoctrineModel implements RoleModel
         return $this;
     }
 
-    /**
-     * @param InvitationModel $invitation
-     *
-     * @return RoleModel
-     */
     public function addInvitation(InvitationModel $invitation): RoleModel
     {
         if (!$this->invitations->contains($invitation)) {
@@ -253,11 +181,6 @@ final class RoleDoctrineModel extends AbstractDoctrineModel implements RoleModel
         return $this->invitations;
     }
 
-    /**
-     * @param bool $withProject
-     *
-     * @return array
-     */
     public function toArray(bool $withProject = false): array
     {
         $data = [

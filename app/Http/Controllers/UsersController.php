@@ -10,11 +10,6 @@ use App\Users\UserManager;
 use Illuminate\Contracts\Routing\ResponseFactory;
 use Illuminate\Http\JsonResponse;
 
-/**
- * Class UsersController
- *
- * @package App\Http\Controllers
- */
 final class UsersController extends Controller
 {
     public const ROUTE_NAME_REGISTER        = 'user.register';
@@ -23,12 +18,6 @@ final class UsersController extends Controller
 
     public const RESPONSE_PARAMETER_USER = 'user';
 
-    /**
-     * UsersController constructor.
-     *
-     * @param UserManager     $userManager
-     * @param ResponseFactory $responseFactory
-     */
     public function __construct(private UserManager $userManager, ResponseFactory $responseFactory)
     {
         parent::__construct($responseFactory);
@@ -36,12 +25,6 @@ final class UsersController extends Controller
 
     //region Controller actions
 
-    /**
-     * @param Register    $request
-     * @param AuthManager $authManager
-     *
-     * @return JsonResponse
-     */
     public function register(Register $request, AuthManager $authManager): JsonResponse
     {
         $user = $this->userManager->createUser($request->getEmail(), $request->getPassword());
@@ -54,12 +37,6 @@ final class UsersController extends Controller
         );
     }
 
-    /**
-     * @param Update      $request
-     * @param AuthManager $authManager
-     *
-     * @return JsonResponse
-     */
     public function update(Update $request, AuthManager $authManager): JsonResponse
     {
         $user = $this->userManager->updateUserData($authManager->authenticatedUser(), $request->getEmail());
@@ -69,12 +46,6 @@ final class UsersController extends Controller
         ]);
     }
 
-    /**
-     * @param UpdatePassword $request
-     * @param AuthManager    $authManager
-     *
-     * @return JsonResponse
-     */
     public function updatePassword(UpdatePassword $request, AuthManager $authManager): JsonResponse
     {
         $user = $this->userManager->updatePassword($authManager->authenticatedUser(), $request->getUserPassword());

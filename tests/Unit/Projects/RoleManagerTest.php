@@ -228,4 +228,39 @@ final class RoleManagerTest extends TestCase
         $this->assertRepositorySave($roleRepository, $role);
         $this->assertRoleModelSetPermissions($role, [$permission]);
     }
+
+    private function setUpRemoveRoleTest(): array
+    {
+        $newRole = $this->createRoleModel();
+        $member = $this->createMemberModel();
+        $this->mockMemberModelSetRole($member, $newRole);
+        $role = $this->createRoleModel();
+        $this->mockRoleModelGetMembers($role, new ArrayCollection([$member]));
+        $roleRepository = $this->createRoleRepository();
+        $roleManager = $this->getRoleManager($roleRepository);
+
+        return [$roleManager, $role, $roleRepository, $newRole, $member];
+    }
+
+    public function testRemoveRole(): void
+    {
+        /** @var RoleManager $roleManager */
+        [$roleManager, $role, $roleRepository] = $this->setUpRemoveRoleTest();
+
+        $this->assertNull($roleManager->removeRole($role));
+        $this->assertRepositoryDelete($roleRepository, $role);
+    }
+
+    public function testRemoveRoleWithNewRole(): void
+    {
+        /** @var RoleManager $roleManager */
+        [$roleManager, $role, $roleRepository, $newRole, $member] = $this->setUpRemoveRoleTest();
+
+        $this->assertEquals($newRole, $roleManager->removeRole($role, $newRole));
+        $this->assertRoleModelAddMember($newRole, $member);
+        $this->assertMemberModelSetRole($member, $newRole);
+        $this->assertRepositorySave($roleRepository, $newRole, false);
+        $this->assertRoleModelSetMembers($role, []);
+        $this->assertRepositoryDelete($roleRepository, $role);
+    }
 }

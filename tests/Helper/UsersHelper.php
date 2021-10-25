@@ -424,6 +424,8 @@ trait UsersHelper
             ]
         )->first();
 
+        $role->addMember($member);
+
         return $user->addMember($member);
     }
 }

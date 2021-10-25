@@ -4,6 +4,7 @@ namespace Tests\Helper;
 
 use App\Http\Requests\Auth\Authenticate;
 use App\Http\Requests\Projects\ChangeRole;
+use App\Http\Requests\Projects\RemoveRole;
 use App\Http\Requests\Users\UpdatePassword;
 use App\Http\Rules\PermissionsExist;
 use App\Http\Rules\ProjectExists;
@@ -348,7 +349,7 @@ trait HttpHelper
         return m::spy(RoleExists::class);
     }
 
-    private function mockRoleExistsRuleGetRole(MockInterface $roleExists, RoleModel $role): self
+    private function mockRoleExistsRuleGetRole(MockInterface $roleExists, ?RoleModel $role): self
     {
         $roleExists
             ->shouldReceive('getRole')
@@ -445,6 +446,17 @@ trait HttpHelper
         return m::spy(PermissionsExist::class)
             ->shouldReceive('getPermissions')
             ->andReturn($permissions ?: new ArrayCollection([]))
+            ->getMock();
+    }
+
+    /**
+     * @return RemoveRole|MockInterface
+     */
+    private function createRemoveRoleRequest(RoleModel $newRole = null): RemoveRole
+    {
+        return m::spy(RemoveRole::class)
+            ->shouldReceive('getNewRole')
+            ->andReturn($newRole)
             ->getMock();
     }
 }

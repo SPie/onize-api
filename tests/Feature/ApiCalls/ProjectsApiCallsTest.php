@@ -704,7 +704,6 @@ final class ProjectsApiCallsTest extends FeatureTestCase
 
     private function setUpMembersTest(
         bool $withMembers = true,
-        bool $withRoles = true,
         bool $withMetaData = true,
         bool $withAuthenticatedUser = true,
         bool $withAuthorizedUser = true,
@@ -736,11 +735,10 @@ final class ProjectsApiCallsTest extends FeatureTestCase
             $role->addMember($member);
             $user->addMember($member);
         }
-        if ($withRoles) {
-            $project->addRole($role);
-        }
 
-        return [$project, $user, $metaData];
+        $project->addRole($role);
+
+        return [$project, $user, $metaData, $authenticatedUser];
     }
 
     public function testMembers(): void
@@ -749,7 +747,7 @@ final class ProjectsApiCallsTest extends FeatureTestCase
          * @var ProjectModel  $project
          * @var UserModel     $user
          */
-        [$project, $user, $metaData] = $this->setUpMembersTest();
+        [$project, $user, $metaData, $authenticatedUser] = $this->setUpMembersTest();
 
         $response = $this->doApiCall(
             'GET',
@@ -764,6 +762,11 @@ final class ProjectsApiCallsTest extends FeatureTestCase
                     UserModel::PROPERTY_EMAIL       => $user->getEmail(),
                     MemberModel::PROPERTY_META_DATA => $metaData,
                 ],
+                [
+                    UserModel::PROPERTY_UUID        => $authenticatedUser->getUuid(),
+                    UserModel::PROPERTY_EMAIL       => $authenticatedUser->getEmail(),
+                    MemberModel::PROPERTY_META_DATA => [],
+                ]
             ]
         ]);
     }
@@ -771,7 +774,7 @@ final class ProjectsApiCallsTest extends FeatureTestCase
     public function testMembersWithoutMembers(): void
     {
         /** @var ProjectModel $project */
-        [$project] = $this->setUpMembersTest(false);
+        [$project, $user, $metaData, $authenticatedUser] = $this->setUpMembersTest(withMembers: false);
 
         $response = $this->doApiCall(
             'GET',
@@ -779,21 +782,13 @@ final class ProjectsApiCallsTest extends FeatureTestCase
         );
 
         $response->assertOk();
-        $response->assertJsonFragment(['members' => []]);
-    }
-
-    public function testMembersWithoutRoles(): void
-    {
-        /** @var ProjectModel $project */
-        [$project] = $this->setUpMembersTest(true, false);
-
-        $response = $this->doApiCall(
-            'GET',
-            $this->getUrl(ProjectsController::ROUTE_NAME_MEMBERS, ['project' => $project->getUuid()])
-        );
-
-        $response->assertOk();
-        $response->assertJsonFragment(['members' => []]);
+        $response->assertJsonFragment(['members' => [
+            [
+                UserModel::PROPERTY_UUID        => $authenticatedUser->getUuid(),
+                UserModel::PROPERTY_EMAIL       => $authenticatedUser->getEmail(),
+                MemberModel::PROPERTY_META_DATA => [],
+            ]
+        ]]);
     }
 
     public function testMembersWithoutMetaData(): void
@@ -802,7 +797,7 @@ final class ProjectsApiCallsTest extends FeatureTestCase
          * @var ProjectModel  $project
          * @var UserModel     $user
          */
-        [$project, $user] = $this->setUpMembersTest(true, true, false);
+        [$project, $user, $metaData, $authenticatedUser] = $this->setUpMembersTest(withMetaData: false);
 
         $response = $this->doApiCall(
             'GET',
@@ -817,6 +812,11 @@ final class ProjectsApiCallsTest extends FeatureTestCase
                    UserModel::PROPERTY_EMAIL       => $user->getEmail(),
                    MemberModel::PROPERTY_META_DATA => [],
                ],
+               [
+                   UserModel::PROPERTY_UUID        => $authenticatedUser->getUuid(),
+                   UserModel::PROPERTY_EMAIL       => $authenticatedUser->getEmail(),
+                   MemberModel::PROPERTY_META_DATA => [],
+               ]
            ]
        ]);
     }
@@ -836,7 +836,7 @@ final class ProjectsApiCallsTest extends FeatureTestCase
     public function testMembersWithoutAuthenticatedUser(): void
     {
         /** @var ProjectModel $project */
-        [$project] = $this->setUpMembersTest(true, true, true, false);
+        [$project] = $this->setUpMembersTest(withAuthenticatedUser: false);
 
         $response = $this->doApiCall(
             'GET',
@@ -849,7 +849,7 @@ final class ProjectsApiCallsTest extends FeatureTestCase
     public function testMembersWithoutAuthorizedUser(): void
     {
         /** @var ProjectModel $project */
-        [$project] = $this->setUpMembersTest(true, true, true, true, false);
+        [$project] = $this->setUpMembersTest(withAuthorizedUser: false);
 
         $response = $this->doApiCall(
             'GET',
@@ -859,17 +859,10 @@ final class ProjectsApiCallsTest extends FeatureTestCase
         $response->assertStatus(403);
     }
 
-    public function testMembersWithoutOwner(): void
+    public function testMembersWithOwner(): void
     {
         /** @var ProjectModel $project */
-        [$project] = $this->setUpMembersTest(
-            true,
-            true,
-            true,
-            true,
-            false,
-            true
-        );
+        [$project] = $this->setUpMembersTest(withOwner: true);
 
         $response = $this->doApiCall(
             'GET',
@@ -2313,5 +2306,138 @@ final class ProjectsApiCallsTest extends FeatureTestCase
         );
 
         $response->assertNoContent();
+    }
+
+    private function setUpRemoveRoleTest(
+        bool $withAuthenticatedUser = true,
+        bool $withAuthorizedUser = true,
+        bool $isOwnerRole = false
+    ): array {
+        if ($withAuthorizedUser) {
+            $role = $this->createRoleWithPermission($this->getConcretePermission(PermissionModel::PERMISSION_PROJECTS_ROLES_MANAGEMENT));
+        } else {
+            $role = $this->createRoleEntities()->first();
+        }
+        $user = $this->createUserWithRole($role);
+        if ($withAuthenticatedUser) {
+            $this->actingAs($user);
+        }
+
+        $roleToRemove = $this->createRoleEntities(1, [
+            RoleModel::PROPERTY_PROJECT => $role->getProject(),
+            RoleModel::PROPERTY_OWNER   => $isOwnerRole,
+        ])->first();
+        $userWithRoleToRemove = $this->createUserWithRole($roleToRemove);
+
+        return [$roleToRemove, $userWithRoleToRemove];
+    }
+
+    public function testRemoveRole(): void
+    {
+        [$role, $userWithRole] = $this->setUpRemoveRoleTest();
+
+        $response = $this->doApiCall(
+            'DELETE',
+            $this->getUrl(ProjectsController::ROUTE_NAME_REMOVE_ROLE, ['role' => $role->getUuid()])
+        );
+
+        $response->assertNoContent();
+        $this->assertNotEmpty($this->getConcreteRoleRepository()->find($role->getId())->getDeletedAt());
+        $this->assertEmpty($userWithRole->getMembers());
+    }
+
+    public function testRemoveRoleWithNewRole(): void
+    {
+        [$role, $userWithRole] = $this->setUpRemoveRoleTest();
+        $newRole = $this->createRoleEntities(1, [RoleModel::PROPERTY_PROJECT => $role->getProject()])->first();
+
+        $response = $this->doApiCall(
+            'DELETE',
+            $this->getUrl(ProjectsController::ROUTE_NAME_REMOVE_ROLE, ['role' => $role->getUuid()]),
+            ['newRole' => $newRole->getUuid()]
+        );
+
+        $response->assertNoContent();
+        $member = $newRole->getMembers()->first();
+        $this->assertNotEmpty($member);
+        $this->assertEquals($userWithRole, $member->getUser());
+        $this->assertEquals($newRole, $member->getRole());
+    }
+
+    public function testRemoveRoleWithoutFoundRole(): void
+    {
+        $this->setUpRemoveRoleTest();
+
+        $response = $this->doApiCall(
+            'DELETE',
+            $this->getUrl(ProjectsController::ROUTE_NAME_REMOVE_ROLE, ['role' => $this->getFaker()->uuid])
+        );
+
+        $response->assertNotFound();
+    }
+
+    public function testRemoveRoleWithoutNewRoleFound(): void
+    {
+        [$role] = $this->setUpRemoveRoleTest();
+
+        $response = $this->doApiCall(
+            'DELETE',
+            $this->getUrl(ProjectsController::ROUTE_NAME_REMOVE_ROLE, ['role' => $role->getUuid()]),
+            ['newRole' => $this->getFaker()->uuid]
+        );
+
+        $response->assertStatus(422);
+        $response->assertJsonFragment(['newRole' => ['validation.role-not-found']]);
+    }
+
+    public function testRemoveRoleWithNewRoleFoundWithoutSameProject(): void
+    {
+        [$role] = $this->setUpRemoveRoleTest();
+        $newRole = $this->createRoleEntities()->first();
+
+        $response = $this->doApiCall(
+            'DELETE',
+            $this->getUrl(ProjectsController::ROUTE_NAME_REMOVE_ROLE, ['role' => $role->getUuid()]),
+            ['newRole' => $newRole->getUuid()]
+        );
+
+        $response->assertStatus(422);
+        $response->assertJsonFragment(['newRole' => ['validation.role-not-found']]);
+    }
+
+    public function testRemoveRoleWithoutAuthenticatedUser(): void
+    {
+        [$role] = $this->setUpRemoveRoleTest(withAuthenticatedUser: false);
+
+        $response = $this->doApiCall(
+            'DELETE',
+            $this->getUrl(ProjectsController::ROUTE_NAME_REMOVE_ROLE, ['role' => $role->getUuid()])
+        );
+
+        $response->assertStatus(401);
+    }
+
+    public function testRemoveRoleWithoutAuthorizedUser(): void
+    {
+        [$role] = $this->setUpRemoveRoleTest(withAuthorizedUser: false);
+
+        $response = $this->doApiCall(
+            'DELETE',
+            $this->getUrl(ProjectsController::ROUTE_NAME_REMOVE_ROLE, ['role' => $role->getUuid()])
+        );
+
+        $response->assertStatus(403);
+    }
+
+    public function testRemoveRoleWithRoleToRemoveIsOwnerRole(): void
+    {
+        [$role] = $this->setUpRemoveRoleTest(isOwnerRole: true);
+
+        $response = $this->doApiCall(
+            'DELETE',
+            $this->getUrl(ProjectsController::ROUTE_NAME_REMOVE_ROLE, ['role' => $role->getUuid()])
+        );
+
+        $response->assertStatus(403);
     }
 }

@@ -6,7 +6,6 @@ use App\Http\Controllers\ProjectsController;
 use App\Http\Requests\Projects\Create;
 use App\Http\Requests\Projects\CreateRole;
 use App\Projects\ProjectManager;
-use App\Projects\ProjectModel;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Illuminate\Auth\Access\AuthorizationException;
@@ -287,5 +286,37 @@ final class ProjectsControllerTest extends TestCase
         $this->expectException(AuthorizationException::class);
 
         $projectsController->changeRole($project, $request, $gate);
+    }
+
+    private function setUpRemoveRoleTest(bool $withNewRole = false): array
+    {
+        $role = $this->createRoleModel();
+        $newRole = $this->createRoleModel();
+        $request = $this->createRemoveRoleRequest($withNewRole ? $newRole : null);
+        $roleManager = $this->createRoleManager();
+        $response = $this->createJsonResponse();
+        $responseFactory = $this->createResponseFactory();
+        $this->mockResponseFactoryJson($responseFactory, $response, [], 204);
+        $projectsController = $this->getProjectsController(null, $responseFactory);
+
+        return [$projectsController, $role, $request, $roleManager, $response, $newRole];
+    }
+
+    public function testRemoveRole(): void
+    {
+        /** @var ProjectsController $projectsController */
+        [$projectsController, $role, $request, $roleManager, $response] = $this->setUpRemoveRoleTest();
+
+        $this->assertEquals($response, $projectsController->removeRole($role, $request, $roleManager));
+        $this->assertRoleManagerRemoveRole($roleManager, $role, null);
+    }
+
+    public function testRemoveRoleWithNewRole(): void
+    {
+        /** @var ProjectsController $projectsController */
+        [$projectsController, $role, $request, $roleManager, $response, $newRole] = $this->setUpRemoveRoleTest(withNewRole: true);
+
+        $this->assertEquals($response, $projectsController->removeRole($role, $request, $roleManager));
+        $this->assertRoleManagerRemoveRole($roleManager, $role, $newRole);
     }
 }

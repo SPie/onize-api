@@ -324,6 +324,16 @@ trait ProjectHelper
         return $this;
     }
 
+    private function assertRoleModelSetMembers(MockInterface $roleModel, array $members): self
+    {
+        $roleModel
+            ->shouldHaveReceived('setMembers')
+            ->with($members)
+            ->once();
+
+        return $this;
+    }
+
     /**
      * @return RoleDoctrineModel[]|Collection
      */
@@ -441,6 +451,16 @@ trait ProjectHelper
         }
 
         $expectation->andReturn($permissions);
+
+        return $this;
+    }
+
+    private function assertRoleManagerRemoveRole(MockInterface $roleManager, RoleModel $role, ?RoleModel $newRole): self
+    {
+        $roleManager
+            ->shouldHaveReceived('removeRole')
+            ->with($role, $newRole)
+            ->once();
 
         return $this;
     }
@@ -916,6 +936,26 @@ trait ProjectHelper
         $memberModel
             ->shouldReceive('getUser')
             ->andReturn($user);
+
+        return $this;
+    }
+
+    private function mockMemberModelSetRole(MockInterface $memberModel, RoleModel $role): self
+    {
+        $memberModel
+            ->shouldReceive('setRole')
+            ->with($role)
+            ->andReturn($memberModel);
+
+        return $this;
+    }
+
+    private function assertMemberModelSetRole(MockInterface $memberModel, RoleModel $role): self
+    {
+        $memberModel
+            ->shouldHaveReceived('setRole')
+            ->with($role)
+            ->once();
 
         return $this;
     }

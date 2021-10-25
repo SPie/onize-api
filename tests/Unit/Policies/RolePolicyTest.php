@@ -9,21 +9,16 @@ use Tests\Helper\ProjectHelper;
 use Tests\Helper\UsersHelper;
 use Tests\TestCase;
 
-/**
- * Class RolePolicyTest
- *
- * @package Tests\Unit\Policies
- */
 final class RolePolicyTest extends TestCase
 {
     use ProjectHelper;
     use UsersHelper;
 
-    //region Tests
+    private function getRolePolicy(RoleManager $roleManager = null): RolePolicy
+    {
+        return new RolePolicy($roleManager ?: $this->createRoleManager());
+    }
 
-    /**
-     * @return array
-     */
     private function setUpInviteTest(bool $allowed = true): array
     {
         $user = $this->createUserModel();
@@ -43,9 +38,6 @@ final class RolePolicyTest extends TestCase
         return [$rolePolicy, $user, $role];
     }
 
-    /**
-     * @return void
-     */
     public function testInvite(): void
     {
         /** @var RolePolicy $rolePolicy */
@@ -54,9 +46,6 @@ final class RolePolicyTest extends TestCase
         $this->assertTrue($rolePolicy->invite($user, $role));
     }
 
-    /**
-     * @return void
-     */
     public function testInviteWithourPermission(): void
     {
         /** @var RolePolicy $rolePolicy */
@@ -65,15 +54,48 @@ final class RolePolicyTest extends TestCase
         $this->assertFalse($rolePolicy->invite($user, $role));
     }
 
-    //endregion
-
-    /**
-     * @param RoleManager|null $roleManager
-     *
-     * @return RolePolicy
-     */
-    private function getRolePolicy(RoleManager $roleManager = null): RolePolicy
+    private function setUpRemoveRoleTest(bool $allowed = true, bool $isOwnerRole = false): array
     {
-        return new RolePolicy($roleManager ?: $this->createRoleManager());
+        $user = $this->createUserModel();
+        $project = $this->createProjectModel();
+        $role = $this->createRoleModel();
+        $this
+            ->mockRoleModelGetProject($role, $project)
+            ->mockRoleModelIsOwner($role, $isOwnerRole);
+        $roleManager = $this->createRoleManager();
+        $this->mockRoleManagerHasPermissionForAction(
+            $roleManager,
+            $allowed,
+            $project,
+            $user,
+            PermissionModel::PERMISSION_PROJECTS_ROLES_MANAGEMENT
+        );
+        $rolePolicy = $this->getRolePolicy($roleManager);
+
+        return [$rolePolicy, $user, $role];
+    }
+
+    public function testRemoveRole(): void
+    {
+        /** @var RolePolicy $rolePolicy */
+        [$rolePolicy, $user, $role] = $this->setUpRemoveRoleTest();
+
+        $this->assertTrue($rolePolicy->removeRole($user, $role));
+    }
+
+    public function testRemoveRoleWithoutPermission(): void
+    {
+        /** @var RolePolicy $rolePolicy */
+        [$rolePolicy, $user, $role] = $this->setUpRemoveRoleTest(allowed: false);
+
+        $this->assertFalse($rolePolicy->removeRole($user, $role));
+    }
+
+    public function testRemoveRoleWithOwnerRole(): void
+    {
+        /** @var RolePolicy $rolePolicy */
+        [$rolePolicy, $user, $role] = $this->setUpRemoveRoleTest(isOwnerRole: true);
+
+        $this->assertFalse($rolePolicy->removeRole($user, $role));
     }
 }

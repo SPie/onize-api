@@ -19,7 +19,7 @@ use Gedmo\Mapping\Annotation as Gedmo;
  *
  * @package App\Projects\Invites
  */
-final class InvitationDoctrineModel extends AbstractDoctrineModel implements InvitationModel
+class InvitationDoctrineModel extends AbstractDoctrineModel implements InvitationModel
 {
     use Timestamps;
     use Uuid;

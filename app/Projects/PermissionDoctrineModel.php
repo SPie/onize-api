@@ -15,7 +15,7 @@ use Doctrine\ORM\Mapping as ORM;
  *
  * @package App\Projects
  */
-final class PermissionDoctrineModel extends AbstractDoctrineModel implements PermissionModel
+class PermissionDoctrineModel extends AbstractDoctrineModel implements PermissionModel
 {
     /**
      * @ORM\Column(name="name", type="string", length=255, nullable=false)

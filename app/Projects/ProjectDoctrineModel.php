@@ -20,7 +20,7 @@ use Gedmo\Mapping\Annotation as Gedmo;
  *
  * @package App\Projects
  */
-final class ProjectDoctrineModel extends AbstractDoctrineModel implements ProjectModel
+class ProjectDoctrineModel extends AbstractDoctrineModel implements ProjectModel
 {
     use SoftDelete;
     use Timestamps;

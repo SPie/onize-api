@@ -17,7 +17,7 @@ use Gedmo\Mapping\Annotation as Gedmo;
  * @ORM\Entity(repositoryClass="App\Projects\RoleDoctrineRepository")
  * @Gedmo\SoftDeleteable(fieldName="deletedAt", timeAware=false)
  */
-final class RoleDoctrineModel extends AbstractDoctrineModel implements RoleModel
+class RoleDoctrineModel extends AbstractDoctrineModel implements RoleModel
 {
     use SoftDelete;
     use Timestamps;

@@ -14,7 +14,7 @@ use Gedmo\Mapping\Annotation as Gedmo;
  * @ORM\Entity(repositoryClass="App\Projects\MemerDoctrineRepository")
  * @Gedmo\SoftDeleteable(fieldName="deletedAt", timeAware=false)
  */
-final class MemberDoctrineModel extends AbstractDoctrineModel implements MemberModel
+class MemberDoctrineModel extends AbstractDoctrineModel implements MemberModel
 {
     use SoftDelete;
     use Timestamps;

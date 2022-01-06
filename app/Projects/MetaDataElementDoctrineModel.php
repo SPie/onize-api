@@ -13,7 +13,7 @@ use Doctrine\ORM\Mapping as ORM;
  *
  * @package App\Projects
  */
-final class MetaDataElementDoctrineModel extends AbstractDoctrineModel implements MetaDataElementModel
+class MetaDataElementDoctrineModel extends AbstractDoctrineModel implements MetaDataElementModel
 {
     /**
      * @ORM\ManyToOne(targetEntity="App\Projects\ProjectDoctrineModel", inversedBy="metaDataElements", cascade={"persist"})

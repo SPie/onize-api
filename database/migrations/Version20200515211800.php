@@ -27,7 +27,8 @@ final class Version20200515211800 extends AbstractMigration
             ->createMembersTable($schema)
             ->createPermissionsTable($schema)
             ->createRolesPermissionsTable($schema)
-            ->createInvitationsTable($schema);
+            ->createInvitationsTable($schema)
+            ->createRefreshTokensTable($schema);
 //            ->createLoginAttemptsTable($schema)
 //            ->createProjectsTable($schema)
 //            ->createProjectInvitesTable($schema)
@@ -196,6 +197,18 @@ final class Version20200515211800 extends AbstractMigration
             $table->dateTime('accepted_at')->setNotnull(false)->setDefault(null);
             $table->dateTime('declined_at')->setNotnull(false)->setDefault(null);
             $table->json('meta_data');
+            $table->timestamps();
+        });
+
+        return $this;
+    }
+
+    private function createRefreshTokensTable(Schema $schema): self
+    {
+        (new Builder($schema))->create('refresh_tokens', function (Table $table) {
+            $table->increments('id');
+            $table->string('refresh_token_id');
+            $table->dateTime('revoked_at')->setNotnull(false)->setDefault(null);
             $table->timestamps();
         });
 

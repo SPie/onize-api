@@ -11,11 +11,6 @@ use Tests\Helper\ApiHelper;
 use Tests\Helper\ModelHelper;
 use Tests\Helper\UsersHelper;
 
-/**
- * Class AuthApiCallsTest
- *
- * @package Tests\Feature\ApiCalls
- */
 final class AuthApiCallsTest extends FeatureTestCase
 {
     use ApiHelper;
@@ -25,21 +20,15 @@ final class AuthApiCallsTest extends FeatureTestCase
 
     //region Tests
 
-    /**
-     * @return array
-     */
     private function setUpAuthenticateTest(): array
     {
         $email = $this->getFaker()->safeEmail;
         $password = $this->getFaker()->password;
-        $user = $this->createUserEntities(1, ['email' => $email, 'password' => Hash::make($password)])->first();
+        $this->createUserEntities(1, ['email' => $email, 'password' => Hash::make($password)])->first();
 
         return [$email, $password];
     }
 
-    /**
-     * @return void
-     */
     public function testAuthenticate(): void
     {
         [$email, $password] = $this->setUpAuthenticateTest();
@@ -57,9 +46,6 @@ final class AuthApiCallsTest extends FeatureTestCase
         $this->isAuthenticated();
     }
 
-    /**
-     * @return void
-     */
     public function testAuthenticateWithoutRequiredParameter(): void
     {
         $this->setUpAuthenticateTest();
@@ -74,9 +60,6 @@ final class AuthApiCallsTest extends FeatureTestCase
         $this->assertGuest();
     }
 
-    /**
-     * @return void
-     */
     public function testAuthenticateWithoutFoundEmail(): void
     {
         [$email, $password] = $this->setUpAuthenticateTest();
@@ -94,9 +77,6 @@ final class AuthApiCallsTest extends FeatureTestCase
         $this->assertGuest();
     }
 
-    /**
-     * @return void
-     */
     public function testAuthenticateWithInvalidPassword(): void
     {
         [$email, $password] = $this->setUpAuthenticateTest();
@@ -114,11 +94,24 @@ final class AuthApiCallsTest extends FeatureTestCase
         $this->assertGuest();
     }
 
-    /**
-     * @param bool $withAuthenticatedUser
-     *
-     * @return array
-     */
+    public function testAuthenticateAndCheckForAuthTokens(): void
+    {
+        [$email, $password] = $this->setUpAuthenticateTest();
+
+        $response = $this->doApiCall(
+            'POST',
+            $this->getUrl(AuthController::ROUTE_NAME_AUTHENTICATE),
+            [
+                'email'    => $email,
+                'password' => $password,
+            ]
+        );
+
+        $response->assertStatus(204);
+        $this->assertNotNull($response->headers->get('x-authorize'));
+        $this->assertNotNull($response->headers->get('x-refresh'));
+    }
+
     private function setUpAuthenticatedUserTest(bool $withAuthenticatedUser = true): array
     {
         $user = $this->createUserEntities()->first();
@@ -129,9 +122,6 @@ final class AuthApiCallsTest extends FeatureTestCase
         return [$user];
     }
 
-    /**
-     * @return void
-     */
     public function testAuthenticatedUser(): void
     {
         [$user] = $this->setUpAuthenticatedUserTest();
@@ -142,9 +132,6 @@ final class AuthApiCallsTest extends FeatureTestCase
         $response->assertJsonFragment(['user' => $user->toArray()]);
     }
 
-    /**
-     * @return void
-     */
     public function testAuthenticatedUserWithoutAuthenticatedUser(): void
     {
         $this->setUpAuthenticatedUserTest(false);
@@ -154,9 +141,6 @@ final class AuthApiCallsTest extends FeatureTestCase
         $response->assertStatus(401);
     }
 
-    /**
-     * @return array
-     */
     private function setUpLogoutTest(bool $withAuthenticatedUser = true): array
     {
         $user = $this->createUserEntities()->first();
@@ -167,9 +151,6 @@ final class AuthApiCallsTest extends FeatureTestCase
         return [];
     }
 
-    /**
-     * @return void
-     */
     public function testLogout(): void
     {
         $this->setUpLogoutTest();
@@ -180,9 +161,6 @@ final class AuthApiCallsTest extends FeatureTestCase
         $this->assertGuest();
     }
 
-    /**
-     * @return void
-     */
     public function testLogoutWithoutAuthenticatedUser(): void
     {
         $this->setUpLogoutTest(false);
@@ -190,6 +168,16 @@ final class AuthApiCallsTest extends FeatureTestCase
         $response = $this->doApiCall('POST', $this->getUrl(AuthController::ROUTE_NAME_LOGOUT));
 
         $response->assertStatus(401);
+    }
+
+    public function testLogoutWithoutTokens(): void
+    {
+        $this->setUpLogoutTest();
+
+        $response = $this->doApiCall('POST', $this->getUrl(AuthController::ROUTE_NAME_LOGOUT));
+
+        $this->assertNull($response->headers->get('x-authorization'));
+        $this->assertNull($response->headers->get('x-refresh'));
     }
 
     //endregion

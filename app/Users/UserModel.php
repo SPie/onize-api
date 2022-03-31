@@ -11,8 +11,9 @@ use App\Projects\ProjectModel;
 use App\Projects\RoleModel;
 use Doctrine\Common\Collections\Collection;
 use Illuminate\Contracts\Auth\Authenticatable;
+use SPie\LaravelJWT\Contracts\JWTAuthenticatable;
 
-interface UserModel extends Model, Authenticatable, SoftDeletable, Timestampable, UuidModel
+interface UserModel extends Model, Authenticatable, JWTAuthenticatable, SoftDeletable, Timestampable, UuidModel
 {
     public const PROPERTY_EMAIL          = 'email';
     public const PROPERTY_PASSWORD       = 'password';

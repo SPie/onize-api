@@ -58,7 +58,10 @@ class AuthManager
      */
     public function authenticate(string $email, string $password): UserModel
     {
-        if (!$this->getGuard()->attempt([UserModel::PROPERTY_EMAIL => $email, UserModel::PROPERTY_PASSWORD => $password])) {
+        if (!$this->getGuard()->attempt(
+            [UserModel::PROPERTY_EMAIL => $email, UserModel::PROPERTY_PASSWORD => $password],
+            true
+        )) {
             throw new AuthorizationException();
         }
 

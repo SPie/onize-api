@@ -7,11 +7,6 @@ use App\Http\Requests\Auth\Authenticate;
 use Illuminate\Contracts\Routing\ResponseFactory;
 use Illuminate\Http\JsonResponse;
 
-/**
- * Class AuthController
- *
- * @package App\Http\Controllers
- */
 final class AuthController extends Controller
 {
     public const ROUTE_NAME_AUTHENTICATE  = 'auth.authenticate';
@@ -20,24 +15,11 @@ final class AuthController extends Controller
 
     public const RESPONSE_PARAMETER_USER = 'user';
 
-    /**
-     * AuthController constructor.
-     *
-     * @param AuthManager     $authManager
-     * @param ResponseFactory $responseFactory
-     */
     public function __construct(private AuthManager $authManager, ResponseFactory $responseFactory)
     {
         parent::__construct($responseFactory);
     }
 
-    //region Controller actions
-
-    /**
-     * @param Authenticate $request
-     *
-     * @return JsonResponse
-     */
     public function authenticate(Authenticate $request): JsonResponse
     {
         $this->authManager->authenticate($request->getEmail(), $request->getPassword());
@@ -45,9 +27,6 @@ final class AuthController extends Controller
         return $this->getResponseFactory()->json([], JsonResponse::HTTP_NO_CONTENT);
     }
 
-    /**
-     * @return JsonResponse
-     */
     public function authenticated(): JsonResponse
     {
         return $this->getResponseFactory()->json([
@@ -55,15 +34,10 @@ final class AuthController extends Controller
         ]);
     }
 
-    /**
-     * @return JsonResponse
-     */
     public function logout(): JsonResponse
     {
         $this->authManager->logout();
 
         return $this->getResponseFactory()->json([], JsonResponse::HTTP_NO_CONTENT);
     }
-
-    //endregion
 }

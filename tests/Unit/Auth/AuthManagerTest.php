@@ -11,18 +11,16 @@ use Tests\Helper\HttpHelper;
 use Tests\Helper\UsersHelper;
 use Tests\TestCase;
 
-/**
- * Class AuthManagerTest
- *
- * @package Tests\Unit\Auth
- */
 final class AuthManagerTest extends TestCase
 {
     use AuthHelper;
     use HttpHelper;
     use UsersHelper;
 
-    //region Tests
+    private function getAuthManager(StatefulGuard $guard = null): AuthManager
+    {
+        return new AuthManager($guard ?: $this->createStatefulGuard());
+    }
 
     private function setUpLoginTest(): array
     {
@@ -33,9 +31,6 @@ final class AuthManagerTest extends TestCase
         return [$jwtManager, $user, $guard];
     }
 
-    /**
-     * @return void
-     */
     public function testLogin(): void
     {
         /**
@@ -48,11 +43,6 @@ final class AuthManagerTest extends TestCase
         $this->assertStatefulGuardLogin($guard, $user);
     }
 
-    /**
-     * @param bool $withAuthenticatedUser
-     *
-     * @return array
-     */
     private function setUpAuthenticatedUserTest(bool $withAuthenticatedUser = true): array
     {
         $user = $this->createUserModel();
@@ -63,9 +53,6 @@ final class AuthManagerTest extends TestCase
         return [$authManager, $user];
     }
 
-    /**
-     * @return void
-     */
     public function testAuthenticatedUser(): void
     {
         /** @var AuthManager $authManager */
@@ -74,9 +61,6 @@ final class AuthManagerTest extends TestCase
         $this->assertEquals($user, $authManager->authenticatedUser());
     }
 
-    /**
-     * @return void
-     */
     public function testAuthenticatedUserWithoutAuthenticatedUser(): void
     {
         /** @var AuthManager $authManager */
@@ -87,11 +71,6 @@ final class AuthManagerTest extends TestCase
         $authManager->authenticatedUser();
     }
 
-    /**
-     * @param bool $authenticated
-     *
-     * @return array
-     */
     private function setUpAuthenticateTest(bool $authenticated = true): array
     {
         $email = $this->getFaker()->safeEmail;
@@ -99,16 +78,13 @@ final class AuthManagerTest extends TestCase
         $user = $this->createUserModel();
         $guard = $this->createStatefulGuard();
         $this
-            ->mockStatefulGuardAttempt($guard, $authenticated, ['email' => $email, 'password' => $password])
+            ->mockStatefulGuardAttempt($guard, $authenticated, ['email' => $email, 'password' => $password], true)
             ->mockStatefulGuardUser($guard, $user);
         $authManager = $this->getAuthManager($guard);
 
         return [$authManager, $email, $password, $user];
     }
 
-    /**
-     * @return void
-     */
     public function testAuthenticate(): void
     {
         /** @var AuthManager $authManager */
@@ -117,9 +93,6 @@ final class AuthManagerTest extends TestCase
         $this->assertEquals($user, $authManager->authenticate($email, $password));
     }
 
-    /**
-     * @return void
-     */
     public function testAuthenticateWithInvalidAttempt(): void
     {
         /** @var AuthManager $authManager */
@@ -130,9 +103,6 @@ final class AuthManagerTest extends TestCase
         $authManager->authenticate($email, $password);
     }
 
-    /**
-     * @return void
-     */
     public function testLogout(): void
     {
         $guard = $this->createStatefulGuard();
@@ -140,17 +110,5 @@ final class AuthManagerTest extends TestCase
         $this->getAuthManager($guard)->logout();
 
         $guard->shouldHaveReceived('logout')->once();
-    }
-
-    //endregion
-
-    /**
-     * @param StatefulGuard|null $guard
-     *
-     * @return AuthManager
-     */
-    private function getAuthManager(StatefulGuard $guard = null): AuthManager
-    {
-        return new AuthManager($guard ?: $this->createStatefulGuard());
     }
 }

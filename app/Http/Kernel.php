@@ -6,6 +6,7 @@ use App\Http\Middleware\SubstituteBindings;
 use Illuminate\Cookie\Middleware\EncryptCookies;
 use Illuminate\Foundation\Http\Kernel as HttpKernel;
 use Illuminate\Session\Middleware\StartSession;
+use SPie\LaravelJWT\Middleware\JWTTokens;
 
 class Kernel extends HttpKernel
 {
@@ -35,6 +36,7 @@ class Kernel extends HttpKernel
 //            'throttle:60,1',
             StartSession::class,
             EncryptCookies::class,
+            JWTTokens::class,
             SubstituteBindings::class,
         ],
     ];

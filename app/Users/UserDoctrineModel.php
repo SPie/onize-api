@@ -233,4 +233,9 @@ class UserDoctrineModel extends AbstractDoctrineModel implements UserModel
 
         return null;
     }
+
+    public function getCustomClaims(): array
+    {
+        return [];
+    }
 }

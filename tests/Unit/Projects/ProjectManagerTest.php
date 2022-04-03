@@ -42,6 +42,7 @@ final class ProjectManagerTest extends TestCase
     {
         $name = $this->getFaker()->word;
         $description = $this->getFaker()->word;
+        $metaData = [$this->getFaker()->word => $this->getFaker()->word];
         $metaDataElement = [
             'name'     => $this->getFaker()->word,
             'label'    => $this->getFaker()->word,
@@ -54,7 +55,7 @@ final class ProjectManagerTest extends TestCase
         $metaDataElements = [$metaDataElement];
         $project = $this->createProjectModel();
         $projectModelFactory = $this->createProjectModelFactory();
-        $this->mockProjectModelFactoryCreate($projectModelFactory, $project, $name, $description);
+        $this->mockProjectModelFactoryCreate($projectModelFactory, $project, $name, $description, $metaData);
         $savedProject = $this->createProjectModel();
         $projectRepository = $this->createProjectRepository();
         $this->mockRepositorySave($projectRepository, $project, null, $savedProject);
@@ -81,6 +82,7 @@ final class ProjectManagerTest extends TestCase
             $projectManager,
             $name,
             $description,
+            $metaData,
             $metaDataElements,
             $savedProject
         ];
@@ -89,17 +91,17 @@ final class ProjectManagerTest extends TestCase
     public function testCreateProject(): void
     {
         /** @var ProjectManager $projectManager */
-        [$projectManager, $name, $description, $metaDataElements, $project] = $this->setUpCreateProjectTest();
+        [$projectManager, $name, $description, $metaData, $metaDataElements, $project] = $this->setUpCreateProjectTest();
 
-        $this->assertEquals($project, $projectManager->createProject($name, $description, $metaDataElements));
+        $this->assertEquals($project, $projectManager->createProject($name, $description, $metaData, $metaDataElements));
     }
 
     public function testCreateProjectWithoutOptionalMetaDataElementProperties(): void
     {
         /** @var ProjectManager $projectManager */
-        [$projectManager, $name, $description, $metaDataElements, $project] = $this->setUpCreateProjectTest(false);
+        [$projectManager, $name, $description, $metaData, $metaDataElements, $project] = $this->setUpCreateProjectTest(withOptionalMetaDataElementProperties: false);
 
-        $this->assertEquals($project, $projectManager->createProject($name, $description, $metaDataElements));
+        $this->assertEquals($project, $projectManager->createProject($name, $description, $metaData, $metaDataElements));
     }
 
     private function setUpGetProjectTest(bool $withProject = true): array

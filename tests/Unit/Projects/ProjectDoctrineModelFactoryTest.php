@@ -7,14 +7,14 @@ use App\Projects\ProjectDoctrineModelFactory;
 use Tests\Helper\ProjectHelper;
 use Tests\TestCase;
 
-/**
- * Class ProjectDoctrineModelFactoryTest
- *
- * @package Tests\Unit\Projects
- */
 final class ProjectDoctrineModelFactoryTest extends TestCase
 {
     use ProjectHelper;
+
+    private function getProjectDoctrineModelFactory(): ProjectDoctrineModelFactory
+    {
+        return new ProjectDoctrineModelFactory();
+    }
 
     //region Tests
 
@@ -29,10 +29,17 @@ final class ProjectDoctrineModelFactoryTest extends TestCase
         );
     }
 
-    //endregion
-
-    private function getProjectDoctrineModelFactory(): ProjectDoctrineModelFactory
+    public function testCreateWithMetaData(): void
     {
-        return new ProjectDoctrineModelFactory();
+        $label = $this->getFaker()->word;
+        $description = $this->getFaker()->words(3, true);
+        $metaData = [$this->getFaker()->word => $this->getFaker()->word];
+
+        $this->assertEquals(
+            new ProjectDoctrineModel($label, $description, $metaData),
+            $this->getProjectDoctrineModelFactory()->create($label, $description, $metaData)
+        );
     }
+
+    //endregion
 }

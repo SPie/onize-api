@@ -26,6 +26,7 @@ final class CreateTest extends TestCase
             [
                 'label'                       => ['required', 'string'],
                 'description'                 => ['required', 'string'],
+                'projectMetaData'             => ['array'],
                 'metaDataElements'            => ['present', 'array'],
                 'metaDataElements.*.name'     => ['required', 'string'],
                 'metaDataElements.*.label'    => ['required', 'string'],
@@ -218,5 +219,21 @@ final class CreateTest extends TestCase
                 'birthday' => ['validation.date'],
             ]])
             ->once();
+    }
+
+    public function testGetProjectMetaData(): void
+    {
+        $projectMetaData = [$this->getFaker()->word => $this->getFaker()->word];
+        $request = $this->getCreate();
+        $request->offsetSet('projectMetaData', $projectMetaData);
+
+        $this->assertEquals($projectMetaData, $request->getProjectMetaData());
+    }
+
+    public function testGetProjectMetaDataWithoutProjectMetaData(): void
+    {
+        $request = $this->getCreate();
+
+        $this->assertEquals([], $request->getProjectMetaData());
     }
 }

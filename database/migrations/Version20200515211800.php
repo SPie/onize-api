@@ -71,6 +71,7 @@ final class Version20200515211800 extends AbstractMigration
             $table->unique('uuid');
             $table->string('label');
             $table->string('description');
+            $table->json('meta_data');
             $table->timestamps();
             $table->softDeletes();
         });

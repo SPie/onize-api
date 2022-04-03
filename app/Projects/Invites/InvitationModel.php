@@ -8,11 +8,6 @@ use App\Models\UuidModel;
 use App\Projects\RoleModel;
 use Carbon\CarbonImmutable;
 
-/**
- * Interface InviteModel
- *
- * @package App\Projects\Invites
- */
 interface InvitationModel extends Model, Timestampable, UuidModel
 {
     public const PROPERTY_EMAIl       = 'email';

@@ -13,5 +13,6 @@ $factory->define(ProjectDoctrineModel::class, function (Faker $faker, array $att
         ProjectDoctrineModel::PROPERTY_UUID        => $attributes[ProjectDoctrineModel::PROPERTY_UUID] ?? $faker->uuid,
         ProjectDoctrineModel::PROPERTY_LABEL       => $attributes[ProjectDoctrineModel::PROPERTY_LABEL] ?? $faker->word,
         ProjectDoctrineModel::PROPERTY_DESCRIPTION => $attributes[ProjectDoctrineModel::PROPERTY_DESCRIPTION] ?? $faker->words(3, true),
+        ProjectDoctrineModel::PROPERTY_META_DATA   => $attributes[ProjectDoctrineModel::PROPERTY_META_DATA] ?? [],
     ];
 });

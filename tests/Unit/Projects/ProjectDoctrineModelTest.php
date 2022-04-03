@@ -4,17 +4,11 @@ namespace Tests\Unit\Projects;
 
 use App\Projects\ProjectDoctrineModel;
 use App\Projects\ProjectModel;
-use App\Users\UserDoctrineModel;
 use Doctrine\Common\Collections\ArrayCollection;
 use Tests\Helper\ProjectHelper;
 use Tests\Helper\UsersHelper;
 use Tests\TestCase;
 
-/**
- * Class ProjectDoctrineModelTest
- *
- * @package Tests\Unit\Projects
- */
 final class ProjectDoctrineModelTest extends TestCase
 {
     use ProjectHelper;
@@ -32,6 +26,7 @@ final class ProjectDoctrineModelTest extends TestCase
                 'uuid'             => $uuid,
                 'label'            => $project->getLabel(),
                 'description'      => $project->getDescription(),
+                'metaData'         => [],
                 'metaDataElements' => [],
                 'roles'            => [],
             ],
@@ -58,8 +53,30 @@ final class ProjectDoctrineModelTest extends TestCase
                 'uuid'             => $uuid,
                 'label'            => $project->getLabel(),
                 'description'      => $project->getDescription(),
+                'metaData'         => [],
                 'metaDataElements' => [$metaDataElementModelData],
                 'roles'            => [$roleData],
+            ],
+            $project->toArray()
+        );
+    }
+
+    public function testToArrayWithMetaData(): void
+    {
+        $uuid = $this->getFaker()->uuid;
+        $metaData = [$this->getFaker()->word => $this->getFaker()->word];
+        $project = $this->getProjectDoctrineModel()
+            ->setUuid($uuid)
+            ->setMetaData($metaData);
+
+        $this->assertEquals(
+            [
+                'uuid'             => $uuid,
+                'label'            => $project->getLabel(),
+                'description'      => $project->getDescription(),
+                'metaData'         => $metaData,
+                'metaDataElements' => [],
+                'roles'            => [],
             ],
             $project->toArray()
         );

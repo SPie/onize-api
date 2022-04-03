@@ -17,9 +17,9 @@ class ProjectManager
     ) {
     }
 
-    public function createProject(string $label, string $description, array $metaDataElements): ProjectModel
+    public function createProject(string $label, string $description, array $metaData, array $metaDataElements): ProjectModel
     {
-        $project = $this->projectModelFactory->create($label, $description);
+        $project = $this->projectModelFactory->create($label, $description, $metaData);
 
         foreach ($metaDataElements as $metaDataElement) {
             $project->addMetaDataElement(

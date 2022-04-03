@@ -20,7 +20,7 @@
         "laravel/framework": "^8.18",
         "nesbot/carbon": "^2.46",
         "predis/predis": "^1.1",
-        "spie/laravel-jwt": "dev-fix-registrar"
+        "spie/laravel-jwt": "^3.4.1"
     },
     "require-dev": {
         "facade/ignition": "^2.0",

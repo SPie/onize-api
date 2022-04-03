@@ -2,13 +2,18 @@
 
 namespace Tests\Feature\ApiCalls;
 
+use App\Auth\RefreshTokenModel;
+use App\Auth\RefreshTokenRepository;
 use App\Http\Controllers\AuthController;
+use Carbon\CarbonImmutable;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\URL;
 use LaravelDoctrine\Migrations\Testing\DatabaseMigrations;
+use SPie\LaravelJWT\Contracts\TokenBlockList;
 use Tests\Feature\FeatureTestCase;
 use Tests\Helper\ApiHelper;
 use Tests\Helper\ModelHelper;
+use Tests\Helper\ReflectionHelper;
 use Tests\Helper\UsersHelper;
 
 final class AuthApiCallsTest extends FeatureTestCase
@@ -16,6 +21,7 @@ final class AuthApiCallsTest extends FeatureTestCase
     use ApiHelper;
     use DatabaseMigrations;
     use ModelHelper;
+    use ReflectionHelper;
     use UsersHelper;
 
     //region Tests
@@ -176,8 +182,128 @@ final class AuthApiCallsTest extends FeatureTestCase
 
         $response = $this->doApiCall('POST', $this->getUrl(AuthController::ROUTE_NAME_LOGOUT));
 
-        $this->assertNull($response->headers->get('x-authorization'));
+        $this->assertNull($response->headers->get('x-authorize'));
         $this->assertNull($response->headers->get('x-refresh'));
+    }
+
+    private function setUpAuthorizationTokensTest(
+        bool $withRevokedRefreshToken = false,
+        bool $withRevokedAuthorizeToken = false
+    ): array {
+        $user = $this->createUserEntities()->first();
+
+        $guard = $this->app['auth']->guard();
+
+        $authorizeToken = $this->runPrivateMethod($guard, 'issueAccessToken', [$user]);
+        $refreshToken = $this->runPrivateMethod($guard, 'issueRefreshToken', [$user]);
+        $this->app['auth']->forgetGuards();
+
+        if ($withRevokedAuthorizeToken) {
+            $this->app->get(TokenBlockList::class)->revoke($authorizeToken);
+        }
+        if ($withRevokedRefreshToken) {
+            $refreshTokenRepository = $this->app->get(RefreshTokenRepository::class);
+            $refreshTokenModel = $refreshTokenRepository->findOneBy([RefreshTokenModel::PROPERTY_REFRESH_TOKEN_ID => $refreshToken->getRefreshTokenId()]);
+            $refreshTokenModel->setRevokedAt((new CarbonImmutable())->subDay());
+            $refreshTokenRepository->save($refreshTokenModel);
+        }
+
+        return [$authorizeToken, $refreshToken];
+    }
+
+    public function testAuthorizationToken(): void
+    {
+        [$authorizeToken] = $this->setUpAuthorizationTokensTest();
+
+        $response = $this->doApiCall(
+            'GET',
+            $this->getUrl(AuthController::ROUTE_NAME_AUTHENTICATED),
+            [],
+            [
+                'x-authorize' => \sprintf('Bearer %s', $authorizeToken->getJWT()),
+            ]
+        );
+
+        $response->assertOk();
+    }
+
+    public function testRefreshToken(): void
+    {
+        [$authorizeToken, $refreshToken] = $this->setUpAuthorizationTokensTest();
+
+        $response = $this->doApiCall(
+            'GET',
+            $this->getUrl(AuthController::ROUTE_NAME_AUTHENTICATED),
+            [],
+            [
+                'x-authorize' => \sprintf('Bearer %s', $this->getFaker()->word),
+                'x-refresh'   => \sprintf('Bearer %s', $refreshToken->getJWT()),
+            ]
+        );
+
+        $response->assertOk();
+    }
+
+    public function testAuthorizationTokenWithInvalidTokenAndNoRefresh(): void
+    {
+        $response = $this->doApiCall(
+            'GET',
+            $this->getUrl(AuthController::ROUTE_NAME_AUTHENTICATED),
+            [],
+            [
+                'x-authorize' => \sprintf('Bearer %s', $this->getFaker()->word),
+            ]
+        );
+
+        $response->assertStatus(401);
+    }
+
+    public function testRefreshTokenWithInvalidToken(): void
+    {
+        $response = $this->doApiCall(
+            'GET',
+            $this->getUrl(AuthController::ROUTE_NAME_AUTHENTICATED),
+            [],
+            [
+                'x-authorize' => \sprintf('Bearer %s', $this->getFaker()->word),
+                'x-refresh'   => \sprintf('Bearer %s', $this->getFaker()->word),
+            ]
+        );
+
+        $response->assertStatus(401);
+    }
+
+    public function testRefreshTokenWithRevokedToken(): void
+    {
+        [$authorizeToken, $refreshToken] = $this->setUpAuthorizationTokensTest(withRevokedRefreshToken: true);
+
+        $response = $this->doApiCall(
+            'GET',
+            $this->getUrl(AuthController::ROUTE_NAME_AUTHENTICATED),
+            [],
+            [
+                'x-authorize' => \sprintf('Bearer %s', $this->getFaker()->word),
+                'x-refresh'   => \sprintf('Bearer %s', $refreshToken->getJWT()),
+            ]
+        );
+
+        $response->assertStatus(401);
+    }
+
+    public function testAuthorizationTokenWithRevokedToken(): void
+    {
+        [$authorizeToken] = $this->setUpAuthorizationTokensTest(withRevokedAuthorizeToken: true);
+
+        $response = $this->doApiCall(
+            'GET',
+            $this->getUrl(AuthController::ROUTE_NAME_AUTHENTICATED),
+            [],
+            [
+                'x-authorize' => \sprintf('Bearer %s', $authorizeToken->getJWT()),
+            ]
+        );
+
+        $response->assertStatus(401);
     }
 
     //endregion

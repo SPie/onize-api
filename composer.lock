@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "63af9dd29217d909be7d5ff9a93f4f4d",
+    "content-hash": "93bf34813aaa8bc6e9e02a5abbb2499b",
     "packages": [
         {
             "name": "asm89/stack-cors",
@@ -4267,16 +4267,16 @@
         },
         {
             "name": "spie/laravel-jwt",
-            "version": "dev-fix-registrar",
+            "version": "v3.4.1",
             "source": {
                 "type": "git",
                 "url": "https://github.com/SPie/laravel-jwt.git",
-                "reference": "584b349e9de279c38550a3d5d44b67d4eecd0ccf"
+                "reference": "e637fac6f85312fd346bca8962ab8ed06172a333"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/SPie/laravel-jwt/zipball/584b349e9de279c38550a3d5d44b67d4eecd0ccf",
-                "reference": "584b349e9de279c38550a3d5d44b67d4eecd0ccf",
+                "url": "https://api.github.com/repos/SPie/laravel-jwt/zipball/e637fac6f85312fd346bca8962ab8ed06172a333",
+                "reference": "e637fac6f85312fd346bca8962ab8ed06172a333",
                 "shasum": ""
             },
             "require": {
@@ -4319,9 +4319,9 @@
             ],
             "support": {
                 "issues": "https://github.com/SPie/laravel-jwt/issues",
-                "source": "https://github.com/SPie/laravel-jwt/tree/fix-registrar"
+                "source": "https://github.com/SPie/laravel-jwt/tree/v3.4.1"
             },
-            "time": "2022-03-29T20:52:07+00:00"
+            "time": "2022-04-03T19:00:42+00:00"
         },
         {
             "name": "swiftmailer/swiftmailer",
@@ -10192,9 +10192,7 @@
     ],
     "aliases": [],
     "minimum-stability": "dev",
-    "stability-flags": {
-        "spie/laravel-jwt": 20
-    },
+    "stability-flags": [],
     "prefer-stable": true,
     "prefer-lowest": false,
     "platform": {
@@ -10202,5 +10200,5 @@
         "ext-json": "*"
     },
     "platform-dev": [],
-    "plugin-api-version": "2.2.0"
+    "plugin-api-version": "2.1.0"
 }

@@ -31,7 +31,7 @@ trait ReflectionHelper
         $method = $this->getReflectionObject($object)->getMethod($methodName);
         $method->setAccessible(true);
 
-        return $method->invoke($object, $arguments);
+        return $method->invokeArgs($object, $arguments);
     }
 
     /**

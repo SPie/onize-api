@@ -2,6 +2,12 @@
 
 namespace App\Providers;
 
+use App\Auth\RefreshTokenDoctrineModel;
+use App\Auth\RefreshTokenDoctrineModelFactory;
+use App\Auth\RefreshTokenDoctrineRepository;
+use App\Auth\RefreshTokenModel;
+use App\Auth\RefreshTokenModelFactory;
+use App\Auth\RefreshTokenRepository;
 use App\Models\DatabaseHandler;
 use App\Models\DoctrineDatabaseHandler;
 use App\Models\LaravelPasswordHasher;
@@ -54,16 +60,8 @@ use Illuminate\Hashing\HashManager;
 use Illuminate\Support\ServiceProvider;
 use Ramsey\Uuid\UuidFactory;
 
-/**
- * Class ModelServiceProvider
- *
- * @package App\Providers
- */
 final class ModelServiceProvider extends ServiceProvider
 {
-    /**
-     * @return void
-     */
     public function register()
     {
         $this
@@ -75,9 +73,6 @@ final class ModelServiceProvider extends ServiceProvider
             ->bindPasswordHasher();
     }
 
-    /**
-     * @return $this
-     */
     private function bindModels(): self
     {
         $this->app->bind(UserModel::class, UserDoctrineModel::class);
@@ -87,13 +82,11 @@ final class ModelServiceProvider extends ServiceProvider
         $this->app->bind(MemberModel::class, MemberDoctrineModel::class);
         $this->app->bind(PermissionModel::class, PermissionDoctrineModel::class);
         $this->app->bind(InvitationModel::class, InvitationDoctrineModel::class);
+        $this->app->bind(RefreshTokenModel::class, RefreshTokenDoctrineModel::class);
 
         return $this;
     }
 
-    /**
-     * @return $this
-     */
     private function bindModelFactories(): self
     {
         $this->app->singleton(UserModelFactory::class, UserDoctrineModelFactory::class);
@@ -104,13 +97,11 @@ final class ModelServiceProvider extends ServiceProvider
         $this->app->singleton(InvitationModelFactory::class, fn () => new InvitationDoctrineModelFactory(
             $this->app['config']['projects.invitations.validUntilMinutes']
         ));
+        $this->app->singleton(RefreshTokenModelFactory::class, RefreshTokenDoctrineModelFactory::class);
 
         return $this;
     }
 
-    /**
-     * @return $this
-     */
     private function bindDatabaseHandler(): self
     {
         $this->app->bind(
@@ -121,19 +112,11 @@ final class ModelServiceProvider extends ServiceProvider
         return $this;
     }
 
-    /**
-     * @param string $className
-     *
-     * @return DatabaseHandler
-     */
     private function makeDatabaseHandler(string $className): DatabaseHandler
     {
         return $this->app->make(DatabaseHandler::class, [$this->app->get(EntityManager::class), $className]);
     }
 
-    /**
-     * @return $this
-     */
     private function bindRepositories(): self
     {
         $this->app->singleton(
@@ -164,13 +147,14 @@ final class ModelServiceProvider extends ServiceProvider
             InvitationRepository::class,
             fn () => new InvitationDoctrineRepository($this->makeDatabaseHandler(InvitationDoctrineModel::class))
         );
+        $this->app->singleton(
+            RefreshTokenRepository::class,
+            fn () => new RefreshTokenDoctrineRepository($this->makeDatabaseHandler(RefreshTokenDoctrineModel::class))
+        );
 
         return $this;
     }
 
-    /**
-     * @return $this
-     */
     private function bindUuidGenerator(): self
     {
         $this->app->singleton(UuidGenerator::class, fn () => new RamseyUuidGenerator(new UuidFactory()));

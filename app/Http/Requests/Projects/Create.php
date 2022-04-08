@@ -4,15 +4,11 @@ namespace App\Http\Requests\Projects;
 
 use Illuminate\Foundation\Http\FormRequest;
 
-/**
- * Class Create
- *
- * @package App\Http\Requests\Projects
- */
 class Create extends FormRequest
 {
     public const PARAMETER_LABEL              = 'label';
     public const PARAMETER_DESCRIPTION        = 'description';
+    public const PARAMETER_PROJECT_META_DATA  = 'projectMetaData';
     public const PARAMETER_META_DATA_ELEMENTS = 'metaDataElements';
     public const PARAMETER_META_DATA          = 'metaData';
 
@@ -22,14 +18,12 @@ class Create extends FormRequest
     public const META_DATA_ELEMENT_IN_LIST  = 'inList';
     public const META_DATA_ELEMENT_TYPE     = 'type';
 
-    /**
-     * @return array
-     */
     public function rules(): array
     {
         return [
             self::PARAMETER_LABEL                                                         => ['required', 'string'],
             self::PARAMETER_DESCRIPTION                                                   => ['required', 'string'],
+            self::PARAMETER_PROJECT_META_DATA                                             => ['array'],
             self::PARAMETER_META_DATA_ELEMENTS                                            => ['present', 'array'],
             self::PARAMETER_META_DATA_ELEMENTS . '.*.' . self::META_DATA_ELEMENT_NAME     => ['required', 'string'],
             self::PARAMETER_META_DATA_ELEMENTS . '.*.' . self::META_DATA_ELEMENT_LABEL    => ['required', 'string'],
@@ -43,41 +37,31 @@ class Create extends FormRequest
         ];
     }
 
-    /**
-     * @return string
-     */
     public function getLabel(): string
     {
         return $this->get(self::PARAMETER_LABEL);
     }
 
-    /**
-     * @return string
-     */
     public function getDescription(): string
     {
         return $this->get(self::PARAMETER_DESCRIPTION);
     }
 
-    /**
-     * @return array
-     */
+    public function getProjectMetaData(): array
+    {
+        return $this->get(self::PARAMETER_PROJECT_META_DATA, []);
+    }
+
     public function getMetaDataElements(): array
     {
         return $this->get(self::PARAMETER_META_DATA_ELEMENTS, []);
     }
 
-    /**
-     * @return array
-     */
     public function getMetaData(): array
     {
         return $this->get(self::PARAMETER_META_DATA, []);
     }
 
-    /**
-     * @return \Closure
-     */
     private function getValidateMetaDataRule(): \Closure
     {
         return function ($argument, $metaData, $fail): bool {
@@ -130,41 +114,21 @@ class Create extends FormRequest
         };
     }
 
-    /**
-     * @param mixed $value
-     *
-     * @return bool
-     */
     private function isInvalidString($value): bool
     {
         return !$this->getValidatorInstance()->validateString(self::PARAMETER_META_DATA, $value);
     }
 
-    /**
-     * @param mixed $value
-     *
-     * @return bool
-     */
     private function isInvalidEmail($value): bool
     {
         return !$this->getValidatorInstance()->validateEmail(self::PARAMETER_META_DATA, $value, []);
     }
 
-    /**
-     * @param mixed $value
-     *
-     * @return bool
-     */
     private function isInvalidNumeric($value): bool
     {
         return !$this->getValidatorInstance()->validateNumeric(self::PARAMETER_META_DATA, $value);
     }
 
-    /**
-     * @param mixed $value
-     *
-     * @return bool
-     */
     private function isInvalidDate($value): bool
     {
         return !$this->getValidatorInstance()->validateDate(self::PARAMETER_META_DATA, $value);

@@ -41,6 +41,11 @@ class ProjectDoctrineModel extends AbstractDoctrineModel implements ProjectModel
     private string $description;
 
     /**
+     * @ORM\Column(name="meta_data", type="json", nullable=false)
+     */
+    private array $metaData;
+
+    /**
      * @ORM\OneToMany(targetEntity="App\Projects\RoleDoctrineModel", mappedBy="project", cascade={"persist"})
      *
      * @var RoleModel[]|Collection
@@ -54,72 +59,62 @@ class ProjectDoctrineModel extends AbstractDoctrineModel implements ProjectModel
      */
     private Collection $metaDataElements;
 
-    public function __construct(string $label, string $description)
+    public function __construct(string $label, string $description, array $metaData = [])
     {
         $this->label = $label;
         $this->description = $description;
+        $this->metaData = $metaData;
         $this->roles = new ArrayCollection();
         $this->metaDataElements = new ArrayCollection();
     }
 
-    /**
-     * @param string $label
-     *
-     * @return $this|ProjectModel
-     */
-    public function setLabel(string $label): ProjectModel
+    public function setLabel(string $label): self
     {
         $this->label = $label;
 
         return $this;
     }
 
-    /**
-     * @return string
-     */
     public function getLabel(): string
     {
         return $this->label;
     }
 
-    /**
-     * @param string $description
-     *
-     * @return $this|ProjectModel
-     */
-    public function setDescription(string $description): ProjectModel
+    public function setDescription(string $description): self
     {
         $this->description = $description;
 
         return $this;
     }
 
-    /**
-     * @return string
-     */
     public function getDescription(): string
     {
         return $this->description;
     }
 
+    public function setMetaData(array $metaData): self
+    {
+        $this->metaData = $metaData;
+
+        return $this;
+    }
+
+    public function getMetaData(): array
+    {
+        return $this->metaData;
+    }
+
     /**
      * @param RoleModel[] $roles
-     *
-     * @return $this|ProjectModel
      */
-    public function setRoles(array $roles): ProjectModel
+    public function setRoles(array $roles): self
     {
         $this->roles = new ArrayCollection($roles);
 
         return $this;
     }
 
-    /**
-     * @param RoleModel $role
-     *
-     * @return $this|ProjectModel
-     */
-    public function addRole(RoleModel $role): ProjectModel
+    public function addRole(RoleModel $role): self
     {
         if (!$this->getRoles()->contains($role)) {
             $this->getRoles()->add($role);
@@ -138,22 +133,15 @@ class ProjectDoctrineModel extends AbstractDoctrineModel implements ProjectModel
 
     /**
      * @param MetaDataElementModel[] $metaDataElements
-     *
-     * @return $this|ProjectModel
      */
-    public function setMetaDataElements(array $metaDataElements): ProjectModel
+    public function setMetaDataElements(array $metaDataElements): self
     {
         $this->metaDataElements = new ArrayCollection($metaDataElements);
 
         return $this;
     }
 
-    /**
-     * @param MetaDataElementModel $metaDataElement
-     *
-     * @return $this|ProjectModel
-     */
-    public function addMetaDataElement(MetaDataElementModel $metaDataElement): ProjectModel
+    public function addMetaDataElement(MetaDataElementModel $metaDataElement): self
     {
         if (!$this->getMetaDataElements()->add($metaDataElement)) {
             $this->getMetaDataElements()->contains($metaDataElement);
@@ -170,15 +158,13 @@ class ProjectDoctrineModel extends AbstractDoctrineModel implements ProjectModel
         return $this->metaDataElements;
     }
 
-    /**
-     * @return array
-     */
     public function toArray(): array
     {
         return [
             self::PROPERTY_UUID               => $this->getUuid(),
             self::PROPERTY_LABEL              => $this->getLabel(),
             self::PROPERTY_DESCRIPTION        => $this->getDescription(),
+            self::PROPERTY_META_DATA          => $this->getMetaData(),
             self::PROPERTY_META_DATA_ELEMENTS => $this->getMetaDataElements()
                 ->map(fn (MetaDataElementModel $metaDataElement) => $metaDataElement->toArray())
                 ->toArray(),
@@ -203,11 +189,6 @@ class ProjectDoctrineModel extends AbstractDoctrineModel implements ProjectModel
         return $members;
     }
 
-    /**
-     * @param string $email
-     *
-     * @return bool
-     */
     public function hasMemberWithEmail(string $email): bool
     {
         return $this->getRoles()->exists(

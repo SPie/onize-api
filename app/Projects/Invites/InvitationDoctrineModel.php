@@ -54,11 +54,11 @@ class InvitationDoctrineModel extends AbstractDoctrineModel implements Invitatio
     private ?\DateTimeImmutable $declinedAt;
 
     /**
-     * @ORM\Column(name="meta_data", type="string", length=255, nullable=false)
+     * @ORM\Column(name="meta_data", type="json", nullable=false)
      *
      * @var string
      */
-    private string $metaData;
+    private array $metaData;
 
     public function __construct(
         RoleModel $role,
@@ -69,7 +69,7 @@ class InvitationDoctrineModel extends AbstractDoctrineModel implements Invitatio
         $this->role = $role;
         $this->email = $email;
         $this->validUntil = $validUntil;
-        $this->metaData = \json_encode($metaData);
+        $this->metaData = $metaData;
         $this->acceptedAt = null;
         $this->declinedAt = null;
     }
@@ -91,7 +91,7 @@ class InvitationDoctrineModel extends AbstractDoctrineModel implements Invitatio
 
     public function getMetaData(): array
     {
-        return \json_decode($this->metaData, true);
+        return $this->metaData;
     }
 
     public function setAcceptedAt(?\DateTimeImmutable $acceptedAt): InvitationModel

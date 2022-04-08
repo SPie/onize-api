@@ -43,6 +43,7 @@ final class ProjectsController extends Controller
         $project = $this->projectManager->createProject(
             $request->getLabel(),
             $request->getDescription(),
+            $request->getProjectMetaData(),
             $request->getMetaDataElements()
         );
 

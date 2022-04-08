@@ -14,11 +14,8 @@ use App\Projects\MemberRepository;
 use App\Projects\MetaDataElementDoctrineModel;
 use App\Projects\MetaDataElementModel;
 use App\Projects\MetaDataElementModelFactory;
-use App\Projects\MetaDataElementRepository;
 use App\Projects\MetaData\MetaDataManager;
-use App\Projects\MetaDataModel;
 use App\Projects\MetaData\MetaDataValidator;
-use App\Projects\PermissionDoctrineModel;
 use App\Projects\PermissionModel;
 use App\Projects\PermissionRepository;
 use App\Projects\ProjectDoctrineModel;
@@ -138,11 +135,12 @@ trait ProjectHelper
         ProjectModel $project,
         string $name,
         string $description,
+        array $metaData,
         array $metaDataElements
     ): self {
         $projectManager
             ->shouldReceive('createProject')
-            ->with($name, $description, $metaDataElements)
+            ->with($name, $description, $metaData, $metaDataElements)
             ->andReturn($project);
 
         return $this;
@@ -214,11 +212,12 @@ trait ProjectHelper
         MockInterface $projectModelFactory,
         ProjectModel $projectModel,
         string $name,
-        string $description
+        string $description,
+        array $metaData
     ): self {
         $projectModelFactory
             ->shouldReceive('create')
-            ->with($name, $description)
+            ->with($name, $description, $metaData)
             ->andReturn($projectModel);
 
         return $this;

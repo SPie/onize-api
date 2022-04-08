@@ -118,6 +118,7 @@ final class ProjectsApiCallsTest extends FeatureTestCase
                 'uuid'             => $project->getUuid(),
                 'label'            => $projectLabel,
                 'description'      => $projectDescription,
+                'metaData'         => [],
                 'metaDataElements' => [
                     [
                         'name'     => $metaDataName,
@@ -573,6 +574,105 @@ final class ProjectsApiCallsTest extends FeatureTestCase
         $response->assertStatus(401);
     }
 
+    public function testCreateProjectWithProjectMetaData(): void
+    {
+        [
+            $projectLabel,
+            $projectDescription,
+            $metaDataName,
+            $metaDataValue,
+            $metaDataElementLabel,
+            $metaDataElementRequired,
+            $metaDataElementInList,
+        ] = $this->setUpCreateTest();
+        $projectMetaData = [$this->getFaker()->word => $this->getFaker()->word];
+
+        $response = $this->doApiCall(
+            'POST',
+            $this->getUrl(ProjectsController::ROUTE_NAME_CREATE),
+            [
+                'label'            => $projectLabel,
+                'description'      => $projectDescription,
+                'projectMetaData'  => $projectMetaData,
+                'metaDataElements' => [
+                    [
+                        'name'     => $metaDataName,
+                        'label'    => $metaDataElementLabel,
+                        'required' => $metaDataElementRequired,
+                        'inList'   => $metaDataElementInList,
+                        'type'     => 'string',
+                    ],
+                ],
+                'metaData'         => [$metaDataName => $metaDataValue],
+            ]
+        );
+
+        $response->assertStatus(201);
+        /** @var ProjectModel $project */
+        $project = $this->getConcreteProjectRepository()->findAll()->first();
+        $this->assertEquals($projectMetaData, $project->getMetaData());
+        $response->assertJsonFragment([
+            'project' => [
+                'uuid'             => $project->getUuid(),
+                'label'            => $projectLabel,
+                'description'      => $projectDescription,
+                'metaData'         => $projectMetaData,
+                'metaDataElements' => [
+                    [
+                        'name'     => $metaDataName,
+                        'label'    => $metaDataElementLabel,
+                        'type'     => 'string',
+                        'required' => $metaDataElementRequired,
+                        'inList'   => $metaDataElementInList,
+                    ],
+                ],
+                'roles'            => [
+                    [
+                        'uuid'  => $project->getRoles()->first()->getUuid(),
+                        'label' => 'Owner',
+                        'owner' => true,
+                    ]
+                ]
+            ],
+        ]);
+    }
+
+    public function testCreateProjectWithInvalidProjectMetaData(): void
+    {
+        [
+            $projectLabel,
+            $projectDescription,
+            $metaDataName,
+            $metaDataValue,
+            $metaDataElementLabel,
+            $metaDataElementRequired,
+            $metaDataElementInList,
+        ] = $this->setUpCreateTest();
+
+        $response = $this->doApiCall(
+            'POST',
+            $this->getUrl(ProjectsController::ROUTE_NAME_CREATE),
+            [
+                'label'            => $projectLabel,
+                'description'      => $projectDescription,
+                'projectMetaData'  => $this->getFaker()->word,
+                'metaDataElements' => [
+                    [
+                        'name'     => $metaDataName,
+                        'label'    => $metaDataElementLabel,
+                        'required' => $metaDataElementRequired,
+                        'inList'   => $metaDataElementInList,
+                        'type'     => 'string',
+                    ],
+                ],
+                'metaData'         => [$metaDataName => $metaDataValue],
+            ]
+        );
+
+        $response->assertStatus(422);
+        $response->assertJsonFragment(['projectMetaData' => ['validation.array']]);
+    }
+
     private function setUpUsersProjectsTest(bool $withProjects = true, bool $withAuthenticatedUser = true): array
     {
         $project = $this->createProjectEntities()->first();
@@ -609,6 +709,7 @@ final class ProjectsApiCallsTest extends FeatureTestCase
                         'uuid'             => $project->getUuid(),
                         'label'            => $project->getLabel(),
                         'description'      => $project->getDescription(),
+                        'metaData'         => [],
                         'roles'            => [
                             [
                                 'uuid'  => $role->getUuid(),
@@ -667,6 +768,7 @@ final class ProjectsApiCallsTest extends FeatureTestCase
                 'uuid'             => $project->getUuid(),
                 'label'            => $project->getLabel(),
                 'description'      => $project->getDescription(),
+                'metaData'         => [],
                 'roles'            => [],
                 'metaDataElements' => [],
             ]

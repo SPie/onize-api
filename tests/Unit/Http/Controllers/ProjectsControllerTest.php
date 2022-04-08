@@ -41,6 +41,7 @@ final class ProjectsControllerTest extends TestCase
     private function createCreateRequest(
         string $label = null,
         string $description = null,
+        array $projectMetaData = [],
         array $metaDataElements = [],
         array $metaData = []
     ): Create {
@@ -50,6 +51,9 @@ final class ProjectsControllerTest extends TestCase
             ->getMock()
             ->shouldReceive('getDescription')
             ->andReturn($description ?: $this->getFaker()->word)
+            ->getMock()
+            ->shouldReceive('getProjectMetaData')
+            ->andReturn($projectMetaData)
             ->getMock()
             ->shouldReceive('getMetaDataElements')
             ->andReturn($metaDataElements)
@@ -77,9 +81,10 @@ final class ProjectsControllerTest extends TestCase
 
     private function setUpCreateTest(): array
     {
+        $projectMetaData = [$this->getFaker()->word => $this->getFaker()->word];
         $metaDataElements = [$this->getFaker()->word => $this->getFaker()->word];
         $metaData = [$this->getFaker()->word => $this->getFaker()->word];
-        $request = $this->createCreateRequest(null, null, $metaDataElements, $metaData);
+        $request = $this->createCreateRequest(null, null, $projectMetaData, $metaDataElements, $metaData);
         $user = $this->createUserModel();
         $authManager = $this->createAuthManager();
         $this->mockAuthManagerAuthenticatedUser($authManager, $user);
@@ -92,6 +97,7 @@ final class ProjectsControllerTest extends TestCase
             $project,
             $request->getLabel(),
             $request->getDescription(),
+            $projectMetaData,
             $metaDataElements
         );
         $role = $this->createRoleModel();

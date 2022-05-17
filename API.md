@@ -23,7 +23,16 @@ Parameter | Type | Required
 
 #### Response
 
-HTTP Status Code `204`
+HTTP Status Code `200`
+
+```json
+{
+  "user": {
+    "uuid": "1234-5678-90AB-CDEF",
+    "email": "example@email.com"
+  }
+}
+```
 
 #### Error Response
 

@@ -11,22 +11,20 @@ use Tests\Helper\HttpHelper;
 use Tests\Helper\UsersHelper;
 use Tests\TestCase;
 
-/**
- * Class AuthControllerTest
- *
- * @package Tests\Unit\Http\Controllers
- */
 final class AuthControllerTest extends TestCase
 {
     use AuthHelper;
     use HttpHelper;
     use UsersHelper;
 
-    //region Tests
+    private function getAuthController(AuthManager $authManager = null, ResponseFactory $responseFactory = null): AuthController
+    {
+        return new AuthController(
+            $authManager ?: $this->createAuthManager(),
+            $responseFactory ?: $this->createResponseFactory()
+        );
+    }
 
-    /**
-     * @return array
-     */
     private function setUpAuthenticatedTest(): array
     {
         $userData = [$this->getFaker()->word => $this->getFaker()->word];
@@ -42,9 +40,6 @@ final class AuthControllerTest extends TestCase
         return [$authController, $response];
     }
 
-    /**
-     * @return void
-     */
     public function testAuthenticated(): void
     {
         /** @var AuthController $authController */
@@ -53,13 +48,12 @@ final class AuthControllerTest extends TestCase
         $this->assertEquals($response, $authController->authenticated());
     }
 
-    /**
-     * @return array
-     */
     private function setUpAuthenticateTest(bool $withValidCredentials = true): array
     {
         $request = $this->createAuthenticateRequest();
+        $userData = [$this->getFaker()->word => $this->getFaker()->word];
         $user = $this->createUserModel();
+        $this->mockUserModelToArray($user, $userData);
         $authManager = $this->createAuthManager();
         $this->mockAuthManagerAuthenticate(
             $authManager,
@@ -69,15 +63,12 @@ final class AuthControllerTest extends TestCase
         );
         $response = $this->createJsonResponse();
         $responseFactory = $this->createResponseFactory();
-        $this->mockResponseFactoryJson($responseFactory, $response, [], 204);
+        $this->mockResponseFactoryJson($responseFactory, $response, ['user' => $userData]);
         $authController = $this->getAuthController($authManager, $responseFactory);
 
         return [$authController, $request, $response];
     }
 
-    /**
-     * @return void
-     */
     public function testAuthenticate(): void
     {
         /** @var AuthController $authController */
@@ -86,9 +77,6 @@ final class AuthControllerTest extends TestCase
         $this->assertEquals($response, $authController->authenticate($request));
     }
 
-    /**
-     * @return void
-     */
     public function testAuthenticateWithInvalidCredentials(): void
     {
         /** @var AuthController $authController */
@@ -99,9 +87,6 @@ final class AuthControllerTest extends TestCase
         $authController->authenticate($request);
     }
 
-    /**
-     * @return void
-     */
     public function testLogout(): void
     {
         $authManager = $this->createAuthManager();
@@ -111,21 +96,5 @@ final class AuthControllerTest extends TestCase
 
         $this->assertEquals($response, $this->getAuthController($authManager, $responseFactory)->logout());
         $authManager->shouldHaveReceived('logout')->once();
-    }
-
-    //endregion
-
-    /**
-     * @param AuthManager|null     $authManager
-     * @param ResponseFactory|null $responseFactory
-     *
-     * @return AuthController
-     */
-    private function getAuthController(AuthManager $authManager = null, ResponseFactory $responseFactory = null): AuthController
-    {
-        return new AuthController(
-            $authManager ?: $this->createAuthManager(),
-            $responseFactory ?: $this->createResponseFactory()
-        );
     }
 }

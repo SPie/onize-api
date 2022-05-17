@@ -22,9 +22,9 @@ final class AuthController extends Controller
 
     public function authenticate(Authenticate $request): JsonResponse
     {
-        $this->authManager->authenticate($request->getEmail(), $request->getPassword());
+        $user = $this->authManager->authenticate($request->getEmail(), $request->getPassword());
 
-        return $this->getResponseFactory()->json([], JsonResponse::HTTP_NO_CONTENT);
+        return $this->getResponseFactory()->json([self::RESPONSE_PARAMETER_USER => $user->toArray()]);
     }
 
     public function authenticated(): JsonResponse

@@ -24,20 +24,18 @@ final class AuthApiCallsTest extends FeatureTestCase
     use ReflectionHelper;
     use UsersHelper;
 
-    //region Tests
-
     private function setUpAuthenticateTest(): array
     {
         $email = $this->getFaker()->safeEmail;
         $password = $this->getFaker()->password;
-        $this->createUserEntities(1, ['email' => $email, 'password' => Hash::make($password)])->first();
+        $user = $this->createUserEntities(1, ['email' => $email, 'password' => Hash::make($password)])->first();
 
-        return [$email, $password];
+        return [$email, $password, $user];
     }
 
     public function testAuthenticate(): void
     {
-        [$email, $password] = $this->setUpAuthenticateTest();
+        [$email, $password, $user] = $this->setUpAuthenticateTest();
 
         $response = $this->doApiCall(
             'POST',
@@ -48,7 +46,8 @@ final class AuthApiCallsTest extends FeatureTestCase
             ]
         );
 
-        $response->assertStatus(204);
+        $response->assertStatus(200);
+        $response->assertJson(['user' => $user->toArray()]);
         $this->isAuthenticated();
     }
 
@@ -113,7 +112,7 @@ final class AuthApiCallsTest extends FeatureTestCase
             ]
         );
 
-        $response->assertStatus(204);
+        $response->assertStatus(200);
         $this->assertNotNull($response->headers->get('x-authorize'));
         $this->assertNotNull($response->headers->get('x-refresh'));
     }
@@ -305,6 +304,4 @@ final class AuthApiCallsTest extends FeatureTestCase
 
         $response->assertStatus(401);
     }
-
-    //endregion
 }

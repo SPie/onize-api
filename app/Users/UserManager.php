@@ -44,15 +44,9 @@ class UserManager
         return $user;
     }
 
-    public function updatePassword(UserModel $user, ?string $password): UserModel
+    public function updatePassword(UserModel $user, string $password): UserModel
     {
-        if (!empty($password)) {
-            $user = $this->userRepository->save(
-                $this->userModelFactory->setPassword($user, $password)
-            );
-        }
-
-        return $user;
+        return $this->userRepository->save($this->userModelFactory->setPassword($user, $password));
     }
 
     public function getUserByUuid(string $uuid): UserModel

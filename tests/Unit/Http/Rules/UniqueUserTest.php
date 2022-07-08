@@ -9,32 +9,21 @@ use Tests\Helper\ModelHelper;
 use Tests\Helper\UsersHelper;
 use Tests\TestCase;
 
-/**
- * Class UniqueUserTest
- *
- * @package Tests\Unit\Http\Rules
- */
 final class UniqueUserTest extends TestCase
 {
     use ModelHelper;
     use UsersHelper;
 
-    //region Tests
-
-    /**
-     * @return void
-     */
-    public function testMessage(): void
+    private function getUniqueUser(UserManager $userManager = null): UniqueUser
     {
-        $this->assertEquals('validation.user_not_unique', $this->getUniqueUser()->message());
+        return new UniqueUser($userManager ?: $this->createUserManager());
     }
 
-    /**
-     * @param bool $emailUsed
-     * @param bool $emailUsedAllowed
-     *
-     * @return array
-     */
+    public function testMessage(): void
+    {
+        $this->assertEquals('validation.user-not-unique', $this->getUniqueUser()->message());
+    }
+
     private function setUpPassesTest(bool $emailUsed = false, bool $emailUsedAllowed = false): array
     {
         $email = $this->getFaker()->safeEmail;
@@ -51,9 +40,6 @@ final class UniqueUserTest extends TestCase
         return [$rule, $email];
     }
 
-    /**
-     * @return void
-     */
     public function testPassesWithoutExistingEmail(): void
     {
         /** @var UniqueUser $rule */
@@ -62,20 +48,14 @@ final class UniqueUserTest extends TestCase
         $this->assertTrue($rule->passes($this->getFaker()->word, $email));
     }
 
-    /**
-     * @return void
-     */
     public function testPassesWithExistingEmail(): void
     {
         /** @var UniqueUser $rule */
-        [$rule, $email] = $this->setUpPassesTest(true);
+        [$rule, $email] = $this->setUpPassesTest(emailUsed: true);
 
         $this->assertFalse($rule->passes($this->getFaker()->word, $email));
     }
 
-    /**
-     * @return void
-     */
     public function testPassesWithExistingEmailAllowed(): void
     {
         /** @var UniqueUser $rule */
@@ -84,26 +64,11 @@ final class UniqueUserTest extends TestCase
         $this->assertTrue($rule->passes($this->getFaker()->word, $email));
     }
 
-    /**
-     * @return void
-     */
     public function testPassesWithEmptyEmail(): void
     {
         /** @var UniqueUser $rule */
         [$rule] = $this->setUpPassesTest();
 
         $this->assertTrue($rule->passes($this->getFaker()->word, null));
-    }
-
-    //endregion
-
-    /**
-     * @param UserManager|null $userManager
-     *
-     * @return UniqueUser
-     */
-    private function getUniqueUser(UserManager $userManager = null): UniqueUser
-    {
-        return new UniqueUser($userManager ?: $this->createUserManager());
     }
 }

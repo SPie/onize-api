@@ -7,11 +7,11 @@ use App\Models\Repository;
 
 interface UserRepository extends Repository
 {
+    /**
+     * @return UserModel|Model
+     */
     public function save(Model $model, bool $flush = true): Model;
 
-    /**
-     * @return UserModel|Model|null
-     */
     public function find(int $id): ?Model;
 
     public function findOneByEmail(string $email): ?UserModel;

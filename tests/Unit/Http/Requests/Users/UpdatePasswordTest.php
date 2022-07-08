@@ -2,32 +2,36 @@
 
 namespace Tests\Unit\Http\Requests\Users;
 
+use App\Auth\AuthManager;
 use App\Http\Requests\Users\UpdatePassword;
+use Tests\Helper\AuthHelper;
+use Tests\Helper\ReflectionHelper;
+use Tests\Helper\UsersHelper;
 use Tests\TestCase;
 
-/**
- * Class UpdatePasswordTest
- *
- * @package Tests\Unit\Http\Requests\Users
- */
 final class UpdatePasswordTest extends TestCase
 {
-    //region Tests
+    use AuthHelper;
+    use ReflectionHelper;
+    use UsersHelper;
 
-    /**
-     * @return void
-     */
+    private function getUpdatePassword(AuthManager $authManager = null): UpdatePassword
+    {
+        return new UpdatePassword($authManager ?: $this->createAuthManager());
+    }
+
     public function testRules(): void
     {
         $this->assertEquals(
-            ['password' => ['string']],
+            [
+                'password'        => ['required', 'string'],
+                'currentPassword' => ['required', 'string', function () {
+                }],
+            ],
             $this->getUpdatePassword()->rules()
         );
     }
 
-    /**
-     * @return void
-     */
     public function testGetUserPassword(): void
     {
         $password = $this->getFaker()->password;
@@ -37,21 +41,48 @@ final class UpdatePasswordTest extends TestCase
         $this->assertEquals($password, $request->getUserPassword());
     }
 
-    /**
-     * @return void
-     */
-    public function testGetUserPasswordWithoutPassword(): void
+    private function setUpCorrectCurrentPasswordTest(bool $validPassword = true): array
     {
-        $this->assertNull($this->getUpdatePassword()->getUserPassword());
+        $currentPassword = $this->getFaker()->password;
+        $user = $this->createUserModel();
+        $authManager = $this->createAuthManager();
+        $this->mockAuthManagerAuthenticatedUser($authManager, $user);
+        $this->mockAuthManagerValidateCredentials($authManager, $validPassword, $user, $currentPassword);
+        $request = $this->getUpdatePassword($authManager);
+
+        return [$request, $currentPassword];
     }
 
-    //endregion
-
-    /**
-     * @return UpdatePassword
-     */
-    private function getUpdatePassword(): UpdatePassword
+    public function testCorrectCurrentPasswordRule(): void
     {
-        return new UpdatePassword();
+        /** @var UpdatePassword $request */
+        [$request, $currentPassword] = $this->setUpCorrectCurrentPasswordTest();
+        $rule = $this->runPrivateMethod($request, 'getCorrectCurrentPasswordRule');
+
+        $this->assertTrue($rule('currentPassword', $currentPassword, function () {
+        }));
+    }
+
+    public function testCorrectCurrentPasswordRuleWithIncorrectPassword(): void
+    {
+        /** @var UpdatePassword $request */
+        [$request, $currentPassword] = $this->setUpCorrectCurrentPasswordTest(validPassword: false);
+        $rule = $this->runPrivateMethod($request, 'getCorrectCurrentPasswordRule');
+        $fail = '';
+
+        $this->assertFalse($rule('currentPassword', $currentPassword, function (string $message) use (&$fail) {
+            $fail = $message;
+        }));
+        $this->assertEquals('validation.invalid-password', $fail);
+    }
+
+    public function testCorrectCurrentPasswordRuleWithoutCurrentPassword(): void
+    {
+        /** @var UpdatePassword $request */
+        [$request] = $this->setUpCorrectCurrentPasswordTest();
+        $rule = $this->runPrivateMethod($request, 'getCorrectCurrentPasswordRule');
+
+        $this->assertTrue($rule('currentPassword', '', function () {
+        }));
     }
 }

@@ -4,79 +4,34 @@ namespace App\Http\Rules;
 
 use App\Models\Exceptions\ModelNotFoundException;
 use App\Users\UserManager;
-use App\Users\UserModel;
 use Illuminate\Contracts\Validation\Rule;
 
-/**
- * Class UniqueUser
- *
- * @package App\Http\Rules
- */
 class UniqueUser implements Rule
 {
-    /**
-     * @var UserManager
-     */
-    private UserManager $userManager;
-
-    /**
-     * @var int|null
-     */
-    private ?int $existingUserId;
-
-    /**
-     * UniqueUser constructor.
-     *
-     * @param UserManager $userManager
-     */
-    public function __construct(UserManager $userManager)
+    public function __construct(private UserManager $userManager, private ?int $existingUserId = null)
     {
-        $this->userManager = $userManager;
-        $this->existingUserId = null;
     }
 
-    /**
-     * @return UserManager
-     */
-    private function getUserManager(): UserManager
-    {
-        return $this->userManager;
-    }
-
-    /**
-     * @param int|null $existingUserId
-     *
-     * @return $this
-     */
-    public function setExistingUserId(?int $existingUserId)
+    public function setExistingUserId(?int $existingUserId): self
     {
         $this->existingUserId = $existingUserId;
 
         return $this;
     }
 
-    /**
-     * @return UserModel|null
-     */
     private function getExistingUserId(): ?int
     {
         return $this->existingUserId;
     }
 
-    /**
-     * @param string $attribute
-     * @param mixed  $value
-     *
-     * @return bool|void
-     */
-    public function passes($attribute, $value)
+    public function passes($attribute, $value): bool
     {
         if (empty($value)) {
             return true;
         }
 
         try {
-            $user = $this->getUserManager()->getUserByEmail($value);
+            $user = $this->userManager->getUserByEmail($value);
 
             return !empty($this->getExistingUserId()) && $this->getExistingUserId() == $user->getId();
         } catch (ModelNotFoundException $e) {
@@ -84,11 +39,8 @@ class UniqueUser implements Rule
         }
     }
 
-    /**
-     * @return string
-     */
-    public function message()
+    public function message(): string
     {
-        return 'validation.user_not_unique';
+        return 'validation.user-not-unique';
     }
 }

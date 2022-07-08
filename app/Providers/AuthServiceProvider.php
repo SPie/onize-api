@@ -10,13 +10,9 @@ use App\Projects\Invites\InvitationModel;
 use App\Projects\ProjectModel;
 use App\Projects\RoleModel;
 use Illuminate\Contracts\Auth\StatefulGuard;
+use Illuminate\Contracts\Auth\UserProvider as UserProviderContract;
 use Illuminate\Foundation\Support\Providers\AuthServiceProvider as ServiceProvider;
 
-/**
- * Class AuthServiceProvider
- *
- * @package App\Providers
- */
 class AuthServiceProvider extends ServiceProvider
 {
     /**
@@ -30,24 +26,19 @@ class AuthServiceProvider extends ServiceProvider
         InvitationModel::class => InvitationPolicy::class,
     ];
 
-    /**
-     * @return void
-     */
     public function register(): void
     {
         $this->app->bind(StatefulGuard::class, fn () => $this->app->get('auth')->guard());
+//        $this->app->bind(UserProviderContract::class, fn () => $this->app->get('auth')->getDefaultUserProvider());
+        $this->app->bind(UserProviderContract::class, function () {
+            return $this->app->get('auth')->createUserProvider('app');
+        });
     }
 
-    /**
-     * Register any authentication / authorization services.
-     *
-     * @return void
-     */
     public function boot()
     {
         $this->registerPolicies();
 
-        //
         $this->app->get('auth')->provider('app_user_provider', function ($app, array $config) {
             return $this->app->get(UserProvider::class);
         });

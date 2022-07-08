@@ -9,92 +9,40 @@ use App\Users\UserModel;
 use Illuminate\Contracts\Auth\Authenticatable;
 use Illuminate\Contracts\Auth\UserProvider as UserProviderContract;
 
-/**
- * Class UserProvider
- *
- * @package App\Auth
- */
 class UserProvider implements UserProviderContract
 {
-    /**
-     * @var UserManager
-     */
-    private UserManager $userManager;
-
-    /**
-     * @var PasswordHasher
-     */
-    private PasswordHasher $passwordHasher;
-
-    /**
-     * UserProvider constructor.
-     *
-     * @param UserManager    $userManager
-     * @param PasswordHasher $passwordHasher
-     */
-    public function __construct(UserManager $userManager, PasswordHasher $passwordHasher)
+    public function __construct(private UserManager $userManager, private PasswordHasher $passwordHasher)
     {
-        $this->userManager = $userManager;
-        $this->passwordHasher = $passwordHasher;
-    }
-
-    /**
-     * @return UserManager
-     */
-    private function getUserManager(): UserManager
-    {
-        return $this->userManager;
-    }
-
-    /**
-     * @return PasswordHasher
-     */
-    private function getPasswordHasher(): PasswordHasher
-    {
-        return $this->passwordHasher;
     }
 
     /**
      * @param int $identifier
-     *
-     * @return UserModel|Authenticatable|null
      */
-    public function retrieveById($identifier)
+    public function retrieveById($identifier): UserModel|Authenticatable|null
     {
         try {
-            return $this->getUserManager()->getUserById($identifier);
+            return $this->userManager->getUserById($identifier);
         } catch (ModelNotFoundException $e) {
             return null;
         }
     }
 
-    /**
-     * @param array $credentials
-     *
-     * @return UserModel|Authenticatable|null
-     */
-    public function retrieveByCredentials(array $credentials)
+    public function retrieveByCredentials(array $credentials): UserModel|Authenticatable|null
     {
         try {
-            return $this->getUserManager()->getUserByEmail($credentials[UserModel::PROPERTY_EMAIL]);
+            return $this->userManager->getUserByEmail($credentials[UserModel::PROPERTY_EMAIL]);
         } catch (ModelNotFoundException $e) {
             return null;
         }
     }
 
-    /**
-     * @param Authenticatable $user
-     * @param array           $credentials
-     *
-     * @return bool
-     */
-    public function validateCredentials(Authenticatable $user, array $credentials)
+    public function validateCredentials(Authenticatable $user, array $credentials): bool
     {
         if (empty($credentials[UserModel::PROPERTY_PASSWORD])) {
             return false;
         }
 
-        return $this->getPasswordHasher()->check($credentials[UserModel::PROPERTY_PASSWORD], $user->getAuthPassword());
+        return $this->passwordHasher->check($credentials[UserModel::PROPERTY_PASSWORD], $user->getAuthPassword());
     }
 
     public function retrieveByToken($identifier, $token)

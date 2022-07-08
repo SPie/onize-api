@@ -6,6 +6,7 @@ use App\Auth\AuthManager;
 use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Auth\AuthenticationException;
 use Illuminate\Contracts\Auth\StatefulGuard;
+use Illuminate\Contracts\Auth\UserProvider;
 use Tests\Helper\AuthHelper;
 use Tests\Helper\HttpHelper;
 use Tests\Helper\UsersHelper;
@@ -17,9 +18,12 @@ final class AuthManagerTest extends TestCase
     use HttpHelper;
     use UsersHelper;
 
-    private function getAuthManager(StatefulGuard $guard = null): AuthManager
+    private function getAuthManager(StatefulGuard $guard = null, UserProvider $userProvider = null): AuthManager
     {
-        return new AuthManager($guard ?: $this->createStatefulGuard());
+        return new AuthManager(
+            $guard ?: $this->createStatefulGuard(),
+            $userProvider ?: $this->createUserProvider()
+        );
     }
 
     private function setUpLoginTest(): array
@@ -110,5 +114,32 @@ final class AuthManagerTest extends TestCase
         $this->getAuthManager($guard)->logout();
 
         $guard->shouldHaveReceived('logout')->once();
+    }
+
+    private function setUpValidateCredentialsTest(bool $validCredentials = true): array
+    {
+        $user = $this->createUserModel();
+        $password = $this->getFaker()->password;
+        $userProvider = $this->createUserProvider();
+        $this->mockUserProviderValidateCredentials($userProvider, $validCredentials, $user, ['password' => $password]);
+        $authManager = $this->getAuthManager(null, $userProvider);
+
+        return [$authManager, $user, $password];
+    }
+
+    public function testValidateCredentialsWithValidCredentials(): void
+    {
+        /** @var AuthManager $authManager */
+        [$authManager, $user, $password] = $this->setUpValidateCredentialsTest();
+
+        $this->assertTrue($authManager->validateCredentials($user, $password));
+    }
+
+    public function testValidateCredentialsWithInvalidCredentials(): void
+    {
+        /** @var AuthManager $authManager */
+        [$authManager, $user, $password] = $this->setUpValidateCredentialsTest(validCredentials: false);
+
+        $this->assertFalse($authManager->validateCredentials($user, $password));
     }
 }

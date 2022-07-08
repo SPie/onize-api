@@ -10,16 +10,12 @@ use App\Users\UserModel;
 use Illuminate\Contracts\Auth\Access\Gate;
 use Illuminate\Contracts\Auth\Authenticatable;
 use Illuminate\Contracts\Auth\StatefulGuard;
+use Illuminate\Contracts\Auth\UserProvider;
 use Illuminate\Http\JsonResponse;
 use Mockery as m;
 use Mockery\CompositeExpectation;
 use Mockery\MockInterface;
 
-/**
- * Trait AuthHelper
- *
- * @package Tests\Helper
- */
 trait AuthHelper
 {
     /**
@@ -30,12 +26,6 @@ trait AuthHelper
         return m::spy(StatefulGuard::class);
     }
 
-    /**
-     * @param StatefulGuard|MockInterface $guard
-     * @param UserModel                   $user
-     *
-     * @return $this
-     */
     private function assertStatefulGuardLogin(MockInterface $guard, UserModel $user): self
     {
         $guard
@@ -46,12 +36,6 @@ trait AuthHelper
         return $this;
     }
 
-    /**
-     * @param StatefulGuard|MockInterface $guard
-     * @param Authenticatable|null        $user
-     *
-     * @return $this
-     */
     private function mockStatefulGuardUser(MockInterface $guard, ?Authenticatable $user): self
     {
         $guard
@@ -83,12 +67,6 @@ trait AuthHelper
         return m::spy(AuthManager::class);
     }
 
-    /**
-     * @param AuthManager|MockInterface $authManager
-     * @param UserModel                 $user
-     *
-     * @return $this
-     */
     private function assertAuthManagerLogin(MockInterface $authManager, UserModel $user): self
     {
         $authManager
@@ -99,12 +77,6 @@ trait AuthHelper
         return $this;
     }
 
-    /**
-     * @param AuthManager|MockInterface $authManager
-     * @param UserModel|\Exception      $user
-     *
-     * @return $this
-     */
     private function mockAuthManagerAuthenticatedUser(MockInterface $authManager, $user): self
     {
         $authManager
@@ -115,12 +87,7 @@ trait AuthHelper
     }
 
     /**
-     * @param AuthManager|MockInterface $authManager
      * @param UserModel|\Exception      $user
-     * @param string                    $email
-     * @param string                    $password
-     *
-     * @return $this
      */
     private function mockAuthManagerAuthenticate(
         MockInterface $authManager,
@@ -136,6 +103,18 @@ trait AuthHelper
         return $this;
     }
 
+    private function mockAuthManagerValidateCredentials(
+        MockInterface $authManager,
+        bool $valid,
+        UserModel $user,
+        string $password
+    ): CompositeExpectation {
+        return $authManager
+            ->shouldReceive('validateCredentials')
+            ->with($user, $password)
+            ->andReturn($valid);
+    }
+
     /**
      * @return Gate|MockInterface
      */
@@ -147,10 +126,6 @@ trait AuthHelper
     /**
      * @param Gate|MockInterface      $gate
      * @param JsonResponse|\Exception $response
-     * @param string                  $ability
-     * @param array                   $arguments
-     *
-     * @return $this
      */
     private function mockGateAuthorize(Gate $gate, $response, string $ability, array $arguments): self
     {
@@ -162,9 +137,6 @@ trait AuthHelper
         return $this;
     }
 
-    /**
-     * @return RefreshTokenModel|MockInterface
-     */
     private function createRefreshTokenModel(): RefreshTokenModel
     {
         return m::spy(RefreshTokenModel::class);
@@ -213,5 +185,25 @@ trait AuthHelper
             ->shouldReceive('findOneByRefreshTokenId')
             ->with($refreshTokenId)
             ->andReturn($refreshTokenModel);
+    }
+
+    /**
+     * @return UserProvider|MockInterface
+     */
+    private function createUserProvider(): UserProvider
+    {
+        return m::spy(UserProvider::class);
+    }
+
+    private function mockUserProviderValidateCredentials(
+        MockInterface $userProvider,
+        bool $valid,
+        Authenticatable $user,
+        array $credentials
+    ): CompositeExpectation {
+        return $userProvider
+            ->shouldReceive('validateCredentials')
+            ->with($user, $credentials)
+            ->andReturn($valid);
     }
 }

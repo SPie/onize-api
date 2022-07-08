@@ -141,7 +141,7 @@ final class UserManagerTest extends TestCase
         $userRepository->shouldNotHaveReceived('save');
     }
 
-    private function setUpUpdatePasswordTest(bool $withChange = true): array
+    private function setUpUpdatePasswordTest(): array
     {
         $user = $this->createUserModel();
         $password = $this->getFaker()->password;
@@ -149,9 +149,7 @@ final class UserManagerTest extends TestCase
         $userModelFactory = $this->createUserModelFactory();
         $this->mockUserModelFactorySetPassword($userModelFactory, $updatedUser, $user, $password);
         $userRepository = $this->createUserRepository();
-        if ($withChange) {
-            $this->mockRepositorySave($userRepository, $updatedUser);
-        }
+        $this->mockRepositorySave($userRepository, $updatedUser);
         $userManager = $this->getUserManager($userRepository, $userModelFactory);
 
         return [$userManager, $user, $password, $updatedUser, $userRepository];
@@ -164,18 +162,6 @@ final class UserManagerTest extends TestCase
 
         $this->assertEquals($updatedUser, $userManager->updatePassword($user, $password));
         $this->assertRepositorySave($userRepository, $updatedUser);
-    }
-
-    public function testUpdatePasswordWithoutPasswordChange(): void
-    {
-        /**
-         * @var UserManager                  $userManager
-         * @var UserRepository|MockInterface $userRepository
-         */
-        [$userManager, $user, $password, $updatedUser, $userRepository] = $this->setUpUpdatePasswordTest(false);
-
-        $this->assertEquals($user, $userManager->updatePassword($user, null));
-        $userRepository->shouldNotHaveReceived('save');
     }
 
     private function setUpGetUserByUuidTest(bool $withUser = true): array

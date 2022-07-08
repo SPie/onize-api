@@ -7,65 +7,34 @@ use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Auth\AuthenticationException;
 use Illuminate\Contracts\Auth\Authenticatable;
 use Illuminate\Contracts\Auth\StatefulGuard;
+use Illuminate\Contracts\Auth\UserProvider as UserProviderContract;
 
-/**
- * Class AuthManager
- *
- * @package App\Auth
- */
 class AuthManager
 {
-    /**
-     * @var StatefulGuard
-     */
-    private StatefulGuard $guard;
-
-    /**
-     * JWTManager constructor.
-     *
-     * @param StatefulGuard $guard
-     */
-    public function __construct(StatefulGuard $guard)
+    public function __construct(private StatefulGuard $guard, private UserProviderContract $userProvider)
     {
-        $this->guard = $guard;
     }
 
-    /**
-     * @return StatefulGuard
-     */
-    private function getGuard(): StatefulGuard
-    {
-        return $this->guard;
-    }
-
-    /**
-     * @param UserModel    $user
-     *
-     * @return $this
-     */
     public function login(UserModel $user): self
     {
-        $this->getGuard()->login($user);
+        $this->guard->login($user);
 
         return $this;
     }
 
     /**
-     * @param string $email
-     * @param string $password
-     *
      * @return UserModel|Authenticatable
      */
     public function authenticate(string $email, string $password): UserModel
     {
-        if (!$this->getGuard()->attempt(
+        if (!$this->guard->attempt(
             [UserModel::PROPERTY_EMAIL => $email, UserModel::PROPERTY_PASSWORD => $password],
             true
         )) {
             throw new AuthorizationException();
         }
 
-        return $this->getGuard()->user();
+        return $this->guard->user();
     }
 
     /**
@@ -73,7 +42,7 @@ class AuthManager
      */
     public function authenticatedUser(): UserModel
     {
-        $user = $this->getGuard()->user();
+        $user = $this->guard->user();
         if (!$user) {
             throw new AuthenticationException();
         }
@@ -81,12 +50,14 @@ class AuthManager
         return $user;
     }
 
-    /**
-     * @return $this
-     */
+    public function validateCredentials(UserModel $user, string $password): bool
+    {
+        return $this->userProvider->validateCredentials($user, [UserModel::PROPERTY_PASSWORD => $password]);
+    }
+
     public function logout(): self
     {
-        $this->getGuard()->logout();
+        $this->guard->logout();
 
         return $this;
     }

@@ -13,11 +13,6 @@ use Tests\Helper\ApiHelper;
 use Tests\Helper\ModelHelper;
 use Tests\Helper\UsersHelper;
 
-/**
- * Class UsersApiCallsTest
- *
- * @package Tests\Feature\ApiCalls
- */
 final class UsersApiCallsTest extends FeatureTestCase
 {
     use ApiHelper;
@@ -25,11 +20,11 @@ final class UsersApiCallsTest extends FeatureTestCase
     use ModelHelper;
     use UsersHelper;
 
-    //region Tests
+    private function getConcreteUserRepository(): UserRepository
+    {
+        return $this->app->get(UserRepository::class);
+    }
 
-    /**
-     * @return void
-     */
     public function testRegister(): void
     {
         $email = $this->getFaker()->safeEmail;
@@ -55,9 +50,6 @@ final class UsersApiCallsTest extends FeatureTestCase
         $this->assertNotEmpty($response->json('user.uuid'));
     }
 
-    /**
-     * @return void
-     */
     public function testRegisterWithoutRequiredParameters(): void
     {
         $response = $this->doApiCall('POST', URL::route(UsersController::ROUTE_NAME_REGISTER));
@@ -69,9 +61,6 @@ final class UsersApiCallsTest extends FeatureTestCase
         ]);
     }
 
-    /**
-     * @return void
-     */
     public function testRegisterWithInvalidParameters(): void
     {
         $response = $this->doApiCall(
@@ -90,9 +79,6 @@ final class UsersApiCallsTest extends FeatureTestCase
         ]);
     }
 
-    /**
-     * @return void
-     */
     public function testRegisterWithUniqueUser(): void
     {
         /** @var UserModel $user */
@@ -109,13 +95,10 @@ final class UsersApiCallsTest extends FeatureTestCase
 
         $response->assertStatus(422);
         $response->assertJsonFragment([
-            'email' => ['validation.user_not_unique'],
+            'email' => ['validation.user-not-unique'],
         ]);
     }
 
-    /**
-     * @return array
-     */
     private function setUpUpdateTest(bool $withAuthenticatedUser = true): array
     {
         $user = $this->createUserEntities()->first();
@@ -126,9 +109,6 @@ final class UsersApiCallsTest extends FeatureTestCase
         return [$user, $this->createUserEntities()->first()->getEmail()];
     }
 
-    /**
-     * @return void
-     */
     public function testUpdate(): void
     {
         [$user] = $this->setUpUpdateTest();
@@ -149,9 +129,6 @@ final class UsersApiCallsTest extends FeatureTestCase
         ]);
     }
 
-    /**
-     * @return void
-     */
     public function testUpdateWithoutChange(): void
     {
         [$user] = $this->setUpUpdateTest();
@@ -170,9 +147,6 @@ final class UsersApiCallsTest extends FeatureTestCase
         ]);
     }
 
-    /**
-     * @return void
-     */
     public function testUpdateWithEmptyEmail(): void
     {
         $this->setUpUpdateTest();
@@ -187,9 +161,6 @@ final class UsersApiCallsTest extends FeatureTestCase
         $response->assertJsonFragment(['email' => ['validation.email']]);
     }
 
-    /**
-     * @return void
-     */
     public function testUpdateWithInvalidEmail(): void
     {
         $this->setUpUpdateTest();
@@ -204,9 +175,6 @@ final class UsersApiCallsTest extends FeatureTestCase
         $response->assertJsonFragment(['email' => ['validation.email']]);
     }
 
-    /**
-     * @return void
-     */
     public function testUpdateWithExistingEmail(): void
     {
         [$user, $existingEmail] = $this->setUpUpdateTest();
@@ -218,12 +186,9 @@ final class UsersApiCallsTest extends FeatureTestCase
         );
 
         $response->assertStatus(422);
-        $response->assertJsonFragment(['email' => ['validation.user_not_unique']]);
+        $response->assertJsonFragment(['email' => ['validation.user-not-unique']]);
     }
 
-    /**
-     * @return void
-     */
     public function testUpdateWithExistingEmailFromAuthenticatedUser(): void
     {
         [$user] = $this->setUpUpdateTest();
@@ -237,9 +202,6 @@ final class UsersApiCallsTest extends FeatureTestCase
         $response->assertOk();
     }
 
-    /**
-     * @return void
-     */
     public function testUpdateWithoutAuthenticatedUser(): void
     {
         $this->setUpUpdateTest(false);
@@ -253,33 +215,29 @@ final class UsersApiCallsTest extends FeatureTestCase
         $response->assertStatus(401);
     }
 
-    /**
-     * @param bool $withAuthenticatedUser
-     *
-     * @return array
-     */
     private function setUpUpdatePasswordTest(bool $withAuthenticatedUser = true): array
     {
-        $user = $this->createUserEntities()->first();
+        $currentPassword = $this->getFaker()->password;
+        $user = $this->createUserEntities(1, ['password' => Hash::make($currentPassword)])->first();
         if ($withAuthenticatedUser) {
             $this->actingAs($user);
         }
 
-        return [$user];
+        return [$user, $currentPassword];
     }
 
-    /**
-     * @return void
-     */
     public function testUpdatePassword(): void
     {
-        [$user] = $this->setUpUpdatePasswordTest();
+        [$user, $currentPassword] = $this->setUpUpdatePasswordTest();
         $password = $this->getFaker()->password;
 
         $response = $this->doApiCall(
             'PATCH',
             $this->getUrl(UsersController::ROUTE_NAME_UPDATE_PASSWORD),
-            ['password' => $password]
+            [
+                'password'        => $password,
+                'currentPassword' => $currentPassword,
+            ]
         );
 
         $response->assertOk();
@@ -292,69 +250,59 @@ final class UsersApiCallsTest extends FeatureTestCase
         $this->assertTrue(Hash::check($password, $user->getPassword()));
     }
 
-    /**
-     * @return void
-     */
-    public function testUpdatePasswordWithoutChange(): void
-    {
-        [$user] = $this->setUpUpdatePasswordTest();
-        $password = $user->getPassword();
-
-        $response = $this->doApiCall(
-            'PATCH',
-            $this->getUrl(UsersController::ROUTE_NAME_UPDATE_PASSWORD),
-        );
-
-        $response->assertOk();
-        $response->assertJsonFragment([
-            'user' => [
-                'uuid'  => $user->getUuid(),
-                'email' => $user->getEmail(),
-            ]
-        ]);
-        $this->assertEquals($password, $user->getPassword());
-    }
-
-    /**
-     * @return void
-     */
     public function testUpdatePasswordWithEmptyPassword(): void
     {
-        $this->setUpUpdatePasswordTest();
+        [$user, $currentPassword] = $this->setUpUpdatePasswordTest();
 
         $response = $this->doApiCall(
             'PATCH',
             $this->getUrl(UsersController::ROUTE_NAME_UPDATE_PASSWORD),
-            ['password' => '']
+            [
+                'password'        => '',
+                'currentPassword' => $currentPassword,
+            ]
         );
 
         $response->assertStatus(422);
-        $response->assertJsonFragment(['password' => ['validation.string']]);
+        $response->assertJsonFragment(['password' => ['validation.required']]);
     }
 
-    /**
-     * @return void
-     */
     public function testUpdatePasswordWithInvalidPassword(): void
     {
-        $this->setUpUpdatePasswordTest();
+        [$user, $currentPassword] = $this->setUpUpdatePasswordTest();
 
         $response = $this->doApiCall(
             'PATCH',
             $this->getUrl(UsersController::ROUTE_NAME_UPDATE_PASSWORD),
-            ['password' => $this->getFaker()->numberBetween()]
+            [
+                'password'        => $this->getFaker()->numberBetween(),
+                'currentPassword' => $currentPassword,
+            ]
         );
 
         $response->assertStatus(422);
         $response->assertJsonFragment(['password' => ['validation.string']]);
     }
 
-    /**
-     * @return void
-     */
     public function testUpdatePasswordWithoutAuthenticatedUser(): void
     {
-        $this->setUpUpdatePasswordTest(false);
+        [$user, $currentPassword] = $this->setUpUpdatePasswordTest(false);
+
+        $response = $this->doApiCall(
+            'PATCH',
+            $this->getUrl(UsersController::ROUTE_NAME_UPDATE_PASSWORD),
+            [
+                'password'        => $this->getFaker()->password,
+                'currentPassword' => $currentPassword,
+            ]
+        );
+
+        $response->assertStatus(401);
+    }
+
+    public function testUpdatePasswordWithoutCurrentPassword(): void
+    {
+        $this->setUpUpdatePasswordTest();
 
         $response = $this->doApiCall(
             'PATCH',
@@ -362,16 +310,72 @@ final class UsersApiCallsTest extends FeatureTestCase
             ['password' => $this->getFaker()->password]
         );
 
-        $response->assertStatus(401);
+        $response->assertStatus(422);
+        $response->assertJsonFragment(['currentPassword' => ['validation.required']]);
     }
 
-    //endregion
-
-    /**
-     * @return UserRepository
-     */
-    private function getConcreteUserRepository(): UserRepository
+    public function testUpdatePasswordWithInvalidCurrentPassword(): void
     {
-        return $this->app->get(UserRepository::class);
+        $this->setUpUpdatePasswordTest();
+
+        $response = $this->doApiCall(
+            'PATCH',
+            $this->getUrl(UsersController::ROUTE_NAME_UPDATE_PASSWORD),
+            [
+                'password'        => $this->getFaker()->password,
+                'currentPassword' => $this->getFaker()->numberBetween(),
+            ]
+        );
+
+        $response->assertStatus(422);
+        $response->assertJsonFragment(['currentPassword' => ['validation.string', 'validation.invalid-password']]);
+    }
+
+    public function testUpdatePasswordWithInvalidCredentials(): void
+    {
+        [$user, $currentPassword] = $this->setUpUpdatePasswordTest();
+
+        $response = $this->doApiCall(
+            'PATCH',
+            $this->getUrl(UsersController::ROUTE_NAME_UPDATE_PASSWORD),
+            [
+                'password'        => $this->getFaker()->password,
+                'currentPassword' => $currentPassword . $this->getFaker()->word,
+            ]
+        );
+
+        $response->assertStatus(422);
+        $response->assertJsonFragment(['currentPassword' => ['validation.invalid-password']]);
+    }
+
+    public function testUpdatePasswordWithEmptyCurrentPassword(): void
+    {
+        $this->setUpUpdatePasswordTest();
+
+        $response = $this->doApiCall(
+            'PATCH',
+            $this->getUrl(UsersController::ROUTE_NAME_UPDATE_PASSWORD),
+            [
+                'password'        => $this->getFaker()->password,
+                'currentPassword' => '',
+            ]
+        );
+
+        $response->assertStatus(422);
+        $response->assertJsonFragment(['currentPassword' => ['validation.required']]);
+    }
+
+    public function testUpdatePasswordWithoutPassword(): void
+    {
+        [$user, $currentPassword] = $this->setUpUpdatePasswordTest();
+
+        $response = $this->doApiCall(
+            'PATCH',
+            $this->getUrl(UsersController::ROUTE_NAME_UPDATE_PASSWORD),
+            ['currentPassword' => $currentPassword]
+        );
+
+        $response->assertStatus(422);
+        $response->assertJsonFragment(['password' => ['validation.required']]);
     }
 }

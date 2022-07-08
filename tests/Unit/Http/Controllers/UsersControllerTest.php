@@ -14,18 +14,44 @@ use Tests\Helper\HttpHelper;
 use Tests\Helper\UsersHelper;
 use Tests\TestCase;
 
-/**
- * Class UsersControllerTest
- *
- * @package Tests\Unit\Http\Controllers
- */
 final class UsersControllerTest extends TestCase
 {
     use AuthHelper;
     use HttpHelper;
     use UsersHelper;
 
-    //region Tests
+    private function getUsersController(UserManager $userManager = null, ResponseFactory $responseFactory = null): UsersController
+    {
+        return new UsersController(
+            $userManager ?: $this->createUserManager(),
+            $responseFactory ?: $this->createResponseFactory()
+        );
+    }
+
+    /**
+     * @return Register|MockInterface
+     */
+    private function createRegister(string $email = null, string $password = null): Register
+    {
+        return m::spy(Register::class)
+            ->shouldReceive('getEmail')
+            ->andReturn($email ?: $this->getFaker()->safeEmail)
+            ->getMock()
+            ->shouldReceive('getPassword')
+            ->andReturn($password ?: $this->getFaker()->password)
+            ->getMock();
+    }
+
+    /**
+     * @return Update|MockInterface
+     */
+    private function createUpdate(string $email = null): Update
+    {
+        return m::spy(Update::class)
+            ->shouldReceive('getEmail')
+            ->andReturn($email)
+            ->getMock();
+    }
 
     private function setUpRegisterTest(): array
     {
@@ -44,9 +70,6 @@ final class UsersControllerTest extends TestCase
         return [$usersController, $request, $authManager, $response, $user];
     }
 
-    /**
-     * @return void
-     */
     public function testRegister(): void
     {
         /** @var UsersController $usersController */
@@ -56,11 +79,6 @@ final class UsersControllerTest extends TestCase
         $this->assertAuthManagerLogin($authManager, $user);
     }
 
-    /**
-     * @param bool $withChange
-     *
-     * @return array
-     */
     private function setUpUpdateTest(bool $withChange = true): array
     {
         $email = $this->getFaker()->safeEmail;
@@ -81,9 +99,6 @@ final class UsersControllerTest extends TestCase
         return [$usersController, $request, $authManager, $response];
     }
 
-    /**
-     * @return void
-     */
     public function testUpdateWithEmailChange(): void
     {
         /** @var UsersController $usersController */
@@ -92,9 +107,6 @@ final class UsersControllerTest extends TestCase
         $this->assertEquals($response, $usersController->update($request, $authManager));
     }
 
-    /**
-     * @return void
-     */
     public function testUpdateWithoutChange(): void
     {
         /** @var UsersController $usersController */
@@ -103,14 +115,9 @@ final class UsersControllerTest extends TestCase
         $this->assertEquals($response, $usersController->update($request, $authManager));
     }
 
-    /**
-     * @param bool $withChange
-     *
-     * @return array
-     */
-    private function setUpUpdatePasswordTest(bool $withChange = true): array
+    private function setUpUpdatePasswordTest(): array
     {
-        $password = $withChange ? $this->getFaker()->password : null;
+        $password = $this->getFaker()->password;
         $request = $this->createUpdatePasswordRequest($password);
         $user = $this->createUserModel();
         $authManager = $this->createAuthManager();
@@ -128,71 +135,11 @@ final class UsersControllerTest extends TestCase
         return [$usersController, $request, $authManager, $response];
     }
 
-    /**
-     * @return void
-     */
     public function testUpdatePassword(): void
     {
         /** @var UsersController $usersController */
         [$usersController, $request, $authManager, $response] = $this->setUpUpdatePasswordTest();
 
         $this->assertEquals($response, $usersController->updatePassword($request, $authManager));
-    }
-
-    /**
-     * @return void
-     */
-    public function testUpdatePasswordWithoutChange(): void
-    {
-        /** @var UsersController $usersController */
-        [$usersController, $request, $authManager, $response] = $this->setUpUpdatePasswordTest(false);
-
-        $this->assertEquals($response, $usersController->updatePassword($request, $authManager));
-    }
-
-    //endregion
-
-    /**
-     * @param UserManager|null     $userManager
-     * @param ResponseFactory|null $responseFactory
-     *
-     * @return UsersController
-     */
-    private function getUsersController(UserManager $userManager = null, ResponseFactory $responseFactory = null): UsersController
-    {
-        return new UsersController(
-            $userManager ?: $this->createUserManager(),
-            $responseFactory ?: $this->createResponseFactory()
-        );
-    }
-
-    /**
-     * @param string|null $email
-     * @param string|null $password
-     *
-     * @return Register|MockInterface
-     */
-    private function createRegister(string $email = null, string $password = null): Register
-    {
-        return m::spy(Register::class)
-            ->shouldReceive('getEmail')
-            ->andReturn($email ?: $this->getFaker()->safeEmail)
-            ->getMock()
-            ->shouldReceive('getPassword')
-            ->andReturn($password ?: $this->getFaker()->password)
-            ->getMock();
-    }
-
-    /**
-     * @param string|null $email
-     *
-     * @return Update|MockInterface
-     */
-    private function createUpdate(string $email = null): Update
-    {
-        return m::spy(Update::class)
-            ->shouldReceive('getEmail')
-            ->andReturn($email)
-            ->getMock();
     }
 }

@@ -6,7 +6,7 @@ use Doctrine\Common\Collections\Collection;
 
 abstract class AbstractDoctrineRepository implements Repository
 {
-    public function __construct(private DatabaseHandler $databaseHandler)
+    public function __construct(readonly private DatabaseHandler $databaseHandler)
     {
     }
 

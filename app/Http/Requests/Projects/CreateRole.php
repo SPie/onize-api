@@ -13,7 +13,7 @@ class CreateRole extends FormRequest
     private const PARAMETER_PERMISSIONS = 'permissions';
 
     public function __construct(
-        private PermissionsExist $permissionsExist,
+        readonly private PermissionsExist $permissionsExist,
         array $query = [],
         array $request = [],
         array $attributes = [],

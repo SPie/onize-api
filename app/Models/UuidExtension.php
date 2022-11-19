@@ -11,7 +11,7 @@ use LaravelDoctrine\ORM\Extensions\Extension;
 
 final class UuidExtension implements Extension
 {
-    public function __construct(private UuidGenerator $uuidGenerator)
+    public function __construct(readonly private UuidGenerator $uuidGenerator)
     {
     }
 

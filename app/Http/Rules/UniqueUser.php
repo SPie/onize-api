@@ -8,7 +8,7 @@ use Illuminate\Contracts\Validation\Rule;
 
 class UniqueUser implements Rule
 {
-    public function __construct(private UserManager $userManager, private ?int $existingUserId = null)
+    public function __construct(readonly private UserManager $userManager, private ?int $existingUserId = null)
     {
     }
 

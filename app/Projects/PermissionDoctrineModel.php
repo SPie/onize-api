@@ -8,26 +8,18 @@ use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 
 /**
- * Class PermissionDoctrineModel
- *
  * @ORM\Table(name="permissions")
  * @ORM\Entity(repositoryClass="App\Projects\PermissionDoctrineRepository")
- *
- * @package App\Projects
  */
 class PermissionDoctrineModel extends AbstractDoctrineModel implements PermissionModel
 {
     /**
      * @ORM\Column(name="name", type="string", length=255, nullable=false)
-     *
-     * @var string
      */
     private string $name;
 
     /**
      * @ORM\Column(name="description", type="string", length=255, nullable=false)
-     *
-     * @var string
      */
     private string $description;
 
@@ -75,6 +67,9 @@ class PermissionDoctrineModel extends AbstractDoctrineModel implements Permissio
         return $this;
     }
 
+    /**
+     * @return RoleModel[]|Collection
+     */
     public function getRoles(): Collection
     {
         return $this->roles;

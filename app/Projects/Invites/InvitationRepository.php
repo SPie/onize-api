@@ -5,20 +5,9 @@ namespace App\Projects\Invites;
 use App\Models\Model;
 use App\Models\Repository;
 
-/**
- * Interface InvitationRepository
- *
- * @package App\Projects\Invites
- */
 interface InvitationRepository extends Repository
 {
-    /**
-     * @param InvitationModel|Model $model
-     * @param bool                  $flush
-     *
-     * @return InvitationModel
-     */
-    public function save(Model $model, bool $flush = true): Model;
+    public function save(InvitationModel|Model $model, bool $flush = true): InvitationModel|Model;
 
-    public function findOneByUuid(string $uuid): ?InvitationModel;
+    public function findOneByUuid(string $uuid): InvitationModel|Model|null;
 }

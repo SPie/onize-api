@@ -4,11 +4,6 @@ namespace App\Models;
 
 use Doctrine\ORM\Mapping as ORM;
 
-/**
- * Trait SoftDelete
- *
- * @package App\Models
- */
 trait SoftDelete
 {
     /**
@@ -18,39 +13,25 @@ trait SoftDelete
      */
     private ?\DateTime $deletedAt;
 
-    /**
-     * @param \DateTime|null $deletedAt
-     *
-     * @return $this
-     */
-    public function setDeletedAt(?\DateTime $deletedAt)
+    public function setDeletedAt(?\DateTime $deletedAt): self
     {
         $this->deletedAt = $deletedAt;
 
         return $this;
     }
 
-    /**
-     * @return \DateTime|null
-     */
     public function getDeletedAt(): ?\DateTime
     {
         return $this->deletedAt;
     }
 
-    /**
-     * @return $this
-     */
-    public function restore()
+    public function restore(): self
     {
         $this->deletedAt = null;
 
         return $this;
     }
 
-    /**
-     * @return bool
-     */
     public function isDeleted(): bool
     {
         return ($this->getDeletedAt() && (new \DateTime()) >= $this->getDeletedAt());

@@ -4,34 +4,12 @@ namespace App\Projects\MetaData;
 
 use App\Projects\ProjectModel;
 
-/**
- * Class MetaDataManager
- *
- * @package App\Projects\MetaData
- */
 class MetaDataManager
 {
-    /**
-     * @var MetaDataValidator
-     */
-    private MetaDataValidator $metaDataValidator;
-
-    /**
-     * MetaDataManager constructor.
-     *
-     * @param MetaDataValidator $metaDataValidator
-     */
-    public function __construct(MetaDataValidator $metaDataValidator)
+    public function __construct(readonly private MetaDataValidator $metaDataValidator)
     {
-        $this->metaDataValidator = $metaDataValidator;
     }
 
-    /**
-     * @param ProjectModel $project
-     * @param array        $metaData
-     *
-     * @return array
-     */
     public function validateMetaData(ProjectModel $project, array $metaData): array
     {
         $validationErrors = [];
@@ -61,12 +39,6 @@ class MetaDataManager
         return $validationErrors;
     }
 
-    /**
-     * @param string $type
-     * @param mixed  $value
-     *
-     * @return string|null
-     */
     private function validateMetaDataType(string $type, $value): ?string
     {
         if ($type === 'string' && !$this->metaDataValidator->isValidString($value)) {

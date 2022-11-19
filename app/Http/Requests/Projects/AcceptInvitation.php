@@ -10,7 +10,7 @@ class AcceptInvitation extends FormRequest
     private const PARAMETER_META_DATA = 'metaData';
 
     public function __construct(
-        private ValidMetaData $validMetaDataRule,
+        readonly private ValidMetaData $validMetaDataRule,
         array $query = [],
         array $request = [],
         array $attributes = [],

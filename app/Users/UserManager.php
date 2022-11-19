@@ -6,8 +6,10 @@ use App\Models\Exceptions\ModelNotFoundException;
 
 class UserManager
 {
-    public function __construct(private UserRepository $userRepository, private UserModelFactory $userModelFactory)
-    {
+    public function __construct(
+        readonly private UserRepository $userRepository,
+        readonly private UserModelFactory $userModelFactory
+    ) {
     }
 
     public function createUser(string $email, string $password): UserModel

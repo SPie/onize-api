@@ -8,19 +8,11 @@ use Illuminate\Support\ServiceProvider;
 
 class AppServiceProvider extends ServiceProvider
 {
-    /**
-     * Register any application services.
-     *
-     * @return void
-     */
-    public function register()
+    public function register(): void
     {
         $this->registerMetaDataValidator();
     }
 
-    /**
-     * @return $this
-     */
     private function registerMetaDataValidator(): self
     {
         $this->app->singleton(MetaDataValidator::class, MetaDataLaravelValidator::class);
@@ -28,12 +20,7 @@ class AppServiceProvider extends ServiceProvider
         return $this;
     }
 
-    /**
-     * Bootstrap any application services.
-     *
-     * @return void
-     */
-    public function boot()
+    public function boot(): void
     {
         //
     }

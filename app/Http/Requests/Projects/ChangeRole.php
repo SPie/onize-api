@@ -8,6 +8,7 @@ use App\Projects\ProjectModel;
 use App\Projects\RoleModel;
 use App\Users\UserModel;
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Routing\Route;
 
 class ChangeRole extends FormRequest
 {
@@ -15,8 +16,8 @@ class ChangeRole extends FormRequest
     private const PARAMETER_ROLE = 'role';
 
     public function __construct(
-        private UserExistsAndIsMember $userExistsAndIsMemberRule,
-        private RoleExists $roleExistsRule,
+        readonly private UserExistsAndIsMember $userExistsAndIsMemberRule,
+        readonly private RoleExists $roleExistsRule,
         array $query = [],
         array $request = [],
         array $attributes = [],
@@ -50,7 +51,7 @@ class ChangeRole extends FormRequest
         return $this->roleExistsRule->getRole();
     }
 
-    private function getProject(): ProjectModel
+    private function getProject(): ProjectModel|Route
     {
         return $this->route('project');
     }

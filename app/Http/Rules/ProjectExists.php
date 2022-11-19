@@ -11,7 +11,7 @@ class ProjectExists implements Rule
 {
     private ?ProjectModel $project = null;
 
-    public function __construct(private ProjectManager $projectManager)
+    public function __construct(readonly private ProjectManager $projectManager)
     {
     }
 
@@ -20,7 +20,7 @@ class ProjectExists implements Rule
         return $this->project;
     }
 
-    public function passes($attribute, $value)
+    public function passes($attribute, $value): bool
     {
         try {
             $this->project = $this->projectManager->getProject($value);
@@ -31,7 +31,7 @@ class ProjectExists implements Rule
         return true;
     }
 
-    public function message()
+    public function message(): string
     {
         return 'validation.project-not-found';
     }

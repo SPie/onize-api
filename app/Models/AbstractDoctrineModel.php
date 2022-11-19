@@ -4,11 +4,6 @@ namespace App\Models;
 
 use Doctrine\ORM\Mapping;
 
-/**
- * Class AbstractDoctrineModel
- *
- * @package App\Models
- */
 abstract class AbstractDoctrineModel implements Model
 {
     /**
@@ -20,11 +15,6 @@ abstract class AbstractDoctrineModel implements Model
      */
     protected ?int $id;
 
-    /**
-     * @param int|null $id
-     *
-     * @return $this|Model
-     */
     public function setId(?int $id): Model
     {
         $this->id = $id;
@@ -32,9 +22,6 @@ abstract class AbstractDoctrineModel implements Model
         return $this;
     }
 
-    /**
-     * @return int|null
-     */
     public function getId(): ?int
     {
         return $this->id;

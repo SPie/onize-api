@@ -12,12 +12,8 @@ use Doctrine\ORM\Mapping as ORM;
 use Gedmo\Mapping\Annotation as Gedmo;
 
 /**
- * Class InvitationDoctrineModel
- *
  * @ORM\Table(name="invitations")
  * @ORM\Entity(repositoryClass="App\Projects\Invitations\InvitationDoctrineRepository")
- *
- * @package App\Projects\Invites
  */
 class InvitationDoctrineModel extends AbstractDoctrineModel implements InvitationModel
 {
@@ -26,15 +22,11 @@ class InvitationDoctrineModel extends AbstractDoctrineModel implements Invitatio
 
     /**
      * @ORM\Column(name="email", type="string", length=255, nullable=false)
-     *
-     * @var string
      */
     private string $email;
 
     /**
      * @ORM\ManyToOne(targetEntity="App\Projects\RoleDoctrineModel", inversedBy="invitations", cascade={"persist"})
-     *
-     * @var RoleModel
      */
     private RoleModel $role;
 
@@ -55,8 +47,6 @@ class InvitationDoctrineModel extends AbstractDoctrineModel implements Invitatio
 
     /**
      * @ORM\Column(name="meta_data", type="json", nullable=false)
-     *
-     * @var string
      */
     private array $metaData;
 

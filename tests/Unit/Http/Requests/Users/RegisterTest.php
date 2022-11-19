@@ -7,20 +7,15 @@ use App\Http\Rules\UniqueUser;
 use Tests\Helper\HttpHelper;
 use Tests\TestCase;
 
-/**
- * Class RegisterTest
- *
- * @package Tests\Unit\Http\Requests\Users
- */
 final class RegisterTest extends TestCase
 {
     use HttpHelper;
 
-    //region Tests
+    private function getRegister(UniqueUser $uniqueUser = null): Register
+    {
+        return new Register($uniqueUser ?: $this->createUniqueUser());
+    }
 
-    /**
-     * @return void
-     */
     public function testRules(): void
     {
         $uniqueUser = $this->createUniqueUser();
@@ -34,9 +29,6 @@ final class RegisterTest extends TestCase
         );
     }
 
-    /**
-     * @return void
-     */
     public function testGetEmail(): void
     {
         $email = $this->getFaker()->safeEmail;
@@ -46,9 +38,6 @@ final class RegisterTest extends TestCase
         $this->assertEquals($email, $request->getEmail());
     }
 
-    /**
-     * @return void
-     */
     public function testGetPassword(): void
     {
         $password = $this->getFaker()->password;
@@ -56,17 +45,5 @@ final class RegisterTest extends TestCase
         $request->offsetSet('password', $password);
 
         $this->assertEquals($password, $request->getPassword());
-    }
-
-    //endregion
-
-    /**
-     * @param UniqueUser|null $uniqueUser
-     *
-     * @return Register
-     */
-    private function getRegister(UniqueUser $uniqueUser = null): Register
-    {
-        return new Register($uniqueUser ?: $this->createUniqueUser());
     }
 }

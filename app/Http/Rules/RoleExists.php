@@ -14,7 +14,7 @@ class RoleExists implements Rule
 
     private ?ProjectModel $project;
 
-    public function __construct(private RoleManager $roleManager)
+    public function __construct(readonly private RoleManager $roleManager)
     {
         $this->role = null;
         $this->project = null;
@@ -27,13 +27,7 @@ class RoleExists implements Rule
         return $this;
     }
 
-    /**
-     * @param string $attribute
-     * @param mixed  $value
-     *
-     * @return bool
-     */
-    public function passes($attribute, $value)
+    public function passes($attribute, $value): bool
     {
         if (empty($value)) {
             return true;
@@ -54,10 +48,7 @@ class RoleExists implements Rule
         return true;
     }
 
-    /**
-     * @return string
-     */
-    public function message()
+    public function message(): string
     {
         return 'validation.role-not-found';
     }

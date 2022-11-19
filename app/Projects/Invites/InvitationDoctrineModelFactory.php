@@ -5,14 +5,9 @@ namespace App\Projects\Invites;
 use App\Projects\RoleModel;
 use Carbon\CarbonImmutable;
 
-/**
- * Class InvitationDoctrineModelFactory
- *
- * @package App\Projects\Invites
- */
 final class InvitationDoctrineModelFactory implements InvitationModelFactory
 {
-    public function __construct(private int $validUntilMinutes)
+    public function __construct(readonly private int $validUntilMinutes)
     {
     }
 

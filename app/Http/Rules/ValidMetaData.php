@@ -12,7 +12,7 @@ class ValidMetaData implements ImplicitRule
 
     private string|array $message;
 
-    public function __construct(private MetaDataManager $metaDataManager)
+    public function __construct(readonly private MetaDataManager $metaDataManager)
     {
         $this->project = null;
         $this->message = '';
@@ -25,7 +25,7 @@ class ValidMetaData implements ImplicitRule
         return $this;
     }
 
-    public function passes($attribute, $value)
+    public function passes($attribute, $value): bool
     {
         if (!$this->project) {
             return true;
@@ -55,7 +55,7 @@ class ValidMetaData implements ImplicitRule
         return true;
     }
 
-    public function message()
+    public function message(): string
     {
         return $this->message;
     }

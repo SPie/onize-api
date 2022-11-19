@@ -12,13 +12,9 @@ use Doctrine\ORM\Mapping as ORM;
 use Gedmo\Mapping\Annotation as Gedmo;
 
 /**
- * Class ProjectDoctrineModel
- *
  * @ORM\Table(name="projects")
  * @ORM\Entity(repositoryClass="App\Projects\ProjectDoctrineRepository")
  * @Gedmo\SoftDeleteable(fieldName="deletedAt", timeAware=false)
- *
- * @package App\Projects
  */
 class ProjectDoctrineModel extends AbstractDoctrineModel implements ProjectModel
 {
@@ -28,15 +24,11 @@ class ProjectDoctrineModel extends AbstractDoctrineModel implements ProjectModel
 
     /**
      * @ORM\Column(name="label", type="string", length=255, nullable=false)
-     *
-     * @var string
      */
     private string $label;
 
     /**
      * @ORM\Column(name="description", type="string", length=255, nullable=false)
-     *
-     * @var string
      */
     private string $description;
 

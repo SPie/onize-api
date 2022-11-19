@@ -4,11 +4,6 @@ namespace App\Models;
 
 use Carbon\CarbonImmutable;
 
-/**
- * Trait DateTimeToCarbon
- *
- * @package App\Models
- */
 trait DateTimeCarbonConversion
 {
     /**

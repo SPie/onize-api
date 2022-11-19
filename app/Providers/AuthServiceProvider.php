@@ -29,13 +29,12 @@ class AuthServiceProvider extends ServiceProvider
     public function register(): void
     {
         $this->app->bind(StatefulGuard::class, fn () => $this->app->get('auth')->guard());
-//        $this->app->bind(UserProviderContract::class, fn () => $this->app->get('auth')->getDefaultUserProvider());
         $this->app->bind(UserProviderContract::class, function () {
             return $this->app->get('auth')->createUserProvider('app');
         });
     }
 
-    public function boot()
+    public function boot(): void
     {
         $this->registerPolicies();
 

@@ -9,7 +9,7 @@ use App\Users\UserModel;
 
 final class ProjectPolicy
 {
-    public function __construct(private RoleManager $roleManager)
+    public function __construct(readonly private RoleManager $roleManager)
     {
     }
 

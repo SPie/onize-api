@@ -22,10 +22,7 @@ class AuthManager
         return $this;
     }
 
-    /**
-     * @return UserModel|Authenticatable
-     */
-    public function authenticate(string $email, string $password): UserModel
+    public function authenticate(string $email, string $password): UserModel|Authenticatable
     {
         if (!$this->guard->attempt(
             [UserModel::PROPERTY_EMAIL => $email, UserModel::PROPERTY_PASSWORD => $password],
@@ -37,10 +34,7 @@ class AuthManager
         return $this->guard->user();
     }
 
-    /**
-     * @return UserModel|Authenticatable
-     */
-    public function authenticatedUser(): UserModel
+    public function authenticatedUser(): UserModel|Authenticatable
     {
         $user = $this->guard->user();
         if (!$user) {

@@ -11,7 +11,7 @@ class UpdatePassword extends FormRequest
     public const PARAMETER_CURRENT_PASSWORD = 'currentPassword';
 
     public function __construct(
-        private AuthManager $authManager,
+        readonly private AuthManager $authManager,
         array $query = [],
         array $request = [],
         array $attributes = [],

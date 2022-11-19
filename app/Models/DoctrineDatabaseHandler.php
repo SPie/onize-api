@@ -9,7 +9,7 @@ use Doctrine\ORM\Persisters\Entity\EntityPersister;
 
 final class DoctrineDatabaseHandler implements DatabaseHandler
 {
-    public function __construct(private EntityManager $entityManager, private string $className)
+    public function __construct(readonly private EntityManager $entityManager, readonly private string $className)
     {
     }
 

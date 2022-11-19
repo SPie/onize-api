@@ -23,8 +23,6 @@ final class UsersController extends Controller
         parent::__construct($responseFactory);
     }
 
-    //region Controller actions
-
     public function register(Register $request, AuthManager $authManager): JsonResponse
     {
         $user = $this->userManager->createUser($request->getEmail(), $request->getPassword());
@@ -54,6 +52,4 @@ final class UsersController extends Controller
             self::RESPONSE_PARAMETER_USER => $user->toArray()
         ]);
     }
-
-    //endregion
 }

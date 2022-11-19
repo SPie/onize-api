@@ -2,34 +2,15 @@
 
 namespace App\Models;
 
-/**
- * Interface SoftDeleteable
- *
- * @package App\Models
- */
 interface SoftDeletable
 {
     public const PROPERTY_DELETED_AT = 'deletedAt';
 
-    /**
-     * @param \DateTime|null $deletedAt
-     *
-     * @return $this
-     */
-    public function setDeletedAt(?\DateTime $deletedAt);
+    public function setDeletedAt(?\DateTime $deletedAt): self;
 
-    /**
-     * @return \DateTime|null
-     */
     public function getDeletedAt(): ?\DateTime;
 
-    /**
-     * @return $this
-     */
-    public function restore();
+    public function restore(): self;
 
-    /**
-     * @return bool
-     */
     public function isDeleted(): bool;
 }

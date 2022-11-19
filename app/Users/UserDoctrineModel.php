@@ -15,13 +15,9 @@ use Doctrine\ORM\Mapping as ORM;
 use Gedmo\Mapping\Annotation as Gedmo;
 
 /**
- * Class UserDoctrineModel
- *
  * @ORM\Table(name="users")
  * @ORM\Entity(repositoryClass="App\User\UserDoctrineRepository")
  * @Gedmo\SoftDeleteable(fieldName="deletedAt", timeAware=false)
- *
- * @package App\Users
  */
 class UserDoctrineModel extends AbstractDoctrineModel implements UserModel
 {
@@ -31,15 +27,11 @@ class UserDoctrineModel extends AbstractDoctrineModel implements UserModel
 
     /**
      * @ORM\Column(name="email", type="string", length=255, nullable=false)
-     *
-     * @var string
      */
     private string $email;
 
     /**
      * @ORM\Column(name="password", type="string", length=255, nullable=false)
-     *
-     * @var string
      */
     private string $password;
 
@@ -50,12 +42,6 @@ class UserDoctrineModel extends AbstractDoctrineModel implements UserModel
      */
     private Collection $members;
 
-    /**
-     * UserDoctrineModel constructor.
-     *
-     * @param string $email
-     * @param string $password
-     */
     public function __construct(string $email, string $password)
     {
         $this->email = $email;
@@ -63,11 +49,6 @@ class UserDoctrineModel extends AbstractDoctrineModel implements UserModel
         $this->members = new ArrayCollection();
     }
 
-    /**
-     * @param string $email
-     *
-     * @return $this
-     */
     public function setEmail(string $email): self
     {
         $this->email = $email;
@@ -75,19 +56,11 @@ class UserDoctrineModel extends AbstractDoctrineModel implements UserModel
         return $this;
     }
 
-    /**
-     * @return string
-     */
     public function getEmail(): string
     {
         return $this->email;
     }
 
-    /**
-     * @param string $password
-     *
-     * @return $this
-     */
     public function setPassword(string $password): self
     {
         $this->password = $password;
@@ -95,9 +68,6 @@ class UserDoctrineModel extends AbstractDoctrineModel implements UserModel
         return $this;
     }
 
-    /**
-     * @return string
-     */
     public function getPassword(): string
     {
         return $this->password;
@@ -105,22 +75,15 @@ class UserDoctrineModel extends AbstractDoctrineModel implements UserModel
 
     /**
      * @param MemberModel[] $members
-     *
-     * @return UserModel
      */
-    public function setMembers(array $members): UserModel
+    public function setMembers(array $members): self
     {
         $this->members = new ArrayCollection($members);
 
         return $this;
     }
 
-    /**
-     * @param MemberModel $member
-     *
-     * @return UserModel
-     */
-    public function addMember(MemberModel $member): UserModel
+    public function addMember(MemberModel $member): self
     {
         if (!$this->members->contains($member)) {
             $this->members->add($member);

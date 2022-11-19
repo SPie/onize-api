@@ -5,25 +5,9 @@ namespace App\Projects;
 use App\Models\Model;
 use App\Models\Repository;
 
-/**
- * Interface RoleRepository
- *
- * @package App\Projects
- */
 interface RoleRepository extends Repository
 {
-    /**
-     * @param RoleModel|Model $model
-     * @param bool            $flush
-     *
-     * @return RoleModel|Model
-     */
-    public function save(Model $model, bool $flush = true): Model;
+    public function save(RoleModel|Model $model, bool $flush = true): RoleModel|Model;
 
-    /**
-     * @param string $uuid
-     *
-     * @return RoleModel|null
-     */
-    public function findOneByUuid(string $uuid): ?RoleModel;
+    public function findOneByUuid(string $uuid): RoleModel|Model|null;
 }

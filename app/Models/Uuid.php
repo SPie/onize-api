@@ -4,11 +4,6 @@ namespace App\Models;
 
 use Doctrine\ORM\Mapping as ORM;
 
-/**
- * Trait Uuid
- *
- * @package App\Models
- */
 trait Uuid
 {
     /**

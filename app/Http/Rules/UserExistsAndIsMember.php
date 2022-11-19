@@ -14,7 +14,7 @@ class UserExistsAndIsMember implements Rule
 
     private ?ProjectModel $project;
 
-    public function __construct(private UserManager $userManager)
+    public function __construct(readonly private UserManager $userManager)
     {
         $this->user = null;
         $this->project = null;
@@ -32,7 +32,7 @@ class UserExistsAndIsMember implements Rule
         return $this->user;
     }
 
-    public function passes($attribute, $value)
+    public function passes($attribute, $value): bool
     {
         try {
             $user = $this->userManager->getUserByUuid($value);
@@ -49,7 +49,7 @@ class UserExistsAndIsMember implements Rule
         return true;
     }
 
-    public function message()
+    public function message(): string
     {
         return 'validation.user-not-found';
     }

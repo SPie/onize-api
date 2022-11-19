@@ -28,25 +28,14 @@ class Handler extends ExceptionHandler
         'password_confirmation',
     ];
 
-    /**
-     * @return void
-     */
-    public function register()
+    public function register(): void
     {
         parent::register();
 
         $this->map(ModelNotFoundException::class, fn (ModelNotFoundException $e) => new NotFoundHttpException($e->getMessage(), $e));
     }
 
-    /**
-     * Report or log an exception.
-     *
-     * @param  \Throwable  $exception
-     * @return void
-     *
-     * @throws \Exception
-     */
-    public function report(Throwable $exception)
+    public function report(Throwable $exception): void
     {
         parent::report($exception);
     }
@@ -55,7 +44,6 @@ class Handler extends ExceptionHandler
      * Render an exception into an HTTP response.
      *
      * @param  \Illuminate\Http\Request  $request
-     * @param  \Throwable  $exception
      * @return \Symfony\Component\HttpFoundation\Response
      *
      * @throws \Throwable

@@ -14,7 +14,7 @@ class PermissionsExist implements Rule
 
     private array $notFoundIdentifiers = [];
 
-    public function __construct(private RoleManager $roleManager)
+    public function __construct(readonly private RoleManager $roleManager)
     {
         $this->permissions = new ArrayCollection([]);
     }
@@ -24,7 +24,7 @@ class PermissionsExist implements Rule
         return $this->permissions;
     }
 
-    public function passes($attribute, $value)
+    public function passes($attribute, $value): bool
     {
         if (!\is_array($value)) {
             // will be handled by another rule
@@ -42,7 +42,7 @@ class PermissionsExist implements Rule
         return true;
     }
 
-    public function message()
+    public function message(): string
     {
         return \sprintf('validation.permissions-not-found:%s', \implode(',', $this->notFoundIdentifiers));
     }

@@ -10,11 +10,11 @@ use Doctrine\Common\Collections\Collection;
 class RoleManager
 {
     public function __construct(
-        private RoleRepository $roleRepository,
-        private RoleModelFactory $roleModelFactory,
-        private MemberRepository $memberRepository,
-        private MemberModelFactory $memberModelFactory,
-        private PermissionRepository $permissionRepository
+        readonly private RoleRepository $roleRepository,
+        readonly private RoleModelFactory $roleModelFactory,
+        readonly private MemberRepository $memberRepository,
+        readonly private MemberModelFactory $memberModelFactory,
+        readonly private PermissionRepository $permissionRepository
     ) {
     }
 

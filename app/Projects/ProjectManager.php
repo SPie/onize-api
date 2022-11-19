@@ -9,11 +9,11 @@ use App\Users\UserModel;
 class ProjectManager
 {
     public function __construct(
-        private ProjectRepository $projectRepository,
-        private ProjectModelFactory $projectModelFactory,
-        private MetaDataElementModelFactory $metaDataElementModelFactory,
-        private MemberRepository $memberRepository,
-        private MemberModelFactory $memberModelFactory
+        readonly private ProjectRepository $projectRepository,
+        readonly private ProjectModelFactory $projectModelFactory,
+        readonly private MetaDataElementModelFactory $metaDataElementModelFactory,
+        readonly private MemberRepository $memberRepository,
+        readonly private MemberModelFactory $memberModelFactory
     ) {
     }
 

@@ -18,11 +18,11 @@ use Carbon\CarbonImmutable;
 class InvitationManager
 {
     public function __construct(
-        private InvitationRepository $invitationRepository,
-        private InvitationModelFactory $invitationModelFactory,
-        private EmailService $emailService,
-        private MemberRepository $memberRepository,
-        private MemberModelFactory $memberModelFactory
+        readonly private InvitationRepository $invitationRepository,
+        readonly private InvitationModelFactory $invitationModelFactory,
+        readonly private EmailService $emailService,
+        readonly private MemberRepository $memberRepository,
+        readonly private MemberModelFactory $memberModelFactory
     ) {
     }
 

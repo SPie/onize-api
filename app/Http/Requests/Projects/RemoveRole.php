@@ -11,7 +11,7 @@ class RemoveRole extends FormRequest
     private const PARAMETER_NEW_ROLE = 'newRole';
 
     public function __construct(
-        private RoleExists $roleExists,
+        readonly private RoleExists $roleExists,
         array $query = [],
         array $request = [],
         array $attributes = [],

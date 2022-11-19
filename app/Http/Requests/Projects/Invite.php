@@ -7,6 +7,7 @@ use App\Http\Rules\ValidMetaData;
 use App\Projects\ProjectModel;
 use App\Projects\RoleModel;
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Routing\Route;
 
 class Invite extends FormRequest
 {
@@ -15,8 +16,8 @@ class Invite extends FormRequest
     private const PARAMETER_META_DATA = 'metaData';
 
     public function __construct(
-        private ValidMetaData $validMetaDataRule,
-        private RoleExists $roleExistsRule,
+        readonly private ValidMetaData $validMetaDataRule,
+        readonly private RoleExists $roleExistsRule,
         array $query = [],
         array $request = [],
         array $attributes = [],
@@ -28,7 +29,7 @@ class Invite extends FormRequest
         parent::__construct($query, $request, $attributes, $cookies, $files, $server, $content);
     }
 
-    private function getProject(): ProjectModel
+    private function getProject(): ProjectModel|Route
     {
         return $this->route('project');
     }

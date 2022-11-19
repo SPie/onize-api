@@ -7,7 +7,6 @@ use Illuminate\Hashing\HashManager;
 
 final class LaravelPasswordHasher implements PasswordHasher
 {
-
     public function __construct(readonly private HashManager $hashManager)
     {
     }

@@ -7,16 +7,8 @@ use Doctrine\Migrations\AbstractMigration;
 use LaravelDoctrine\Migrations\Schema\Builder;
 use LaravelDoctrine\Migrations\Schema\Table;
 
-/**
- * Class Version20200515211800
- */
 final class Version20200515211800 extends AbstractMigration
 {
-    //region Up calls
-
-    /**
-     * @param Schema $schema
-     */
     public function up(Schema $schema): void
     {
         $this
@@ -28,20 +20,9 @@ final class Version20200515211800 extends AbstractMigration
             ->createPermissionsTable($schema)
             ->createRolesPermissionsTable($schema)
             ->createInvitationsTable($schema)
-            ->createRefreshTokensTable($schema);
-//            ->createLoginAttemptsTable($schema)
-//            ->createProjectsTable($schema)
-//            ->createProjectInvitesTable($schema)
-//            ->createProjectMembersTable($schema)
-//            ->createProjectMetaDataElements($schema)
-        ;
+            ->createRefreshTokensTable($schema);;
     }
 
-    /**
-     * @param Schema $schema
-     *
-     * @return $this
-     */
     private function createUsersTable(Schema $schema): self
     {
         (new Builder($schema))->create('users', function (Table $table) {
@@ -58,11 +39,6 @@ final class Version20200515211800 extends AbstractMigration
         return $this;
     }
 
-    /**
-     * @param Schema $schema
-     *
-     * @return $this
-     */
     private function createProjectsTable(Schema $schema): self
     {
         (new Builder($schema))->create('projects', function (Table $table) {
@@ -79,11 +55,6 @@ final class Version20200515211800 extends AbstractMigration
         return $this;
     }
 
-    /**
-     * @param Schema $schema
-     *
-     * @return $this
-     */
     private function createMetaDataElementsTable(Schema $schema): self
     {
         (new Builder($schema))->create('meta_data_elements', function (Table $table) {
@@ -101,11 +72,6 @@ final class Version20200515211800 extends AbstractMigration
         return $this;
     }
 
-    /**
-     * @param Schema $schema
-     *
-     * @return $this
-     */
     private function createRolesTable(Schema $schema): self
     {
         (new Builder($schema))->create('roles', function (Table $table) {
@@ -123,11 +89,6 @@ final class Version20200515211800 extends AbstractMigration
         return $this;
     }
 
-    /**
-     * @param Schema $schema
-     *
-     * @return $this
-     */
     private function createMembersTable(Schema $schema): self
     {
         (new Builder($schema))->create('members', function (Table $table) {
@@ -145,11 +106,6 @@ final class Version20200515211800 extends AbstractMigration
         return $this;
     }
 
-    /**
-     * @param Schema $schema
-     *
-     * @return $this
-     */
     private function createPermissionsTable(Schema $schema): self
     {
         (new Builder($schema))->create('permissions', function (Table $table) {
@@ -162,11 +118,6 @@ final class Version20200515211800 extends AbstractMigration
         return $this;
     }
 
-    /**
-     * @param Schema $schema
-     *
-     * @return $this
-     */
     private function createRolesPermissionsTable(Schema $schema): self
     {
         (new Builder($schema))->create('roles_permissions', function (Table $table) {
@@ -180,11 +131,6 @@ final class Version20200515211800 extends AbstractMigration
         return $this;
     }
 
-    /**
-     * @param Schema $schema
-     *
-     * @return $this
-     */
     private function createInvitationsTable(Schema $schema): self
     {
         (new Builder($schema))->create('invitations', function (Table $table) {
@@ -216,96 +162,80 @@ final class Version20200515211800 extends AbstractMigration
         return $this;
     }
 
-    /**
-     * @param Schema $schema
-     *
-     * @return $this
-     */
-    private function createLoginAttemptsTable(Schema $schema): self
-    {
-        (new Builder($schema))->create('login_attempts', function (Table $table) {
-            $table->increments('id');
-            $table->string('ip_address');
-            $table->string('identifier');
-            $table->dateTime('attempted_at');
-            $table->boolean('success');
-        });
-
-        return $this;
-    }
-
-    /**
-     * @param Schema $schema
-     *
-     * @return $this
-     */
-    private function createProjectInvitesTable(Schema $schema): self
-    {
-        (new Builder($schema))->create('project_invites', function (Table $table) {
-            $table->increments('id');
-            $table->string('uuid');
-            $table->unique('uuid');
-            $table->string('token');
-            $table->unique('token');
-            $table->string('email');
-            $table->integer('project_id', false, true);
-            $table->foreign('projects', 'project_id', 'id');
-            $table->unique(['email', 'project_id']);
-            $table->timestamps();
-        });
-
-        return $this;
-    }
-
-    /**
-     * @param Schema $schema
-     *
-     * @return $this
-     */
-    private function createProjectMembersTable(Schema $schema): self
-    {
-        (new Builder($schema))->create('project_members', function (Table $table) {
-            $table->increments('id');
-            $table->integer('user_id', false, true);
-            $table->foreign('users', 'user_id', 'id');
-            $table->integer('project_id', false, true);
-            $table->foreign('projects', 'project_id', 'id');
-            $table->unique(['user_id', 'project_id']);
-        });
-
-        return $this;
-    }
-
-    /**
-     * @param Schema $schema
-     *
-     * @return $this
-     */
-    private function createProjectMetaDataElements(Schema $schema): self
-    {
-        (new Builder($schema))->create('project_meta_data_elements', function (Table $table) {
-            $table->increments('id');
-            $table->string('uuid');
-            $table->unique('uuid');
-            $table->string('label');
-            $table->integer('project_id', false, true);
-            $table->foreign('projects', 'project_id', 'id');
-            $table->boolean('required');
-            $table->boolean('in_list');
-            $table->smallInteger('position');
-            $table->string('field_type');
-        });
-
-        return $this;
-    }
-
-    //endregion
-
-    /**
-     * @param Schema $schema
-     */
     public function down(Schema $schema): void
     {
-        //no rollback
+        $this
+            ->dropRefreshTokensTable($schema)
+            ->dropInvitationsTable($schema)
+            ->dropRolesPermissionsTable($schema)
+            ->dropPermissionsTable($schema)
+            ->dropMembersTable($schema)
+            ->dropRolesTable($schema)
+            ->dropMetaDataElementsTable($schema)
+            ->dropProjectsTable($schema)
+            ->dropUsersTable($schema);
+    }
+
+    private function dropUsersTable(Schema $schema): self
+    {
+        (new Builder($schema))->dropIfExists('users');
+
+        return $this;
+    }
+
+    private function dropProjectsTable(Schema $schema): self
+    {
+        (new Builder($schema))->dropIfExists('projects');
+
+        return $this;
+    }
+
+    private function dropMetaDataElementsTable(Schema $schema): self
+    {
+        (new Builder($schema))->dropIfExists('meta_data_elements');
+
+        return $this;
+    }
+
+    private function dropRolesTable(Schema $schema): self
+    {
+        (new Builder($schema))->dropIfExists('roles');
+
+        return $this;
+    }
+
+    private function dropMembersTable(Schema $schema): self
+    {
+        (new Builder($schema))->dropIfExists('members');
+
+        return $this;
+    }
+
+    private function dropPermissionsTable(Schema $schema): self
+    {
+        (new Builder($schema))->dropIfExists('permissions');
+
+        return $this;
+    }
+
+    private function dropRolesPermissionsTable(Schema $schema): self
+    {
+        (new Builder($schema))->dropIfExists('roles_permissions');
+
+        return $this;
+    }
+
+    private function dropInvitationsTable(Schema $schema): self
+    {
+        (new Builder($schema))->dropIfExists('invitations');
+
+        return $this;
+    }
+
+    private function dropRefreshTokensTable(Schema $schema): self
+    {
+        (new Builder($schema))->dropIfExists('refresh_tokens');
+
+        return $this;
     }
 }

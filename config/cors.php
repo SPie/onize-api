@@ -25,7 +25,7 @@ return [
 
     'allowed_headers' => ['*'],
 
-    'exposed_headers' => [],
+    'exposed_headers' => \explode(',', env('CORS_EXPOSED_HEADERS')),
 
     'max_age' => 0,
 

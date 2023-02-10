@@ -39,23 +39,23 @@ class ValidMetaData implements ImplicitRule
         }
 
         $validationErrors = $this->metaDataManager->validateMetaData($this->project, $value);
-        if (!empty($validationErrors)) {
-            $errorMessages = [];
-            foreach ($validationErrors as $metaDataName => $errors) {
-                foreach ($errors as $error) {
-                    $errorMessages[] = \sprintf('%s.validation.%s', $metaDataName, $error);
-                }
-            }
-
-            $this->message = $errorMessages;
-
-            return false;
+        if (empty($validationErrors)) {
+            return true;
         }
 
-        return true;
+        $errorMessages = [];
+        foreach ($validationErrors as $metaDataName => $errors) {
+            foreach ($errors as $error) {
+                $errorMessages[] = \sprintf('%s.validation.%s', $metaDataName, $error);
+            }
+        }
+
+        $this->message = $errorMessages;
+
+        return false;
     }
 
-    public function message(): string
+    public function message(): string|array
     {
         return $this->message;
     }

@@ -16,7 +16,6 @@ use App\Projects\RoleModel;
 use App\Projects\RoleRepository;
 use App\Users\UserModel;
 use Carbon\CarbonImmutable;
-use LaravelDoctrine\Migrations\Testing\DatabaseMigrations;
 use Tests\Feature\FeatureTestCase;
 use Tests\Helper\ApiHelper;
 use Tests\Helper\ModelHelper;
@@ -26,7 +25,6 @@ use Tests\Helper\UsersHelper;
 final class ProjectsApiCallsTest extends FeatureTestCase
 {
     use ApiHelper;
-    use DatabaseMigrations;
     use ModelHelper;
     use ProjectHelper;
     use UsersHelper;

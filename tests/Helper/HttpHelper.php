@@ -392,7 +392,7 @@ trait HttpHelper
     private function createChangeRoleRequest(UserModel $user, RoleModel $role): ChangeRole
     {
         return m::spy(ChangeRole::class)
-            ->shouldReceive('getUser')
+            ->shouldReceive('getUserModel')
             ->andReturn($user)
             ->getMock()
             ->shouldReceive('getRole')

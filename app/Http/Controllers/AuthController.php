@@ -12,6 +12,7 @@ final class AuthController extends Controller
     public const ROUTE_NAME_AUTHENTICATE  = 'auth.authenticate';
     public const ROUTE_NAME_AUTHENTICATED = 'auth.authenticated';
     public const ROUTE_NAME_LOGOUT        = 'auth.logout';
+    public const ROUTE_NAME_REFRESH       = 'auth.refresh';
 
     public const RESPONSE_PARAMETER_USER = 'user';
 

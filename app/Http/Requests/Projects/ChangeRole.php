@@ -41,7 +41,7 @@ class ChangeRole extends FormRequest
         ];
     }
 
-    public function getUser(): UserModel
+    public function getUserModel(): UserModel
     {
         return $this->userExistsAndIsMemberRule->getUser();
     }

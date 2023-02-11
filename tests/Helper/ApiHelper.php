@@ -6,15 +6,16 @@ use Illuminate\Testing\TestResponse;
 
 trait ApiHelper
 {
-    private function doApiCall(string $method, string $uri, array $parameters = [], array $headers = []): TestResponse
+    private function doApiCall(string $method, string $uri, array $parameters = [], array $headers = [], array $cookies = []): TestResponse
     {
-        return $this->call(
+        $this->withCredentials();
+        $this->withCookies($cookies);
+
+        return $this->json(
             $method,
             $uri,
             $parameters,
-            [],
-            [],
-            $this->transformHeadersToServerVars(\array_merge(['Accept' => 'application/json'], $headers))
+            $headers
         );
     }
 }

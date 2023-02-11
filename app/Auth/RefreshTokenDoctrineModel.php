@@ -16,7 +16,7 @@ use Gedmo\Mapping\Annotation as Gedmo;
  *
  * @package App\Auth
  */
-final class RefreshTokenDoctrineModel extends AbstractDoctrineModel implements RefreshTokenModel
+class RefreshTokenDoctrineModel extends AbstractDoctrineModel implements RefreshTokenModel
 {
     use Timestamps;
 

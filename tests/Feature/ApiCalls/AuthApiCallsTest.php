@@ -8,7 +8,6 @@ use App\Http\Controllers\AuthController;
 use Carbon\CarbonImmutable;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\URL;
-use LaravelDoctrine\Migrations\Testing\DatabaseMigrations;
 use SPie\LaravelJWT\Contracts\TokenBlockList;
 use Tests\Feature\FeatureTestCase;
 use Tests\Helper\ApiHelper;
@@ -19,7 +18,6 @@ use Tests\Helper\UsersHelper;
 final class AuthApiCallsTest extends FeatureTestCase
 {
     use ApiHelper;
-    use DatabaseMigrations;
     use ModelHelper;
     use ReflectionHelper;
     use UsersHelper;
@@ -114,7 +112,7 @@ final class AuthApiCallsTest extends FeatureTestCase
 
         $response->assertStatus(200);
         $this->assertNotNull($response->headers->get('x-authorize'));
-        $this->assertNotNull($response->headers->get('x-refresh'));
+        $this->assertNotNull($response->getCookie('x-refresh'));
     }
 
     private function setUpAuthenticatedUserTest(bool $withAuthenticatedUser = true): array
@@ -231,16 +229,17 @@ final class AuthApiCallsTest extends FeatureTestCase
         [$authorizeToken, $refreshToken] = $this->setUpAuthorizationTokensTest();
 
         $response = $this->doApiCall(
-            'GET',
-            $this->getUrl(AuthController::ROUTE_NAME_AUTHENTICATED),
+            'POST',
+            $this->getUrl(AuthController::ROUTE_NAME_REFRESH),
+            [],
             [],
             [
-                'x-authorize' => \sprintf('Bearer %s', $this->getFaker()->word),
-                'x-refresh'   => \sprintf('Bearer %s', $refreshToken->getJWT()),
+                'x-refresh' => $refreshToken->getJWT(),
             ]
         );
 
-        $response->assertOk();
+        $response->assertCreated();
+        $this->assertNotNull($response->headers->get('x-authorize'));
     }
 
     public function testAuthorizationTokenWithInvalidTokenAndNoRefresh(): void

@@ -108,9 +108,9 @@ final class ProjectsController extends Controller
 
     public function changeRole(ProjectModel $project, ChangeRole $request, Gate $gate): JsonResponse
     {
-        $gate->authorize('changeRole', [$project, $request->getUser()]);
+        $gate->authorize('changeRole', [$project, $request->getUserModel()]);
 
-        $this->projectManager->changeRole($request->getUser(), $request->getRole());
+        $this->projectManager->changeRole($request->getUserModel(), $request->getRole());
 
         return $this->getResponseFactory()->json([], JsonResponse::HTTP_NO_CONTENT);
     }

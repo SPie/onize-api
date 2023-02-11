@@ -7,7 +7,6 @@ use App\Users\UserModel;
 use App\Users\UserRepository;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\URL;
-use LaravelDoctrine\Migrations\Testing\DatabaseMigrations;
 use Tests\Feature\FeatureTestCase;
 use Tests\Helper\ApiHelper;
 use Tests\Helper\ModelHelper;
@@ -16,7 +15,6 @@ use Tests\Helper\UsersHelper;
 final class UsersApiCallsTest extends FeatureTestCase
 {
     use ApiHelper;
-    use DatabaseMigrations;
     use ModelHelper;
     use UsersHelper;
 

@@ -53,7 +53,7 @@ final class ChangeRoleTest extends TestCase
         $userExistsAndIsMemberRule = $this->createUserExistsAndIsMemberRule();
         $this->mockUserExistsAndIsMemberRuleGetUser($userExistsAndIsMemberRule, $user);
 
-        $this->assertEquals($user, $this->getChangeRole($userExistsAndIsMemberRule)->getUser());
+        $this->assertEquals($user, $this->getChangeRole($userExistsAndIsMemberRule)->getUserModel());
     }
 
     public function testGetRole(): void

@@ -181,7 +181,7 @@ final class CreateTest extends TestCase
         }));
         $messageBag
             ->shouldHaveReceived('merge')
-            ->with(['metaData' => [$metaDataElements[1]['name'] => [\sprintf('validation.required')]]])
+            ->with(['metaData' => [\sprintf('%s.validation.required', $metaDataElements[1]['name'])]])
             ->once();
     }
 
@@ -195,7 +195,7 @@ final class CreateTest extends TestCase
         }));
         $messageBag
             ->shouldHaveReceived('merge')
-            ->with(['metaData' => ['phone' => [\sprintf('validation.not-existing')]]])
+            ->with(['metaData' => [\sprintf('phone.validation.not-existing')]])
             ->once();
     }
 
@@ -213,10 +213,10 @@ final class CreateTest extends TestCase
         $messageBag
             ->shouldHaveReceived('merge')
             ->with(['metaData' => [
-                'email'    => ['validation.email'],
-                'username' => ['validation.string'],
-                'count'    => ['validation.numeric'],
-                'birthday' => ['validation.date'],
+                'email.validation.email',
+                'username.validation.string',
+                'count.validation.numeric',
+                'birthday.validation.date',
             ]])
             ->once();
     }

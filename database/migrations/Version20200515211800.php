@@ -20,7 +20,7 @@ final class Version20200515211800 extends AbstractMigration
             ->createPermissionsTable($schema)
             ->createRolesPermissionsTable($schema)
             ->createInvitationsTable($schema)
-            ->createRefreshTokensTable($schema);;
+            ->createRefreshTokensTable($schema);
     }
 
     private function createUsersTable(Schema $schema): self

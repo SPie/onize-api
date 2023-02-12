@@ -30,10 +30,10 @@ final class ProjectPolicy
     public function removeMember(UserModel $user, ProjectModel $project, UserModel $member): bool
     {
         return (
-                !$member->getRoleForProject($project)
-                || !$member->getRoleForProject($project)->isOwner()
-                || $user->getRoleForProject($project)->isOwner()
-            )
+            !$member->getRoleForProject($project)
+            || !$member->getRoleForProject($project)->isOwner()
+            || $user->getRoleForProject($project)->isOwner()
+        )
             && $this->roleManager->hasPermissionForAction(
                 $project,
                 $user,

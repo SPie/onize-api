@@ -81,26 +81,21 @@ class Create extends FormRequest
                     && $metaDataElement['required']
                     && empty($metaData[$metaDataElement['name']])
                 ) {
-                    $errors[$metaDataElement['name']] = ['validation.required'];
+                    $errors[] = $this->buildErrorMessage($metaDataElement['name'], 'validation.required');
                 }
             }
 
             foreach ($metaData as $name => $value) {
-                $metaDataErrors = [];
                 if (!isset($metaDataElements[$name])) {
-                    $metaDataErrors[] = 'validation.not-existing';
+                    $errors[] = $this->buildErrorMessage($name, 'validation.not-existing');
                 } elseif ($metaDataElements[$name] == 'string' && $this->isInvalidString($value)) {
-                    $metaDataErrors[] = 'validation.string';
+                    $errors[] = $this->buildErrorMessage($name, 'validation.string');
                 } elseif ($metaDataElements[$name] == 'email' && $this->isInvalidEmail($value)) {
-                    $metaDataErrors[] = 'validation.email';
+                    $errors[] = $this->buildErrorMessage($name, 'validation.email');
                 } elseif ($metaDataElements[$name] == 'numeric' && $this->isInvalidNumeric($value)) {
-                    $metaDataErrors[] = 'validation.numeric';
+                    $errors[] = $this->buildErrorMessage($name, 'validation.numeric');
                 } elseif ($metaDataElements[$name] == 'date' && $this->isInvalidDate($value)) {
-                    $metaDataErrors[] = 'validation.date';
-                }
-
-                if (!empty($metaDataErrors)) {
-                    $errors[$name] = $metaDataErrors;
+                    $errors[] = $this->buildErrorMessage($name, 'validation.date');
                 }
             }
 
@@ -112,6 +107,11 @@ class Create extends FormRequest
 
             return true;
         };
+    }
+
+    private function buildErrorMessage(string $fieldName, string $validationMessage): string
+    {
+        return \sprintf('%s.%s', $fieldName, $validationMessage);
     }
 
     private function isInvalidString($value): bool

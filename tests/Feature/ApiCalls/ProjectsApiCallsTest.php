@@ -291,7 +291,7 @@ final class ProjectsApiCallsTest extends FeatureTestCase
 
         $response->assertStatus(422);
         $response->assertJsonFragment([
-            'metaData' => [$metaDataName => ['validation.required']],
+            'metaData' => [\sprintf('%s.validation.required', $metaDataName)],
         ]);
     }
 
@@ -312,7 +312,7 @@ final class ProjectsApiCallsTest extends FeatureTestCase
 
         $response->assertStatus(422);
         $response->assertJsonFragment([
-            'metaData' => [$metaDataName => ['validation.not-existing']],
+            'metaData' => [\sprintf('%s.validation.not-existing', $metaDataName)],
         ]);
     }
 
@@ -435,7 +435,7 @@ final class ProjectsApiCallsTest extends FeatureTestCase
 
         $response->assertStatus(422);
         $response->assertJsonFragment([
-            'metaData' => [$metaDataName => ['validation.string']],
+            'metaData' => [\sprintf('%s.validation.string', $metaDataName)],
         ]);
     }
 
@@ -468,7 +468,7 @@ final class ProjectsApiCallsTest extends FeatureTestCase
 
         $response->assertStatus(422);
         $response->assertJsonFragment([
-            'metaData' => [$metaDataName => ['validation.numeric']],
+            'metaData' => [\sprintf('%s.validation.numeric', $metaDataName)],
         ]);
     }
 
@@ -501,7 +501,7 @@ final class ProjectsApiCallsTest extends FeatureTestCase
 
         $response->assertStatus(422);
         $response->assertJsonFragment([
-            'metaData' => [$metaDataName => ['validation.email']],
+            'metaData' => [\sprintf('%s.validation.email', $metaDataName)],
         ]);
     }
 
@@ -534,7 +534,7 @@ final class ProjectsApiCallsTest extends FeatureTestCase
 
         $response->assertStatus(422);
         $response->assertJsonFragment([
-            'metaData' => [$metaDataName => ['validation.date']],
+            'metaData' => [\sprintf('%s.validation.date', $metaDataName)],
         ]);
     }
 
